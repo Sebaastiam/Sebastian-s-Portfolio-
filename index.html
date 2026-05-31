@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Liquid Glass — Design Module</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{
+:root {
   --shadow-offset: 0;
   --shadow-blur: 20px;
   --shadow-spread: -5px;
@@ -18,47 +18,94 @@
   --card-radius: 28px;
 }
 
-html { background: #1a1a2e; }
+html {
+  background: #111;
+  height: 100%;
+  overflow: hidden;         /* no scroll ever */
+}
 
 html, body {
-  height: 100%; margin: 0;
+  margin: 0; padding: 0;
   font-family: system-ui, -apple-system, "Roboto Slab", serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  min-height: 100vh;
-  padding: 40px;
-  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none; /* kills iOS rubber-band / Android edge-stretch */
+  touch-action: none;        /* prevents browser pan/zoom gestures */
 }
 
-/* ── Background slideshow ── */
+/* ── Background container ── */
 #bgContainer {
   position: fixed;
-  inset: 0;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .bg-slide {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 1.5s ease-in-out;
+  overflow: hidden;
 }
 .bg-slide.active { opacity: 1; }
 
+/*
+  Inner image div — 140 % of viewport so Ken Burns
+  pan/zoom never reveals a bare edge
+*/
+.bg-img {
+  position: absolute;
+  width: 140%;
+  height: 140%;
+  top: -20%;
+  left: -20%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  will-change: transform;
+}
+
+/* Ken Burns keyframes */
+@keyframes panRight {
+  from { transform: translateX(-14%); }
+  to   { transform: translateX( 14%); }
+}
+@keyframes panLeft {
+  from { transform: translateX( 14%); }
+  to   { transform: translateX(-14%); }
+}
+@keyframes panUp {
+  from { transform: translateY( 10%); }
+  to   { transform: translateY(-10%); }
+}
+@keyframes zoomIn {
+  from { transform: scale(1);    }
+  to   { transform: scale(1.15); }
+}
+@keyframes zoomOut {
+  from { transform: scale(1.15); }
+  to   { transform: scale(1);    }
+}
+
+/* Applied per slide when it becomes active */
+.bg-img.anim-panRight { animation: panRight 6s ease-in-out forwards; }
+.bg-img.anim-panLeft  { animation: panLeft  6s ease-in-out forwards; }
+.bg-img.anim-panUp    { animation: panUp    6s ease-in-out forwards; }
+.bg-img.anim-zoomIn   { animation: zoomIn   6s ease-in-out forwards; }
+.bg-img.anim-zoomOut  { animation: zoomOut  6s ease-in-out forwards; }
+
 /* ── Glass Module ── */
 .glassModule {
-  position: absolute;
+  position: fixed;         /* fixed = never affected by body layout shifts */
   z-index: 1;
   width: 340px;
   height: 420px;
@@ -114,20 +161,14 @@ body {
 }
 
 .module-title {
-  margin: 0;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #fff;
-  font-size: 20px;
-  text-transform: uppercase;
+  margin: 0; font-weight: 700; letter-spacing: 0.02em;
+  color: #fff; font-size: 20px; text-transform: uppercase;
 }
 
 .module-desc {
-  margin: 0;
-  font-size: 13px;
+  margin: 0; font-size: 13px;
   color: rgba(255,255,255,0.85);
-  max-width: 85%;
-  line-height: 1.25;
+  max-width: 85%; line-height: 1.25;
 }
 
 .module-btn {
@@ -153,8 +194,7 @@ body {
 
 .module-btn::after {
   content: "";
-  position: absolute;
-  top: 0; left: 0;
+  position: absolute; top: 0; left: 0;
   width: 100%; height: 100%;
   border-radius: 16px;
   transition: 0.2s ease-in-out all;
@@ -172,31 +212,32 @@ body {
 .module-btn:focus-visible::after { animation: bounceIn 1000ms linear both; }
 .module-btn:active { letter-spacing: 0.28em; transition: 120ms linear all; }
 .module-btn:active::after { animation: scaleDown 120ms linear both; }
-.module-btn:focus-visible { box-shadow: 0 10px 28px rgba(0,0,0,0.28), 0 0 0 4px rgba(100,150,255,0.12); transform: translateY(-1px); }
+.module-btn:focus-visible {
+  box-shadow: 0 10px 28px rgba(0,0,0,0.28), 0 0 0 4px rgba(100,150,255,0.12);
+  transform: translateY(-1px);
+}
 .module-btn:active { transform: translateY(0) scale(0.995); }
 
-.module-hint { position: absolute; right: 12px; top: 12px; font-size: 11px; color: rgba(255,255,255,0.7); }
+.module-hint {
+  position: absolute; right: 12px; top: 12px;
+  font-size: 11px; color: rgba(255,255,255,0.7);
+}
 
 .module-back {
-  position: absolute;
-  left: 12px; top: 12px;
-  font-size: 11px;
-  color: rgba(255,255,255,0.7);
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
+  position: absolute; left: 12px; top: 12px;
+  font-size: 11px; color: rgba(255,255,255,0.7);
+  cursor: pointer; background: none; border: none;
+  padding: 0; font-family: inherit;
   -webkit-tap-highlight-color: transparent;
   display: none;
 }
 .module-back:hover { color: #fff; }
 
 @media (max-width: 600px) {
-  .glassModule { top: 30%; width: 280px; height: 360px; }
+  .glassModule { width: 280px; height: 360px; }
 }
 
-/* ── Fade helpers ── */
+/* ── Panel fade helpers ── */
 .fade-out { animation: fadeOut 0.35s ease forwards; }
 .fade-in  { animation: fadeIn  0.35s ease forwards; }
 
@@ -218,7 +259,7 @@ body {
   opacity: 0;
 }
 
-/* ── Elastic keyframes ── */
+/* ── Elastic / bounce keyframes ── */
 @keyframes bounceIn {
   0%    { transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1); }
   3.4%  { transform: matrix3d(1.083,0,0,0,0,1.083,0,0,0,0,1,0,0,0,0,1); }
@@ -266,27 +307,44 @@ body {
 </head>
 <body>
 
-<!-- ── Background slideshow ── -->
+<!-- ── 7-image background slideshow ── -->
 <div id="bgContainer">
-  <div class="bg-slide active" id="slide0" style="background-image: url('https://previews.123rf.com/images/novalmub/novalmub2511/novalmub251107322/259689843-mountain-landscape-with-fresh-green-grass-and-a-small-river-at-sunset.jpg')"></div>
-  <div class="bg-slide"        id="slide1" style="background-image: url('https://previews.123rf.com/images/stockee/stockee2310/stockee231063489/233230546-a-stunning-photograph-of-a-rocky-valley-at-sunset-featuring-a-beautiful-blend-of-grass-and-rocks.jpg')"></div>
+  <div class="bg-slide active">
+    <div class="bg-img" style="background-image:url('https://i.postimg.cc/7YpH0r4j/DSC00511.jpg')"></div>
+  </div>
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image:url('https://i.postimg.cc/cHX1nK4s/DSC00469.jpg')"></div>
+  </div>
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image:url('https://i.postimg.cc/4xg3jR05/DSC00671.jpg')"></div>
+  </div>
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image:url('https://i.postimg.cc/qRzB2Jtf/DSC00684.jpg')"></div>
+  </div>
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image:url('https://i.postimg.cc/NG2fM0vv/IMG-20251202-132749.jpg')"></div>
+  </div>
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image:url('https://i.postimg.cc/0QWxNLZH/DSC00548.jpg')"></div>
+  </div>
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image:url('https://i.postimg.cc/DzGbLPRc/DSC00242-(3).jpg')"></div>
+  </div>
 </div>
 
 <!-- ── Glass card ── -->
-<div class="glassModule" id="glassModule" style="left: calc(50% - 170px); top: calc(50% - 210px);">
+<div class="glassModule" id="glassModule" style="left:calc(50vw - 170px);top:calc(50vh - 210px);">
   <div class="module-content" aria-labelledby="moduleTitle">
 
     <div class="module-hint">drag me</div>
     <button class="module-back" id="backBtn" aria-label="Go back">← back</button>
 
-    <!-- default view -->
-    <div id="defaultView" style="display:flex; flex-direction:column; align-items:center; gap:14px; width:100%;">
+    <div id="defaultView" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
       <h3 class="module-title" id="moduleTitle">Liquid Glass Module</h3>
       <p class="module-desc">A draggable glass card demo — keep the button to test animations and interactions.</p>
       <button class="module-btn" id="actionBtn" aria-label="Module action">Explore</button>
     </div>
 
-    <!-- 3-button panel -->
     <div id="btnPanel">
       <a href="https://google.com" target="_blank" class="module-btn">Button 1</a>
       <a href="https://google.com" target="_blank" class="module-btn">Button 2</a>
@@ -308,67 +366,83 @@ body {
 </svg>
 
 <script>
-/* ── Background slideshow ── */
+/* ── Slideshow + Ken Burns ── */
 (function () {
-  const slides = Array.from(document.querySelectorAll('.bg-slide'));
-  let current = 0;
+  const slides  = Array.from(document.querySelectorAll('.bg-slide'));
+  const bgImgs  = Array.from(document.querySelectorAll('.bg-img'));
+  // One animation per slide — vary for dramatic effect
+  const animSeq = ['panRight','panLeft','zoomIn','panRight','panLeft','zoomOut','panUp'];
+  let current   = 0;
+  let started   = false;
 
-  // Preload both images before starting the timer
-  let loaded = 0;
-  slides.forEach((slide, i) => {
-    const url = slide.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/, '$1');
-    const img = new Image();
-    img.src = url;
-    img.onload = img.onerror = () => {
-      loaded++;
-      if (loaded === slides.length) startSlideshow();
-    };
+  // Strip old anim class and re-apply to restart CSS animation
+  function applyAnim(i) {
+    const img = bgImgs[i];
+    img.className = 'bg-img';
+    void img.offsetWidth;           // force reflow → restarts animation
+    img.classList.add('anim-' + animSeq[i]);
+  }
+
+  applyAnim(0); // start first slide's Ken Burns immediately
+
+  // Preload all images; 2.5 s fallback so slow connections still start
+  let ready = 0;
+  const fallback = setTimeout(boot, 2500);
+
+  bgImgs.forEach(img => {
+    const url = img.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/, '$1');
+    const el  = new Image();
+    el.src    = url;
+    el.onload = el.onerror = () => { if (++ready === bgImgs.length) boot(); };
   });
 
-  function startSlideshow() {
+  function boot() {
+    if (started) return;
+    started = true;
+    clearTimeout(fallback);
     setInterval(() => {
       slides[current].classList.remove('active');
       current = (current + 1) % slides.length;
+      applyAnim(current);
       slides[current].classList.add('active');
-    }, 5000);
+    }, 4000); // 4 s per photo
   }
 })();
 
-/* ── Dragging ── */
+/* ── Card dragging ── */
 (function () {
   const el = document.getElementById('glassModule');
   if (!el) return;
-  let startX = 0, startY = 0, dragging = false;
+  let ox = 0, oy = 0, dragging = false;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  function onPointerDown(e) {
-    if (e.target.closest('button, a, input, textarea, select')) return;
+  function onDown(e) {
+    if (e.target.closest('button,a,input,textarea,select')) return;
     e.preventDefault();
     dragging = true;
     el.classList.add('dragging');
-    const rect = el.getBoundingClientRect();
-    startX = e.clientX - rect.left;
-    startY = e.clientY - rect.top;
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp, { once: true });
-  }
-  function onPointerMove(e) {
-    if (!dragging) return;
-    const left = e.clientX - startX;
-    const top  = e.clientY - startY;
-    const maxLeft = window.innerWidth  - el.offsetWidth  - 8;
-    const maxTop  = window.innerHeight - el.offsetHeight - 8;
-    el.style.left = Math.max(8, Math.min(maxLeft, left)) + 'px';
-    el.style.top  = Math.max(8, Math.min(maxTop,  top))  + 'px';
-  }
-  function onPointerUp() {
-    dragging = false;
-    el.classList.remove('dragging');
-    document.removeEventListener('pointermove', onPointerMove);
+    const r = el.getBoundingClientRect();
+    ox = e.clientX - r.left;
+    oy = e.clientY - r.top;
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup',   onUp, { once: true });
   }
 
-  el.addEventListener('pointerdown', onPointerDown);
-  el.addEventListener('pointerdown', function (e) {
-    if (e.target.closest('button, a, input, textarea, select')) return;
+  function onMove(e) {
+    if (!dragging) return;
+    el.style.left = clamp(e.clientX - ox, 8, window.innerWidth  - el.offsetWidth  - 8) + 'px';
+    el.style.top  = clamp(e.clientY - oy, 8, window.innerHeight - el.offsetHeight - 8) + 'px';
+  }
+
+  function onUp() {
+    dragging = false;
+    el.classList.remove('dragging');
+    document.removeEventListener('pointermove', onMove);
+  }
+
+  el.addEventListener('pointerdown', onDown);
+  el.addEventListener('pointerdown', e => {
+    if (e.target.closest('button,a,input,textarea,select')) return;
     el.classList.add('touch-tap');
     setTimeout(() => el.classList.remove('touch-tap'), 160);
   });
@@ -380,47 +454,47 @@ body {
     el.style.animation = 'none'; void el.offsetWidth;
     el.style.animation = 'bounceOut 700ms linear both';
   });
+
+  // Keep card in bounds on orientation change / resize
+  window.addEventListener('resize', () => {
+    const r = el.getBoundingClientRect();
+    el.style.left = clamp(r.left, 8, window.innerWidth  - el.offsetWidth  - 8) + 'px';
+    el.style.top  = clamp(r.top,  8, window.innerHeight - el.offsetHeight - 8) + 'px';
+  });
 })();
 
-/* ── Explore → 3 buttons ── */
+/* ── Panel transitions ── */
 function showPanel() {
-  const defaultView = document.getElementById('defaultView');
-  const btnPanel    = document.getElementById('btnPanel');
-  const backBtn     = document.getElementById('backBtn');
-  defaultView.classList.add('fade-out');
-  defaultView.addEventListener('animationend', () => {
-    defaultView.style.display = 'none';
-    defaultView.classList.remove('fade-out');
-    btnPanel.style.display = 'flex';
-    backBtn.style.display  = 'block';
-    btnPanel.classList.add('fade-in');
-    btnPanel.addEventListener('animationend', () => {
-      btnPanel.style.opacity = '1';
-      btnPanel.classList.remove('fade-in');
+  const dv = document.getElementById('defaultView');
+  const bp = document.getElementById('btnPanel');
+  const bk = document.getElementById('backBtn');
+  dv.classList.add('fade-out');
+  dv.addEventListener('animationend', () => {
+    dv.style.display = 'none'; dv.classList.remove('fade-out');
+    bp.style.display = 'flex'; bk.style.display = 'block';
+    bp.classList.add('fade-in');
+    bp.addEventListener('animationend', () => {
+      bp.style.opacity = '1'; bp.classList.remove('fade-in');
     }, { once: true });
   }, { once: true });
 }
 
 function showDefault() {
-  const defaultView = document.getElementById('defaultView');
-  const btnPanel    = document.getElementById('btnPanel');
-  const backBtn     = document.getElementById('backBtn');
-  btnPanel.classList.add('fade-out');
-  btnPanel.addEventListener('animationend', () => {
-    btnPanel.style.display  = 'none';
-    btnPanel.style.opacity  = '0';
-    btnPanel.classList.remove('fade-out');
-    backBtn.style.display   = 'none';
-    defaultView.style.display = 'flex';
-    defaultView.classList.add('fade-in');
-    defaultView.addEventListener('animationend', () => {
-      defaultView.classList.remove('fade-in');
-    }, { once: true });
+  const dv = document.getElementById('defaultView');
+  const bp = document.getElementById('btnPanel');
+  const bk = document.getElementById('backBtn');
+  bp.classList.add('fade-out');
+  bp.addEventListener('animationend', () => {
+    bp.style.display = 'none'; bp.style.opacity = '0';
+    bp.classList.remove('fade-out'); bk.style.display = 'none';
+    dv.style.display = 'flex';
+    dv.classList.add('fade-in');
+    dv.addEventListener('animationend', () => { dv.classList.remove('fade-in'); }, { once: true });
   }, { once: true });
 }
 
-document.getElementById('actionBtn').addEventListener('click', (e) => { e.currentTarget.blur(); showPanel(); });
-document.getElementById('backBtn').addEventListener('click',   (e) => { e.currentTarget.blur(); showDefault(); });
+document.getElementById('actionBtn').addEventListener('click', e => { e.currentTarget.blur(); showPanel(); });
+document.getElementById('backBtn').addEventListener('click',   e => { e.currentTarget.blur(); showDefault(); });
 </script>
 </body>
 </html>
