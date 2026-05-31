@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Liquid Glass — Design Module</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --shadow-offset: 0;
+  --shadow-blur: 20px;
+  --shadow-spread: -5px;
+  --shadow-color: rgba(255,255,255,0.72);
+  --tint-color: 200,220,255;
+  --tint-opacity: 0.22;
+  --frost-blur: 2px;
+  --outer-shadow-blur: 24px;
+  --card-radius: 28px;
+}
+
+html { background: #1a1a2e; }
+
+html, body {
+  height: 100%; margin: 0;
+  font-family: system-ui, -apple-system, "Roboto Slab", serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+/* ── Background slideshow ── */
+#bgContainer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+.bg-slide.active { opacity: 1; }
+
+/* ── Glass Module ── */
+.glassModule {
+  position: absolute;
+  z-index: 1;
+  width: 340px;
+  height: 420px;
+  border-radius: var(--card-radius);
+  cursor: grab;
+  isolation: isolate;
+  touch-action: none;
+  box-shadow: 0 6px var(--outer-shadow-blur) rgba(0,0,0,0.2);
+  transform-origin: center;
+  transition: box-shadow 0.2s ease, transform 0.18s ease;
+  will-change: transform;
+  background: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  outline: 1px solid rgba(255,255,255,0.02);
+}
+
+.glassModule::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  border-radius: inherit;
+  box-shadow: inset var(--shadow-offset) var(--shadow-offset) var(--shadow-blur) var(--shadow-spread) var(--shadow-color);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+    rgba(var(--tint-color), var(--tint-opacity));
+  border: 1px solid rgba(var(--tint-color), 0.14);
+  pointer-events: none;
+}
+
+.glassModule::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  backdrop-filter: blur(var(--frost-blur));
+  -webkit-backdrop-filter: blur(var(--frost-blur));
+  filter: url(#glass-distortion);
+  -webkit-filter: url("#glass-distortion");
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.module-content {
+  position: relative;
+  width: 100%; height: 100%;
+  padding: 28px;
+  border-radius: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  z-index: 1;
+  gap: 14px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.module-title {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.module-desc {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  max-width: 85%;
+  line-height: 1.25;
+}
+
+.module-btn {
+  position: relative;
+  display: inline-block;
+  min-width: 140px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #6dd5ff, #8e54e9);
+  color: #111;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  transition: 0.18s ease-in-out all;
+  z-index: 1;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+  text-decoration: none;
+}
+
+.module-btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border-radius: 16px;
+  transition: 0.2s ease-in-out all;
+  background: #fff;
+  z-index: -1;
+  transform-origin: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  animation: bounceOut 1000ms linear both;
+  pointer-events: none;
+}
+
+.module-btn:hover,
+.module-btn:focus-visible { letter-spacing: 0.32em; color: #1e1e1e; outline: none; }
+.module-btn:hover::after,
+.module-btn:focus-visible::after { animation: bounceIn 1000ms linear both; }
+.module-btn:active { letter-spacing: 0.28em; transition: 120ms linear all; }
+.module-btn:active::after { animation: scaleDown 120ms linear both; }
+.module-btn:focus-visible { box-shadow: 0 10px 28px rgba(0,0,0,0.28), 0 0 0 4px rgba(100,150,255,0.12); transform: translateY(-1px); }
+.module-btn:active { transform: translateY(0) scale(0.995); }
+
+.module-hint { position: absolute; right: 12px; top: 12px; font-size: 11px; color: rgba(255,255,255,0.7); }
+
+.module-back {
+  position: absolute;
+  left: 12px; top: 12px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  display: none;
+}
+.module-back:hover { color: #fff; }
+
+@media (max-width: 600px) {
+  .glassModule { top: 30%; width: 280px; height: 360px; }
+}
+
+/* ── Fade helpers ── */
+.fade-out { animation: fadeOut 0.35s ease forwards; }
+.fade-in  { animation: fadeIn  0.35s ease forwards; }
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#btnPanel {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  opacity: 0;
+}
+
+/* ── Elastic keyframes ── */
+@keyframes bounceIn {
+  0%    { transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1); }
+  3.4%  { transform: matrix3d(1.083,0,0,0,0,1.083,0,0,0,0,1,0,0,0,0,1); }
+  6.81% { transform: matrix3d(1.187,0,0,0,0,1.187,0,0,0,0,1,0,0,0,0,1); }
+  10.21%{ transform: matrix3d(1.26,0,0,0,0,1.26,0,0,0,0,1,0,0,0,0,1); }
+  13.61%{ transform: matrix3d(1.284,0,0,0,0,1.284,0,0,0,0,1,0,0,0,0,1); }
+  17.52%{ transform: matrix3d(1.263,0,0,0,0,1.263,0,0,0,0,1,0,0,0,0,1); }
+  21.32%{ transform: matrix3d(1.225,0,0,0,0,1.225,0,0,0,0,1,0,0,0,0,1); }
+  25.23%{ transform: matrix3d(1.196,0,0,0,0,1.196,0,0,0,0,1,0,0,0,0,1); }
+  29.03%{ transform: matrix3d(1.187,0,0,0,0,1.187,0,0,0,0,1,0,0,0,0,1); }
+  36.74%{ transform: matrix3d(1.205,0,0,0,0,1.205,0,0,0,0,1,0,0,0,0,1); }
+  44.44%{ transform: matrix3d(1.217,0,0,0,0,1.217,0,0,0,0,1,0,0,0,0,1); }
+  59.86%{ transform: matrix3d(1.208,0,0,0,0,1.208,0,0,0,0,1,0,0,0,0,1); }
+  75.28%{ transform: matrix3d(1.211,0,0,0,0,1.211,0,0,0,0,1,0,0,0,0,1); }
+  90.69%{ transform: matrix3d(1.21,0,0,0,0,1.21,0,0,0,0,1,0,0,0,0,1); }
+  100%  { transform: matrix3d(1.21,0,0,0,0,1.21,0,0,0,0,1,0,0,0,0,1); }
+}
+@keyframes bounceOut {
+  0%    { transform: matrix3d(1.21,0,0,0,0,1.21,0,0,0,0,1,0,0,0,0,1); }
+  3.4%  { transform: matrix3d(1.122,0,0,0,0,1.122,0,0,0,0,1,0,0,0,0,1); }
+  6.81% { transform: matrix3d(1.022,0,0,0,0,1.022,0,0,0,0,1,0,0,0,0,1); }
+  10.21%{ transform: matrix3d(0.955,0,0,0,0,0.955,0,0,0,0,1,0,0,0,0,1); }
+  13.61%{ transform: matrix3d(0.935,0,0,0,0,0.935,0,0,0,0,1,0,0,0,0,1); }
+  17.52%{ transform: matrix3d(0.953,0,0,0,0,0.953,0,0,0,0,1,0,0,0,0,1); }
+  21.32%{ transform: matrix3d(0.986,0,0,0,0,0.986,0,0,0,0,1,0,0,0,0,1); }
+  25.23%{ transform: matrix3d(1.013,0,0,0,0,1.013,0,0,0,0,1,0,0,0,0,1); }
+  29.03%{ transform: matrix3d(1.021,0,0,0,0,1.021,0,0,0,0,1,0,0,0,0,1); }
+  36.74%{ transform: matrix3d(1.004,0,0,0,0,1.004,0,0,0,0,1,0,0,0,0,1); }
+  44.44%{ transform: matrix3d(0.994,0,0,0,0,0.994,0,0,0,0,1,0,0,0,0,1); }
+  59.86%{ transform: matrix3d(1.002,0,0,0,0,1.002,0,0,0,0,1,0,0,0,0,1); }
+  75.28%{ transform: matrix3d(0.999,0,0,0,0,0.999,0,0,0,0,1,0,0,0,0,1); }
+  90.69%{ transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1); }
+  100%  { transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1); }
+}
+@keyframes scaleDown {
+  0%   { transform: matrix(1.1,0,0,1.1,0,0); }
+  100% { transform: matrix(1.05,0,0,1.05,0,0); }
+}
+
+.glassModule:hover { animation: bounceIn 900ms linear both; box-shadow: 0 18px 40px rgba(0,0,0,0.28); }
+.glassModule:active { animation: scaleDown 120ms linear both; cursor: grabbing; }
+.glassModule.touch-tap { animation: scaleDown 120ms linear both; }
+.glassModule.dragging { cursor: grabbing; z-index: 9999; transform: scale(1.01); }
+</style>
+</head>
+<body>
+
+<!-- ── Background slideshow ── -->
+<div id="bgContainer">
+  <div class="bg-slide active" id="slide0" style="background-image: url('https://previews.123rf.com/images/novalmub/novalmub2511/novalmub251107322/259689843-mountain-landscape-with-fresh-green-grass-and-a-small-river-at-sunset.jpg')"></div>
+  <div class="bg-slide"        id="slide1" style="background-image: url('https://previews.123rf.com/images/stockee/stockee2310/stockee231063489/233230546-a-stunning-photograph-of-a-rocky-valley-at-sunset-featuring-a-beautiful-blend-of-grass-and-rocks.jpg')"></div>
+</div>
+
+<!-- ── Glass card ── -->
+<div class="glassModule" id="glassModule" style="left: calc(50% - 170px); top: calc(50% - 210px);">
+  <div class="module-content" aria-labelledby="moduleTitle">
+
+    <div class="module-hint">drag me</div>
+    <button class="module-back" id="backBtn" aria-label="Go back">← back</button>
+
+    <!-- default view -->
+    <div id="defaultView" style="display:flex; flex-direction:column; align-items:center; gap:14px; width:100%;">
+      <h3 class="module-title" id="moduleTitle">Liquid Glass Module</h3>
+      <p class="module-desc">A draggable glass card demo — keep the button to test animations and interactions.</p>
+      <button class="module-btn" id="actionBtn" aria-label="Module action">Explore</button>
+    </div>
+
+    <!-- 3-button panel -->
+    <div id="btnPanel">
+      <a href="https://google.com" target="_blank" class="module-btn">Button 1</a>
+      <a href="https://google.com" target="_blank" class="module-btn">Button 2</a>
+      <a href="https://google.com" target="_blank" class="module-btn">Button 3</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- SVG distortion filter -->
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden">
+  <defs>
+    <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="1" seed="9000" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="2" result="blurred"/>
+      <feDisplacementMap in="SourceGraphic" in2="blurred" scale="77" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+/* ── Background slideshow ── */
+(function () {
+  const slides = Array.from(document.querySelectorAll('.bg-slide'));
+  let current = 0;
+
+  // Preload both images before starting the timer
+  let loaded = 0;
+  slides.forEach((slide, i) => {
+    const url = slide.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/, '$1');
+    const img = new Image();
+    img.src = url;
+    img.onload = img.onerror = () => {
+      loaded++;
+      if (loaded === slides.length) startSlideshow();
+    };
+  });
+
+  function startSlideshow() {
+    setInterval(() => {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 5000);
+  }
+})();
+
+/* ── Dragging ── */
+(function () {
+  const el = document.getElementById('glassModule');
+  if (!el) return;
+  let startX = 0, startY = 0, dragging = false;
+
+  function onPointerDown(e) {
+    if (e.target.closest('button, a, input, textarea, select')) return;
+    e.preventDefault();
+    dragging = true;
+    el.classList.add('dragging');
+    const rect = el.getBoundingClientRect();
+    startX = e.clientX - rect.left;
+    startY = e.clientY - rect.top;
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp, { once: true });
+  }
+  function onPointerMove(e) {
+    if (!dragging) return;
+    const left = e.clientX - startX;
+    const top  = e.clientY - startY;
+    const maxLeft = window.innerWidth  - el.offsetWidth  - 8;
+    const maxTop  = window.innerHeight - el.offsetHeight - 8;
+    el.style.left = Math.max(8, Math.min(maxLeft, left)) + 'px';
+    el.style.top  = Math.max(8, Math.min(maxTop,  top))  + 'px';
+  }
+  function onPointerUp() {
+    dragging = false;
+    el.classList.remove('dragging');
+    document.removeEventListener('pointermove', onPointerMove);
+  }
+
+  el.addEventListener('pointerdown', onPointerDown);
+  el.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('button, a, input, textarea, select')) return;
+    el.classList.add('touch-tap');
+    setTimeout(() => el.classList.remove('touch-tap'), 160);
+  });
+  el.addEventListener('pointerenter', () => {
+    el.style.animation = 'none'; void el.offsetWidth;
+    el.style.animation = 'bounceIn 900ms linear both';
+  });
+  el.addEventListener('pointerleave', () => {
+    el.style.animation = 'none'; void el.offsetWidth;
+    el.style.animation = 'bounceOut 700ms linear both';
+  });
+})();
+
+/* ── Explore → 3 buttons ── */
+function showPanel() {
+  const defaultView = document.getElementById('defaultView');
+  const btnPanel    = document.getElementById('btnPanel');
+  const backBtn     = document.getElementById('backBtn');
+  defaultView.classList.add('fade-out');
+  defaultView.addEventListener('animationend', () => {
+    defaultView.style.display = 'none';
+    defaultView.classList.remove('fade-out');
+    btnPanel.style.display = 'flex';
+    backBtn.style.display  = 'block';
+    btnPanel.classList.add('fade-in');
+    btnPanel.addEventListener('animationend', () => {
+      btnPanel.style.opacity = '1';
+      btnPanel.classList.remove('fade-in');
+    }, { once: true });
+  }, { once: true });
+}
+
+function showDefault() {
+  const defaultView = document.getElementById('defaultView');
+  const btnPanel    = document.getElementById('btnPanel');
+  const backBtn     = document.getElementById('backBtn');
+  btnPanel.classList.add('fade-out');
+  btnPanel.addEventListener('animationend', () => {
+    btnPanel.style.display  = 'none';
+    btnPanel.style.opacity  = '0';
+    btnPanel.classList.remove('fade-out');
+    backBtn.style.display   = 'none';
+    defaultView.style.display = 'flex';
+    defaultView.classList.add('fade-in');
+    defaultView.addEventListener('animationend', () => {
+      defaultView.classList.remove('fade-in');
+    }, { once: true });
+  }, { once: true });
+}
+
+document.getElementById('actionBtn').addEventListener('click', (e) => { e.currentTarget.blur(); showPanel(); });
+document.getElementById('backBtn').addEventListener('click',   (e) => { e.currentTarget.blur(); showDefault(); });
+</script>
+</body>
+</html>
