@@ -997,22 +997,18 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
   window.addEventListener('scroll', check, { passive: true });
 })();
 /* ══════════════════════════════════════════════
-   6. CONTACT CTA — reveal on scroll (LIMITED TO 45%)
-   Multiplier: 0.45 limits the upward movement to 45% of original distance
+   6. CONTACT CTA — reveal on scroll
 ══════════════════════════════════════════════ */
 (function () {
   const cta = document.getElementById('contactCTA');
   if (!cta) return;
   const contactSection = document.getElementById('contactSection');
-  // Scroll progress calculation with 0.45 multiplier to cap movement
   function updateScroll() {
     const scrollY = window.scrollY;
     const sectionStart = contactSection.offsetTop;
     const triggerDistance = window.innerHeight * 1.5;
     const progress = Math.min(Math.max((scrollY - (sectionStart - window.innerHeight)) / triggerDistance, 0), 1);
-    // Apply 0.45 multiplier to limit scroll movement
-    const limitedProgress = progress * 0.45;
-    cta.style.opacity = limitedProgress;
+    cta.style.opacity = progress;
     if (progress > 0) {
       cta.classList.add('visible');
     } else {
