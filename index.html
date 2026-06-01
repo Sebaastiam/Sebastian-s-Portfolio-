@@ -382,6 +382,44 @@ body {
   pointer-events: none;
 }
 
+/* ── Contact wrapper & prompt ── */
+.contact-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  z-index: 3;
+}
+
+.contact-prompt {
+  --gy: 50%;
+  font-family: 'AuthenticDeclaration', cursive;
+  font-size: 40px;
+  margin: 0;
+  text-align: center;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+@supports (color: oklch(0.75 0.25 220)) {
+  .contact-prompt {
+    background-image: radial-gradient(
+      in oklch circle at 50% var(--gy),
+      oklch(0.95 0.12 200)      0%,
+      oklch(0.75 0.25 220)     40%,
+      oklch(0.40 0.20 280)     80%,
+      oklch(0.15 0.08 260 / 0) 130%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    filter:
+      drop-shadow(0 0 16px oklch(0.75 0.25 220 / 0.32))
+      drop-shadow(0 2px 4px rgba(0,0,0,0.40));
+  }
+}
+
+
 /* ── Contact glass pill button ── */
 .contact-pill {
   position: relative;
@@ -391,36 +429,29 @@ body {
   cursor: pointer;
   -webkit-user-select: none; user-select: none;
   -webkit-tap-highlight-color: transparent;
-  /* reveal animation: starts hidden, slides up */
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity   0.65s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.65s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.25s ease;
+  /* changed to static display (no reveal animation on scroll) */
   box-shadow: var(--card-shadow);
-  z-index: 3;
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
 }
-.contact-pill.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+
 .contact-pill:hover {
   box-shadow: var(--card-shadow-hover);
   transform: translateY(-5px);
-  transition: box-shadow 0.25s ease, transform 0.2s ease;
 }
 .contact-pill:active { transform: translateY(-2px) scale(0.98); }
 
-/* same glass tint as glassModule::before */
+/* same glass tint as glassModule::before + NEON highlight */
 .contact-pill::before {
   content: ''; position: absolute; inset: 0; z-index: 0;
   border-radius: inherit;
-  box-shadow: inset 0 0 20px -5px rgba(255,255,255,0.72);
+  box-shadow: 
+    inset 0 0 20px -5px rgba(255,255,255,0.72),
+    inset 0 0 12px 0 rgba(142, 84, 233, 0.3),  /* neon inset glow */
+    0 0 15px 0 rgba(142, 84, 233, 0.4);        /* neon outset glow */
   background:
     linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
     rgba(var(--tint-color), var(--tint-opacity));
-  border: 1px solid rgba(var(--tint-color), 0.14);
+  border: 1px solid rgba(142, 84, 233, 0.6);   /* neon border edge */
   pointer-events: none;
 }
 /* same backdrop blur as glassModule::after */
@@ -654,11 +685,16 @@ textarea.cmodal-input { resize: none; height: 76px; line-height: 1.5; }
 
   <!-- Contact section — appears on scroll -->
   <section id="contactSection" aria-label="Sección de contacto">
-    <div class="contact-pill" id="contactTrigger"
-         role="button" tabindex="0"
-         aria-label="Abrir formulario de contacto">
-      <span class="contact-pill-label">contáctame</span>
+    
+    <div class="contact-wrapper">
+      <h3 class="contact-prompt">(presiona que hablemos)</h3>
+      <div class="contact-pill" id="contactTrigger"
+           role="button" tabindex="0"
+           aria-label="Abrir formulario de contacto">
+        <span class="contact-pill-label">contáctame</span>
+      </div>
     </div>
+    
   </section>
 </div>
 
@@ -822,10 +858,10 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
 <script>
 /* ── oklch gradient mouse/touch tracking ── */
 (function () {
-  const title      = document.getElementById('moduleTitle');
-  const pillLabel  = document.querySelector('.contact-pill-label');
-  const modalTitle = document.getElementById('cmodalTitle');
-  if (!title) return;
+  const title       = document.getElementById('moduleTitle');
+  const promptTitle = document.querySelector('.contact-prompt');
+  const pillLabel   = document.querySelector('.contact-pill-label');
+  const modalTitle  = document.getElementById('cmodalTitle');
 
   let tT = 50, tC = 50; // title  target / current
   let pT = 50, pC = 50; // pill   target / current
@@ -838,8 +874,9 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
     pC = lerp(pC, pT, 0.055);
     mC = lerp(mC, mT, 0.055);
 
-    title.style.setProperty('--gy', tC.toFixed(2) + '%');
-    if (pillLabel)  pillLabel.style.setProperty('--gy', pC.toFixed(2) + '%');
+    if (title) title.style.setProperty('--gy', tC.toFixed(2) + '%');
+    if (promptTitle) promptTitle.style.setProperty('--gy', mC.toFixed(2) + '%'); // Share same palette mapping as modal
+    if (pillLabel) pillLabel.style.setProperty('--gy', pC.toFixed(2) + '%');
     if (modalTitle) modalTitle.style.setProperty('--gy', mC.toFixed(2) + '%');
 
     requestAnimationFrame(tick);
@@ -870,15 +907,6 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
   }, { passive: true });
 })();
 
-/* ── Contact pill reveal via IntersectionObserver ── */
-(function () {
-  const pill = document.getElementById('contactTrigger');
-  if (!pill) return;
-  new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) pill.classList.add('visible'); });
-  }, { threshold: 0.25 }).observe(pill);
-})();
-
 /* ── Contact modal open / close / submit ── */
 (function () {
   const wrap    = document.getElementById('contactModal');
@@ -891,28 +919,32 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
   function open()  { wrap.classList.add('open');    document.documentElement.style.overflowY = 'hidden'; }
   function shut()  { wrap.classList.remove('open'); document.documentElement.style.overflowY = ''; }
 
-  trigger.addEventListener('click',   open);
-  trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
-  overlay.addEventListener('click',   shut);
-  close.addEventListener('click',     shut);
+  if (trigger) {
+    trigger.addEventListener('click',   open);
+    trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
+  }
+  if (overlay) overlay.addEventListener('click',   shut);
+  if (close) close.addEventListener('click',     shut);
 
   // Close on Escape
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('open')) shut(); });
 
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    form.style.display = 'none';
-    success.style.display = 'block';
-    setTimeout(() => {
-      shut();
-      // reset after fade out completes
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      form.style.display = 'none';
+      success.style.display = 'block';
       setTimeout(() => {
-        form.style.display   = 'flex';
-        success.style.display = 'none';
-        form.reset();
-      }, 350);
-    }, 2400);
-  });
+        shut();
+        // reset after fade out completes
+        setTimeout(() => {
+          form.style.display   = 'flex';
+          success.style.display = 'none';
+          form.reset();
+        }, 350);
+      }, 2400);
+    });
+  }
 })();
 </script>
 </body>
