@@ -48,12 +48,10 @@
     0 52px 96px rgba(0,0,0,0.22);
 }
 
-/* CHANGED: allow vertical scroll only */
+/* FIXED: allow native scroll by removing redundant overflow and touch restrictions */
 html {
   background: #111;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-width: none;
+scrollbar-width: none;
 }
 html::-webkit-scrollbar { display: none; }
 
@@ -63,13 +61,9 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* CHANGED: pan-y allows vertical scroll; card has its own touch-action:none */
 body {
   background: transparent;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: none;
-  touch-action: pan-y;
+  overflow-x: hidden; /* Prevent horizontal scroll */
   /* Reduced min-height to limit scroll distance */
   min-height: 175vh;
 }
@@ -177,10 +171,10 @@ body {
   .module-title {
     background-image: radial-gradient(
       in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      oklch(0.95 0.12 200)  0vh,
-      oklch(0.75 0.25 220)  50vh,
-      oklch(0.40 0.20 280)  90vh,
-      oklch(0.15 0.08 260 / 0) 150vh
+      oklch(0.92 0.13 85)   0vh,
+      oklch(0.72 0.27 18)   50vh,
+      oklch(0.42 0.18 320)  90vh,
+      oklch(0.18 0.06 280 / 0) 150vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -337,7 +331,7 @@ body {
 #pageContent {
   position: relative;
   z-index: 2;
-  pointer-events: none; /* hero spacer doesn't eat clicks */
+  /* pointer-events: none removed to allow native scroll on edges/Android */
 }
 
 /* First 100vh: glass card floats here (fixed) */
@@ -375,7 +369,6 @@ body {
   padding-bottom: 14vh;
   box-sizing: border-box;
   position: relative;
-  pointer-events: all; /* re-enable clicks for this section */
 }
 /* subtle vignette as you scroll in */
 #contactSection::before {
@@ -409,10 +402,10 @@ body {
   .contact-prompt {
     background-image: radial-gradient(
       in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      oklch(0.95 0.12 200)      0vh,
-      oklch(0.75 0.25 220)     50vh,
-      oklch(0.40 0.20 280)     90vh,
-      oklch(0.15 0.08 260 / 0) 150vh
+    oklch(0.94 0.16 110)  0vh,
+    oklch(0.78 0.24 60)   50vh,
+    oklch(0.45 0.22 25)   90vh,
+    oklch(0.18 0.08 350 / 0) 150vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -486,10 +479,10 @@ body {
   .contact-pill-label {
     background-image: radial-gradient(
       in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      oklch(0.93 0.14 320)      0vh,
-      oklch(0.70 0.28 340)     50vh,
-      oklch(0.38 0.22 295)     90vh,
-      oklch(0.15 0.08 290 / 0) 150vh
+    oklch(0.94 0.16 110)  0vh,
+    oklch(0.78 0.24 60)   50vh,
+    oklch(0.45 0.22 25)   90vh,
+    oklch(0.18 0.08 350 / 0) 150vh
     );
     background-clip: text;
     -webkit-background-clip: text;
