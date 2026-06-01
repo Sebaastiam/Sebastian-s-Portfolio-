@@ -934,43 +934,36 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
   form.addEventListener('submit', async e => {
     e.preventDefault();
 
-    const formData = {
-      nombre: form.nombre.value,
-      email: form.email.value,
-      mensaje: form.mensaje.value
-    };
+    const formData = new FormData();
+
+    formData.append('nombre', form.nombre.value);
+    formData.append('email', form.email.value);
+    formData.append('mensaje', form.mensaje.value);
 
     try {
-      const response = await fetch(
+
+      await fetch(
         'https://script.google.com/macros/s/AKfycbxpnQ42VMCpVnSakwY-JplaqeSFsjRB4s1U6_eWmSoa2K1tV_7dpvUfFbNWsuXU3HqbcQ/exec',
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
+          mode: 'no-cors',
+          body: formData
         }
       );
 
-      const result = await response.json();
+      form.style.display = 'none';
+      success.style.display = 'block';
 
-      if (result.success) {
-        form.style.display = 'none';
-        success.style.display = 'block';
+      setTimeout(() => {
+        shut();
 
         setTimeout(() => {
-          shut();
+          form.style.display = 'flex';
+          success.style.display = 'none';
+          form.reset();
+        }, 350);
 
-          setTimeout(() => {
-            form.style.display = 'flex';
-            success.style.display = 'none';
-            form.reset();
-          }, 350);
-
-        }, 2400);
-      } else {
-        alert('No fue posible enviar el mensaje.');
-      }
+      }, 2400);
 
     } catch (error) {
       console.error(error);
