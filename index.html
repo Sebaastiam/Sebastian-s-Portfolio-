@@ -583,10 +583,10 @@ body {
   .cmodal-title {
     background-image: radial-gradient(
       in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      oklch(0.95 0.12 200)      0vh,
-      oklch(0.75 0.25 220)     50vh,
-      oklch(0.40 0.20 280)     90vh,
-      oklch(0.15 0.08 260 / 0) 150vh
+    oklch(0.94 0.16 110)  0vh,
+    oklch(0.78 0.24 60)   5vh,
+    oklch(0.45 0.22 25)   10vh,
+    oklch(0.18 0.08 350 / 0) 30vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -725,7 +725,7 @@ textarea.cmodal-input { resize: none; height: 76px; line-height: 1.5; }
   <div class="cmodal-panel">
     <button class="cmodal-close" id="cmodalClose" aria-label="Cerrar">✕ cerrar</button>
     <div class="cmodal-body">
-      <h3 class="cmodal-title" id="cmodalTitle">Hablemos</h3>
+      <h3 style="font-size: 50px" class="cmodal-title" id="cmodalTitle">Hablemos</h3>
       <form class="cmodal-form" id="cmodalForm" novalidate>
         <input  class="cmodal-input" type="text"  name="nombre"  placeholder="tu nombre"    autocomplete="name"  required/>
         <input  class="cmodal-input" type="email" name="email"   placeholder="tu email"     autocomplete="email" required/>
