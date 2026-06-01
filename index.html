@@ -931,21 +931,53 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('open')) shut(); });
 
   if (form) {
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      form.style.display = 'none';
-      success.style.display = 'block';
-      setTimeout(() => {
-        shut();
-        // reset after fade out completes
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const formData = {
+      nombre: form.nombre.value,
+      email: form.email.value,
+      mensaje: form.mensaje.value
+    };
+
+    try {
+      const response = await fetch(
+        'https://script.google.com/macros/s/AKfycbxpnQ42VMCpVnSakwY-JplaqeSFsjRB4s1U6_eWmSoa2K1tV_7dpvUfFbNWsuXU3HqbcQ/exec',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        form.style.display = 'none';
+        success.style.display = 'block';
+
         setTimeout(() => {
-          form.style.display   = 'flex';
-          success.style.display = 'none';
-          form.reset();
-        }, 350);
-      }, 2400);
-    });
-  }
+          shut();
+
+          setTimeout(() => {
+            form.style.display = 'flex';
+            success.style.display = 'none';
+            form.reset();
+          }, 350);
+
+        }, 2400);
+      } else {
+        alert('No fue posible enviar el mensaje.');
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert('Error al enviar el mensaje.');
+    }
+  });
+}
 })();
 </script>
 </body>
