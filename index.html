@@ -70,6 +70,8 @@ body {
   overflow-y: auto;
   overscroll-behavior: none;
   touch-action: pan-y;
+  /* Reduced min-height to limit scroll distance */
+  min-height: 175vh;
 }
 
 /* ── Background container — unchanged ── */
@@ -154,8 +156,9 @@ body {
   box-sizing: border-box; text-align: center;
 }
 
-/* ── Title — CHANGED: oklch gradient driven by --gy ── */
+/* ── Title — CHANGED: oklch gradient driven by --gx and --gy ── */
 .module-title {
+  --gx: 50%;
   --gy: 50%;
   margin: 0;
   font-family: 'AuthenticDeclaration', cursive;
@@ -173,11 +176,11 @@ body {
 @supports (color: oklch(0.72 0.27 18)) {
   .module-title {
     background-image: radial-gradient(
-      in oklch circle at 50% var(--gy),
-      oklch(0.92 0.13 85)       0%,
-      oklch(0.72 0.27 18)      40%,
-      oklch(0.42 0.18 320)     80%,
-      oklch(0.18 0.06 280 / 0) 130%
+      in oklch circle at var(--gx, 50%) var(--gy, 50%),
+      oklch(0.92 0.13 85)       0vh,
+      oklch(0.72 0.27 18)      50vh,
+      oklch(0.42 0.18 320)     90vh,
+      oklch(0.18 0.06 280 / 0) 150vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -364,7 +367,7 @@ body {
 
 /* ── Contact section — second 100vh ── */
 #contactSection {
-  height: 100vh;
+  height: 75vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-end; /* button sits near bottom, below glass card */
@@ -392,6 +395,7 @@ body {
 }
 
 .contact-prompt {
+  --gx: 50%;
   --gy: 50%;
   font-family: 'AuthenticDeclaration', cursive;
   font-size: 40px;
@@ -404,11 +408,11 @@ body {
 @supports (color: oklch(0.75 0.25 220)) {
   .contact-prompt {
     background-image: radial-gradient(
-      in oklch circle at 50% var(--gy),
-      oklch(0.95 0.12 200)      0%,
-      oklch(0.75 0.25 220)     40%,
-      oklch(0.40 0.20 280)     80%,
-      oklch(0.15 0.08 260 / 0) 130%
+      in oklch circle at var(--gx, 50%) var(--gy, 50%),
+      oklch(0.95 0.12 200)      0vh,
+      oklch(0.75 0.25 220)     50vh,
+      oklch(0.40 0.20 280)     90vh,
+      oklch(0.15 0.08 260 / 0) 150vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -468,6 +472,7 @@ body {
 
 /* label — Heat Wave oklch palette */
 .contact-pill-label {
+  --gx: 50%;
   --gy: 50%;
   position: relative; z-index: 1;
   display: block;
@@ -480,11 +485,11 @@ body {
 @supports (color: oklch(0.70 0.28 340)) {
   .contact-pill-label {
     background-image: radial-gradient(
-      in oklch circle at 50% var(--gy),
-      oklch(0.93 0.14 320)      0%,
-      oklch(0.70 0.28 340)     40%,
-      oklch(0.38 0.22 295)     80%,
-      oklch(0.15 0.08 290 / 0) 130%
+      in oklch circle at var(--gx, 50%) var(--gy, 50%),
+      oklch(0.93 0.14 320)      0vh,
+      oklch(0.70 0.28 340)     50vh,
+      oklch(0.38 0.22 295)     90vh,
+      oklch(0.15 0.08 290 / 0) 150vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -572,6 +577,7 @@ body {
 
 /* modal title — Neon Drift oklch palette */
 .cmodal-title {
+  --gx: 50%;
   --gy: 50%;
   margin: 0;
   font-family: 'AuthenticDeclaration', cursive;
@@ -583,11 +589,11 @@ body {
 @supports (color: oklch(0.75 0.25 220)) {
   .cmodal-title {
     background-image: radial-gradient(
-      in oklch circle at 50% var(--gy),
-      oklch(0.95 0.12 200)      0%,
-      oklch(0.75 0.25 220)     40%,
-      oklch(0.40 0.20 280)     80%,
-      oklch(0.15 0.08 260 / 0) 130%
+      in oklch circle at var(--gx, 50%) var(--gy, 50%),
+      oklch(0.95 0.12 200)      0vh,
+      oklch(0.75 0.25 220)     50vh,
+      oklch(0.40 0.20 280)     90vh,
+      oklch(0.15 0.08 260 / 0) 150vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -687,11 +693,11 @@ textarea.cmodal-input { resize: none; height: 76px; line-height: 1.5; }
   <section id="contactSection" aria-label="Sección de contacto">
     
     <div class="contact-wrapper">
-      <h3 class="contact-prompt">(presiona que hablemos)</h3>
+      <h3 class="contact-prompt">Contacto</h3>
       <div class="contact-pill" id="contactTrigger"
            role="button" tabindex="0"
            aria-label="Abrir formulario de contacto">
-        <span class="contact-pill-label">contáctame</span>
+        <span class="contact-pill-label">hablemos</span>
       </div>
     </div>
     
@@ -702,11 +708,11 @@ textarea.cmodal-input { resize: none; height: 76px; line-height: 1.5; }
 <div class="glassModule" id="glassModule" style="left:calc(50vw - 170px);top:calc(50vh - 210px);">
   <div class="module-content" aria-labelledby="moduleTitle">
 
-    <div class="module-hint">sí, me puedes mover</div>
+    <div class="module-hint">sí, arrástrame</div>
     <button class="module-back" id="backBtn" aria-label="Volver">← atrás</button>
 
     <div id="defaultView" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
-      <h3 style="font-size:50px;" class="module-title" id="moduleTitle">Sebastián Castillo</h3>
+      <h3 style="font-size:70px;" class="module-title" id="moduleTitle">Sebastián Castillo</h3>
       <p class="module-desc">acá vas a ver ir directo mis redes, ver portafolios y proyectos visuales</p>
       <button class="module-btn" id="actionBtn" aria-label="Ver links">Muestre pues</button>
     </div>
@@ -858,40 +864,42 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
 <script>
 /* ── oklch gradient mouse/touch tracking ── */
 (function () {
-  const title       = document.getElementById('moduleTitle');
-  const promptTitle = document.querySelector('.contact-prompt');
-  const pillLabel   = document.querySelector('.contact-pill-label');
-  const modalTitle  = document.getElementById('cmodalTitle');
+  const els = [
+    document.getElementById('moduleTitle'),
+    document.querySelector('.contact-prompt'),
+    document.querySelector('.contact-pill-label'),
+    document.getElementById('cmodalTitle')
+  ].filter(Boolean);
 
-  let tT = 50, tC = 50; // title  target / current
-  let pT = 50, pC = 50; // pill   target / current
-  let mT = 50, mC = 50; // modal  target / current
+  let tX = 50, tY = 50;
+  let cX = 50, cY = 50;
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   function tick() {
-    tC = lerp(tC, tT, 0.055);
-    pC = lerp(pC, pT, 0.055);
-    mC = lerp(mC, mT, 0.055);
+    cX = lerp(cX, tX, 0.055);
+    cY = lerp(cY, tY, 0.055);
 
-    if (title) title.style.setProperty('--gy', tC.toFixed(2) + '%');
-    if (promptTitle) promptTitle.style.setProperty('--gy', mC.toFixed(2) + '%'); // Share same palette mapping as modal
-    if (pillLabel) pillLabel.style.setProperty('--gy', pC.toFixed(2) + '%');
-    if (modalTitle) modalTitle.style.setProperty('--gy', mC.toFixed(2) + '%');
+    const gx = cX.toFixed(2) + '%';
+    const gy = cY.toFixed(2) + '%';
+
+    els.forEach(el => {
+      el.style.setProperty('--gx', gx);
+      el.style.setProperty('--gy', gy);
+    });
 
     requestAnimationFrame(tick);
   }
 
-  function update(clientY) {
-    const n = clientY / window.innerHeight; // 0→1
-    tT = 78 - n * 58; // Vice City: 78→20
-    pT = 82 - n * 62; // Heat Wave: 82→20
-    mT = 75 - n * 50; // Neon Drift: 75→25
+  function update(clientX, clientY) {
+    // Interactive mouse movement updates the center of the gradient
+    tX = (clientX / window.innerWidth) * 100;
+    tY = (clientY / window.innerHeight) * 100;
   }
 
-  document.addEventListener('pointermove', e => update(e.clientY));
+  document.addEventListener('pointermove', e => update(e.clientX, e.clientY));
   document.addEventListener('touchmove',
-    e => update(e.touches[0].clientY),
+    e => update(e.touches[0].clientX, e.touches[0].clientY),
     { passive: true }
   );
 
