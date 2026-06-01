@@ -416,7 +416,7 @@ body {
   outline: none;
   /* Opacity driven by scroll progress (JS) */
   opacity: 0;
-  transform: translateY(32px) scale(0.97);
+  transform: translateY(12px) scale(0.97);
   transition: opacity 0.55s cubic-bezier(.22,1,.36,1),
               transform 0.55s cubic-bezier(.22,1,.36,1),
               box-shadow 0.25s ease;
@@ -998,61 +998,46 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
 })();
 /* ══════════════════════════════════════════════
    6. CONTACT CTA — reveal on scroll
-   Uses IntersectionObserver for performance
 ══════════════════════════════════════════════ */
 (function () {
   const cta = document.getElementById('contactCTA');
   if (!cta) return;
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        cta.classList.add('visible');
-        obs.unobserve(cta); // fire once
-      }
-    });
-  }, { threshold: 0.25 });
-  obs.observe(cta);
+  function updateCTA() {
+    const progress = window.scrollY;
+    const contactSectionStart = window.innerHeight;
+    if (progress >= contactSectionStart - 100) {
+      cta.classList.add('visible');
+    } else {
+      cta.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', updateCTA, { passive: true });
+  updateCTA();
 })();
 /* ══════════════════════════════════════════════
-   7. CONTACT FORM — open / close / dragging
+   7. CONTACT FORM — toggle & drag
 ══════════════════════════════════════════════ */
 (function () {
-  const form    = document.getElementById('contactForm');
-  const openBtn = document.getElementById('contactCTA');
+  const cta = document.getElementById('contactCTA');
+  const form = document.getElementById('contactForm');
   const closeBtn = document.getElementById('formCloseBtn');
-  const sendBtn  = document.getElementById('formSendBtn');
-  if (!form || !openBtn || !closeBtn) return;
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  // Centre form on open
-  function centreForm() {
-    const w = form.offsetWidth  || 360;
-    const h = form.offsetHeight || 380;
-    form.style.left = clamp((window.innerWidth  - w) / 2, 8, window.innerWidth  - w - 8) + 'px';
-    form.style.top  = clamp((window.innerHeight - h) / 2 - 24, 8, window.innerHeight - h - 8) + 'px';
-  }
-  function openForm() {
-    form.style.display = 'block'; // ensure visible before measuring
-    form.removeAttribute('aria-hidden');
-    requestAnimationFrame(() => {
-      centreForm();
-      form.classList.add('open');
-    });
-    closeBtn.focus();
-  }
-  function closeForm() {
-    form.classList.remove('open');
-    form.setAttribute('aria-hidden', 'true');
-  }
-  openBtn.addEventListener('click',  openForm);
-  closeBtn.addEventListener('click', closeForm);
-  // Close on Escape
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && form.classList.contains('open')) closeForm();
+  if (!cta || !form) return;
+  // Open form
+  cta.addEventListener('click', () => {
+    form.classList.add('open');
+    form.style.left = 'calc(50vw - 180px)';
+    form.style.top = 'calc(50vh - 250px)';
   });
-  // ── Dragging logic (same pattern as glassModule) ──
-  let ox = 0, oy = 0, dragging = false;
+  closeBtn.addEventListener('click', () => {
+    form.classList.remove('open');
+  });
+  // Drag form
+  let dragging = false;
+  let ox = 0, oy = 0;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   function onDown(e) {
-    if (e.target.closest('button,a,input,textarea,select')) return;
+    if (!form.classList.contains('open')) return;
+    if (e.target.closest('input,textarea,button,.form-close')) return;
     e.preventDefault();
     dragging = true;
     form.classList.add('dragging');
@@ -1073,48 +1058,27 @@ document.getElementById('backBtn').addEventListener('click',   e => { e.currentT
     document.removeEventListener('pointermove', onMove);
   }
   form.addEventListener('pointerdown', onDown);
-  // Re-centre on resize
-  window.addEventListener('resize', () => {
-    if (!form.classList.contains('open')) return;
-    const r = form.getBoundingClientRect();
-    form.style.left = clamp(r.left, 8, window.innerWidth  - form.offsetWidth  - 8) + 'px';
-    form.style.top  = clamp(r.top,  8, window.innerHeight - form.offsetHeight - 8) + 'px';
+  // Send form
+  document.getElementById('formSendBtn').addEventListener('click', () => {
+    const name = document.getElementById('inputName').value.trim();
+    const email = document.getElementById('inputEmail').value.trim();
+    const msg = document.getElementById('inputMsg').value.trim();
+    if (!name || !email || !msg) {
+      alert('Por favor completa todos los campos');
+      return;
+    }
+    // Show success
+    document.getElementById('formFields').style.display = 'none';
+    document.getElementById('formSuccess').classList.add('show');
+    setTimeout(() => {
+      form.classList.remove('open');
+      document.getElementById('formFields').style.display = 'flex';
+      document.getElementById('formSuccess').classList.remove('show');
+      document.getElementById('inputName').value = '';
+      document.getElementById('inputEmail').value = '';
+      document.getElementById('inputMsg').value = '';
+    }, 2500);
   });
-  // ── Send simulation (no backend) ──
-  if (sendBtn) {
-    sendBtn.addEventListener('click', () => {
-      const name  = document.getElementById('inputName').value.trim();
-      const email = document.getElementById('inputEmail').value.trim();
-      const msg   = document.getElementById('inputMsg').value.trim();
-      // Simple validation glow
-      let valid = true;
-      [['inputName', name], ['inputEmail', email], ['inputMsg', msg]].forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (!val) {
-          el.style.borderColor = 'oklch(0.65 0.22 18 / 0.8)';
-          valid = false;
-        } else {
-          el.style.borderColor = '';
-        }
-      });
-      if (!valid) return;
-      // Show success state
-      document.getElementById('formFields').style.display = 'none';
-      const success = document.getElementById('formSuccess');
-      success.classList.add('show');
-      // Auto-close after 3s and reset
-      setTimeout(() => {
-        closeForm();
-        setTimeout(() => {
-          document.getElementById('formFields').style.display = '';
-          success.classList.remove('show');
-          ['inputName','inputEmail','inputMsg'].forEach(id => {
-            document.getElementById(id).value = '';
-          });
-        }, 420);
-      }, 3000);
-    });
-  }
 })();
 </script>
 </body>
