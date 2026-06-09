@@ -354,7 +354,7 @@ body {
   flex-direction: column;
   justify-content: flex-end; /* button sits near bottom, below glass card */
   align-items: center;
-  padding-bottom: 14vh;
+  padding-bottom: 50vh;
   box-sizing: border-box;
   position: relative;
 }
