@@ -2,7 +2,7 @@
 (function () {
   const slides  = Array.from(document.querySelectorAll('.bg-slide'));
   const bgImgs  = Array.from(document.querySelectorAll('.bg-img'));
-  const animSeq = ['panRight','panLeft','zoomIn','panRight','panLeft','zoomOut','panUp'];
+  const animSeq = ['panleft','panup','zoomout','panDown','panLeft','zoomOut','panUp'];
   let current = 0, started = false;
   function applyAnim(i) {
     const img = bgImgs[i];
