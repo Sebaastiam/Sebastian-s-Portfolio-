@@ -13,7 +13,7 @@ const CONFIG = Object.freeze({
   SLIDE_FALLBACK_MS: 2500,
 
   /* ── Ken Burns animation sequence (one entry per slide, in order) ── */
-  SLIDE_ANIM_SEQ: ['panLeft', 'panUp', 'none', 'panUp', 'panRight', 'zoomOut', 'panRight', 'none'],
+  SLIDE_ANIM_SEQ: ['panLeft', 'panUp', 'none', 'panUp', 'panRight', 'panDown', 'panRight', 'none'],
 
   /* ── Vimeo embed ── */
   VIMEO_SRC: 'https://player.vimeo.com/video/1200016508?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1',

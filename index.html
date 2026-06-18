@@ -7,7 +7,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-ENFJQFPJ6S');
 </script>
   <meta charset="utf-8"/>
@@ -22,72 +21,89 @@
   <link rel="stylesheet" href="base.css">       <!-- tokens, reset, layout, a11y -->
   <link rel="stylesheet" href="components.css"> <!-- glass card, modal, panel, feed -->
   <link rel="stylesheet" href="animations.css"> <!-- @keyframes, anim utility classes -->
+  <link rel="stylesheet" href="portafolio-panel.css"> <!-- animations for left panel --> 
 </head>
 <body>
 
   <!-- ── Skip link for keyboard / screen-reader users ── -->
   <a class="skip-link" href="#contactSection">Ir al contenido principal</a>
 
-  <!-- ── Background slideshow (decorative) ── -->
-  <div id="bgContainer" role="presentation" aria-hidden="true">
-    <div class="bg-slide active">
-      <div class="bg-img" style="background-image:url('https://i.postimg.cc/28nt7vDm/h-Moxc77shs5e-S42gnkl3xc.jpg')"></div>
-    </div>
-    <div class="bg-slide">
-      <div class="bg-img" style="background-image:url('https://i.postimg.cc/P59wCRVK/DSC00242-(3).jpg')"></div>
-    </div>
-    <div class="bg-slide">
-      <div class="bg-img" style="position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;">
-        <video autoplay muted loop playsinline
-          style="width:110%;height:80%;object-fit:contain;">
-          <source src="Video/VHS_20190821_10485600.MP4" type="video/mp4">
-        </video>
-      </div>
-    </div>
-    <div class="bg-slide">
-      <div class="bg-img" style="background-image:url('https://i.postimg.cc/9FvmZHVr/DSC00521.jpg')"></div>
-    </div>
-    <div class="bg-slide">
-      <div class="bg-img" style="background-image:url('https://i.postimg.cc/WzDzYHJP/quality(80)-(3).webp')"></div>
-    </div>
-    <div class="bg-slide">
-      <div class="bg-img" style="background-image:url('https://i.postimg.cc/gk9c6Pm1/IMG-20260311-140934.jpg')"></div>
-    </div>
-    <div class="bg-slide">
-      <div class="bg-img" style="background-image:url('https://i.postimg.cc/4Nhmy2s4/DSC01268.jpg')"></div>
-    </div>
-    <div class="bg-slide">
-      <div class="bg-img" style="position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;">
-        <video autoplay muted loop playsinline
-          style="width:110%;height:80%;object-fit:contain;">
-          <source src="Video/VHS_20210225_00594500.MP4" type="video/mp4">
-        </video>
-      </div>
-    </div>
-  </div>
-  <!-- /bgContainer -->
+ <!-- ── Background slideshow (decorative) ── -->
+<div id="bgContainer" role="presentation" aria-hidden="true">
 
-  <!-- ── Scroll hint (decorative) ── -->
-  <div id="scrollHint" aria-hidden="true">
-    <span>scroll</span>
-    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" focusable="false">
-      <path d="M7 1v11M2 8l5 5 5-5"
-            stroke="rgba(255,255,255,0.30)"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"/>
-    </svg>
+  <div class="bg-slide active">
+    <div class="bg-img" style="background-image: url('./images/galeria5/hMoxc77shs5eS42gnkl3xc.webp');"></div>
   </div>
 
-  <!-- ── Side button — Visual Archive panel trigger ── -->
-  <button class="more-trigger"
-          id="moreTrigger"
-          type="button"
-          aria-controls="morePanel"
-          aria-expanded="false"
-          aria-label="Abrir archivo visual audiovisuales">
-    Audiovisuales
-  </button>
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image: url('./images/galeria2/DSC00242_3.webp');"></div>
+  </div>
+
+  <div class="bg-slide">
+    <div class="bg-img" style="position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;">
+      <video autoplay muted loop playsinline style="width:110%;height:80%;object-fit:contain;">
+        <source src="./Video/VHS_20190821_10485600.MP4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image: url('./images/galeria2/DSC00521.webp');"></div>
+  </div>
+
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image: url('./images/galeria1/4.webp');"></div>
+  </div>
+
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image: url('./images/galeria4/20180224013950_IMG_2165_2.webp');"></div>
+  </div>
+
+  <div class="bg-slide">
+    <div class="bg-img" style="background-image: url('./images/galeria2/DSC01268.webp');"></div>
+  </div>
+
+  <div class="bg-slide">
+    <div class="bg-img" style="position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;">
+      <video autoplay muted loop playsinline style="width:110%;height:80%;object-fit:contain;">
+        <source src="./Video/VHS_20210225_00594500.MP4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+</div>
+<!-- /bgContainer -->
+
+<!-- ── Scroll hint (decorative) ── -->
+<div id="scrollHint" aria-hidden="true">
+  <span>scroll</span>
+  <svg width="14" height="16" viewBox="0 0 14 16" fill="none" focusable="false">
+    <path d="M7 1v11M2 8l5 5 5-5"
+          stroke="rgba(255,255,255,0.30)"
+          stroke-width="1.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </svg>
+</div>
+
+<!-- ── Side button — Blog/Vlog panel trigger ── -->
+<button class="more-trigger"
+        id="moreTrigger"
+        type="button"
+        aria-controls="morePanel"
+        aria-expanded="false"
+        aria-label="Abrir archivo visual audiovisuales">
+  vlog/blog
+</button>
+
+<!-- ── Page content (gives scrollable height) ── -->
+<div id="pageContent">
+
+  <!-- Hero spacer: glass card floats fixed above this -->
+  <div class="hero-spacer" aria-hidden="true"></div>
+
+</div>
+<!-- /pageContent -->
 
   <!-- ── Page content (gives scrollable height) ── -->
   <div id="pageContent">
@@ -135,7 +151,7 @@
            style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
         <h1 class="module-title" id="moduleTitle">Sebastián Castillo</h1>
         <p class="module-desc">
-          acá vas a ver ir directo mis redes, ver portafolios y proyectos visuales
+        este es mi portafolio y archivo visual, fue desarrollado mediante integración de pens, prompting y auditoría manual, diseñé esta estrategia transmedia para que puedas ver mis proyectos visuales y vivecoding de una manera innovadora y profesional.
         </p>
         <button class="module-btn" id="actionBtn">Muestre pues</button>
       </div>
@@ -145,15 +161,16 @@
         <a href="https://instagram.com/zescru"
            target="_blank"
            rel="noopener noreferrer"
-           class="module-btn">Instagram</a>
-        <a href="https://youtu.be/KYLLRByK2sg?si=h8MAiF-jrZ2dwfjg"
+           class="module-btn">INSTAGRAM</a>
+        <a href="https://linktr.ee/zescru"
            target="_blank"
            rel="noopener noreferrer"
-           class="module-btn">Escuela nocturna</a>
-        <a href="https://facebook.com/demofobico"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="module-btn">coming soon O:</a>
+           class="module-btn">LINKTREE</a>
+<a class="module-btn module-btn--galeria"
+        id="galeriasBtn"      
+        aria-label="Abrir portafolio y galerías">
+Archivo WEB
+     </a>
       </nav>
 
     </div>
@@ -234,7 +251,7 @@
   </div>
   <!-- /contactModal -->
 
-  <!-- ── Visual Archive panel ── -->
+  <!-- ── Blog/Vlog panel ── -->
   <aside class="more-panel"
          id="morePanel"
          aria-hidden="true"
@@ -244,7 +261,7 @@
 
     <div class="more-panel-inner">
       <header class="more-panel-header" role="banner">
-        <span>Visual archive</span>
+        <span>Blog/Vlog</span>
         <button class="more-close"
                 id="moreClose"
                 type="button"
@@ -264,12 +281,11 @@
             </a>
           </h3>
           <h4 class="feed-source">
-            <a href="https://css-tricks.com/" target="_blank" rel="noopener noreferrer">Corto Documental</a>
+            <a href="https://www.youtube.com/watch?v=KYLLRByK2sg&t=5s&pp=ygUhZXNjdWVsYSBub2N0dXJuYSBjb3J0byBkb2N1bWVudGFs" target="_blank" rel="noopener noreferrer">Corto Documental</a>
           </h4>
           <span class="pub-date" datetime="2019">dura: 8:29"</span>
-          <p>Corto que recoge obras y experiencias de los grafiteros en las calles en el año 2019,
-             con entrevistas muy profundas e imágenes inéditas. Este es un remake hecho en 2023,
-             dirigido por Gabriel Esteban Rozo y grabado, producido y co-editado por Sebastián Castillo.</p>
+          <p>Corto Independiente que recoge obras y experiencias de los grafiteros en las calles en el año 2019,
+             con entrevistas muy profundas e imágenes inéditas. Este es un remake hecho en 2023. enteramente grabado, editado y co-producido por Sebastián Castillo, con dirección de Gabriel Esteban Rozo</p>
         </article>
 
         <article class="feed-item feed-item--vimeo" id="feedVimeoItem">
@@ -289,34 +305,35 @@
 
         <article class="feed-item">
           <h3>
-            <a href="https://css-tip.com/speed-control/" target="_blank" rel="noopener noreferrer">
-              Control the Speed of Infinite Animations
+            <a href="https://github.com/Sebaastiam/Sebastian-s-Portfolio-" target="_blank" rel="noopener noreferrer">
+              QUIERES SABER COMO SE LLEVÓ ACABO ESTE PROYECTO?
             </a>
           </h3>
           <h4 class="feed-source">
-            <a href="https://css-tip.com/" target="_blank" rel="noopener noreferrer">CSS Tip</a>
+            <a href="https://github.com/Sebaastiam/Sebastian-s-Portfolio-" target="_blank" rel="noopener noreferrer"> UX/UI on git</a>
           </h4>
-          <span class="pub-date" datetime="2026-05-06">May 6, 2026</span>
-          <p>A compact CSS idea for adjusting infinite animation speed on hover or interaction
-             using additive animation behavior.</p>
-        </article>
-
+          <span class="pub-date" datetime="2026-08-06">Jun 8, 2026</span>
+          <p>Puedes ver todo el repositorio modular que se montó en tiempo record <a href="https://github.com/Sebaastiam/Sebastian-s-Portfolio-" target="_blank" rel="noopener noreferrer"> ACÁ</a> esto me permitió alojar mi propio archivo web y portafolio en Github, además de futuros proyectos .</p>
+<img src="images/fumgus.gif" alt="graffiti" width="300">
+</article>
         <article class="feed-item">
           <h3>
-            <a href="https://frontendmasters.com/blog/creating-puzzle-peices-in-css/"
-               target="_blank"
-               rel="noopener noreferrer">
-              Let's Get Puzzled
+            <a href="https://wa.me/573336451709">
+  ->>> Escríbeme por WhatsApp <<<-
+               click acá!
+              Contacto Whatsapp
             </a>
           </h3>
           <h4 class="feed-source">
-            <a href="https://frontendmasters.com/blog/" target="_blank" rel="noopener noreferrer">Frontend Masters Blog</a>
+            <a href="https://wa.me/573336451709" target="_blank" rel="noopener noreferrer">CHAT WHATSAPP</a>
           </h4>
           <span class="pub-date" datetime="2026-04-06">April 6, 2026</span>
-          <p>Puzzle-piece shapes can make a gallery feel more tactile, playful, and interactive
-             than a regular rectangular card grid.</p>
-        </article>
-
+          <p>¿Eres artista? necesitas ayuda o soporte en proyectos visuales o de desarrollo, o simplemente quieres preguntar? escríbeme! <a href="https://wa.me/573336451709"> CLICK O TAP ACÁ
+</a>
+  <a href="https://wa.me/573336451709" target="_blank" rel="noopener noreferrer">
+  <img src="images/aNIMATED.gif" alt="graffiti" width="300">
+</a>
+</article>
       </div>
       <!-- /more-feed -->
     </div>
@@ -342,7 +359,7 @@
   </svg>
 
   <!-- ── Watermark (decorative) ── -->
-  <div id="watermark" aria-hidden="true">2026 — Sebastián Castillo / Bogotá</div>
+  <div id="watermark" aria-hidden="true">2026 — Desarrollado x Sebastián Castillo / SITE V:3.1.2</div>
 
   <!-- ── Scripts ── -->
   <!-- Load order: config first, then independent modules -->
@@ -350,6 +367,7 @@
   <script src="slideshow.js"></script>
   <script src="drag.js"></script>
   <script src="panels.js"></script>
+  <script src="portfolio-panel.js"></script> 
   <script src="asciiDrawer.js"></script>
   <script src="https://player.vimeo.com/api/player.js" defer></script>
 
