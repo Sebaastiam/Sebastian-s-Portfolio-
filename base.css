@@ -86,7 +86,7 @@ html, body {
 body {
   background: transparent;
   overflow-x: hidden;             /* Prevent horizontal scroll */
-  min-height: 175vh;              /* Scroll travel for slideshow reveal */
+  min-height: 0vh;              /* Scroll travel for slideshow reveal */
 }
 
 

@@ -36,6 +36,11 @@
   from { transform: scale(1.15); }
   to   { transform: scale(1);    }
 }
+@keyframes panDown {
+  from { transform: translateY(-10%); }
+  to   { transform: translateY(10%); }
+}
+
 
 /* Applied by slideshow.js via classList */
 .bg-img.anim-panRight { animation: panRight 6s ease-in-out forwards; }
@@ -43,7 +48,7 @@
 .bg-img.anim-panUp    { animation: panUp    6s ease-in-out forwards; }
 .bg-img.anim-zoomIn   { animation: zoomIn   6s ease-in-out forwards; }
 .bg-img.anim-zoomOut  { animation: zoomOut  6s ease-in-out forwards; }
-
+.bg-img.anim-panDown  { animation: panDown  6s ease-in-out forwards; }
 
 /* ── 2. Panel transitions ─────────────────────────────────── */
 

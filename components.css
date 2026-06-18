@@ -286,7 +286,7 @@
 }
 
 /* Subtle scroll-in vignette */
-#contactSection::before {
+#contactSection: before {
   content: '';
   position: absolute;
   inset: 0;
