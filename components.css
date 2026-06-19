@@ -165,19 +165,19 @@
 /* Back button */
 .module-back {
   position: absolute;
-  left: 12px; top: 12px;
+  left: -5px; top: -5px;
   font-family: 'BarlowSC', system-ui, sans-serif;
   font-weight: 900;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.65);
+  color: rgba(179,36,36,0.65);
   cursor: pointer;
   background: none;
   border: none;
-  padding: 0;
+  padding: 25px;
   display: none; /* shown by JS */
   -webkit-tap-highlight-color: transparent;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  text-shadow: 1 1px 3px rgba(0,0,0,0.45);
 }
 .module-back:hover { color: #fff; }
 
@@ -440,7 +440,7 @@
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.48);
-  backdrop-filter: blur(7px);
+  backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(7px);
   cursor: pointer;
 }
