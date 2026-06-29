@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════
    base.css
-   Sebastián Castillo Portfolio — v2.0
+   Sebastián Castillo Portfolio — v1.3.2
 
    Contenido:
      1. Custom fonts
@@ -36,6 +36,13 @@
   font-family: 'BarlowSC';
   src: url('images/BarlowSemiCondensed-Bold.ttf') format('truetype');
   font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BebasNeue-Regular';
+  src: url('images/BebasNeue-Regular.ttf') format('truetype');
+  font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
@@ -142,6 +149,7 @@ body {
 }
 
 
+
 /* ── 6. Background slideshow ──────────────────────────────── */
 #bgContainer {
   position: fixed;
@@ -176,45 +184,104 @@ body {
 
 
 /* ── 7. Scroll hint ───────────────────────────────────────── */
-#scrollHint {
+#scrollHint.scroll-hint {
   position: fixed;
-  bottom: 26px;
   left: 50%;
-  transform: translateX(-50%);
+  bottom: 26px;
   z-index: 5;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: 4px;
   pointer-events: none;
-  transition: opacity 0.5s ease;
+  transform: translateX(-50%);
+  opacity: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-#scrollHint span {
+
+#scrollHint.scroll-hint.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#scrollHint .scroll-hint__chevron {
+  width: 28px;
+  height: 14px;
+  clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+  opacity: 0;
+  mix-blend-mode: screen;
+  animation-name: hint-drop;
+  animation-duration: 1.7s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-iteration-count: infinite;
+}
+
+#scrollHint .scroll-hint__chevron:nth-of-type(1) {
+  background: #ffffff;
+  animation-delay: 0s;
+}
+
+#scrollHint .scroll-hint__chevron:nth-of-type(2) {
+  background: #ff0077;
+  animation-delay: 0.18s;
+}
+
+#scrollHint .scroll-hint__chevron:nth-of-type(3) {
+  background: #00e7ff;
+  animation-delay: 0.36s;
+}
+
+@keyframes hint-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scaleX(0.82);
+    filter: blur(1px);
+  }
+
+  22% {
+    opacity: 1;
+    transform: translateY(0) scaleX(1);
+    filter: blur(0);
+  }
+
+  58% {
+    opacity: 0.95;
+    transform: translateY(6px) scaleX(1.08);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(17px) scaleX(0.9);
+    filter: blur(1.5px);
+  }
+}
+
+#scrollHint .scroll-hint__label {
+  margin-top: 12px;
   font-family: 'BarlowSC', system-ui, sans-serif;
   font-weight: 900;
-  font-size: 13px;
-  letter-spacing: 0.28em;
+  font-size: 25px;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.52);
+  color: rgba(255, 0, 0, 0.932);
   text-shadow:
-    0 0  7px rgba(109, 213, 255, 0.80),
-    0 0 18px rgba(109, 213, 255, 0.45),
-    0 0 34px rgba(109, 213, 255, 0.20);
-}
-#scrollHint svg {
-  width: 18px; height: 20px;
-  filter:
-    drop-shadow(0 0  5px rgba(109,213,255,0.70))
-    drop-shadow(0 0 12px rgba(109,213,255,0.35));
-}
-#scrollHint svg path {
-  stroke: rgba(255,255,255,0.55);
-}
-#scrollHint.hidden {
-  opacity: 0;
+    0 1vh 10px rgba(255, 0, 119, 0.45),
+    0 1vh 14px rgba(0, 231, 255, 0.30);
+  animation: label-pulse 1.7s ease-in-out infinite;
 }
 
+@keyframes label-pulse {
+  0%, 100% {
+    opacity: 0.34;
+    transform: translateY(0);
+  }
 
+  50% {
+    opacity: 0.82;
+    transform: translateY(2px);
+  }
+}
 /* ── 8. Watermark ─────────────────────────────────────────── */
 #watermark {
   position: fixed;
@@ -249,8 +316,8 @@ body {
   .contact-pill::after {
     filter: none;
     -webkit-filter: none;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(3px); /* valor unificado */
+    -webkit-backdrop-filter: blur(3px);
   }
 
   /* Lighter modal overlay blur */
@@ -263,4 +330,27 @@ body {
   .more-panel.open #ascii-bg {
     opacity: 0.10;
   }
+
+  .glassModule {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .glassModule::before,
+  .cmodal-panel::before,
+  .contact-pill::before {
+    box-shadow: inset 0 0 14px -6px rgba(255, 1, 1, 0.404);
+  }
+
+  .cmodal-panel {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .bg-img {
+    will-change: auto;
+  }
 }
+

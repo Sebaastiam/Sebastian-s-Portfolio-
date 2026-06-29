@@ -1,5 +1,6 @@
 /* ══════════════════════════════════════════════════
    drag.js — Draggable glass card + hover animations
+   Sebastián Castillo Portfolio — v1.3.2
    Depends on: config.js (CONFIG)
    ══════════════════════════════════════════════════ */
 

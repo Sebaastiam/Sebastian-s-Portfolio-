@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════
    config.js — Centralised constants & endpoints
-   Portfolio Sebastián Castillo — v2.0
+   Portfolio Sebastián Castillo — v1.3.2
    ══════════════════════════════════════════════════ */
 
 const CONFIG = Object.freeze({

@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════
    portafolio-panel.css
-   Sebastián Castillo Portfolio — v2.0
+   Sebastián Castillo Portfolio — v1.3.2
    ══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
@@ -86,9 +86,9 @@
 
 .port-title {
   position: relative;
-  padding-right: 0.2em;
+  padding-right: 0;
   font-family: 'AuthenticDeclaration', cursive;
-  font-size: clamp(4rem, 14vw, 13rem);
+  font-size: clamp(3rem, 10vw, 9rem) !important;
   line-height: 1;
   margin: 0;
   color: #fff;
@@ -116,14 +116,17 @@
   position: absolute;
   bottom: clamp(1.5rem, 4vh, 3rem);
   left: 50%;
-  transform: translateX(-50%) translateZ(0);
   display: flex;
+  transform: translateX(-50%) translateY(-10%) translateZ(0);
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 10 px;
   pointer-events: none;
   animation: portScrollHint 2.2s ease-in-out infinite;
 }
+.port-scroll-hint.offset-down {
+  transform: translateY(20px);
+  }
 .port-scroll-hint span {
   font-family: 'BarlowSC', system-ui, sans-serif;
   font-weight: 900;
@@ -292,7 +295,6 @@
 .port-room-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; aspect-ratio: 3 / 4; transition: transform 0.38s ease, filter 0.38s ease; }
 .port-room-thumb:hover img { transform: scale(1.04); filter: brightness(1.08); }
 
-
 /* ══════════════════════════════════════════════
    6. Lightbox viewer
    ══════════════════════════════════════════════ */
@@ -304,17 +306,23 @@
   backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
 }
 .port-lightbox.open { opacity: 1; pointer-events: auto; }
-.port-lightbox img { max-width: 90vw; max-height: 88vh; object-fit: contain; border-radius: 4px; transform: scale(0.92); transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 30px 80px rgba(0,0,0,0.7); }
+.port-lightbox img { max-width: 90vw; max-height: 88vh; z-index: 1; object-fit: contain; border-radius: 4px; transform: scale(0.92); transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 30px 80px rgba(0,0,0,0.7); }
 .port-lightbox.open img { transform: scale(1); }
 
 .port-lightbox-close { position: absolute; top: max(1.2rem, env(safe-area-inset-top)); right: 1.4rem; background: none; border: none; cursor: pointer; color: rgba(255,80,80,0.85); font-family: 'BarlowSC', system-ui, sans-serif; font-weight: 900; font-size: 11px; letter-spacing: 0.14em; padding: 8px; transition: color 0.2s ease; }
 .port-lightbox-close:hover { color: #ff3333; }
 
-.port-lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.70); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; font-size: 18px; }
+.port-lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 1001; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.70); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; font-size: 18px; }
 .port-lightbox-nav:hover { background: rgba(255,255,255,0.15); color: #fff; }
 .port-lightbox-nav.prev { left: 1.2rem; }
 .port-lightbox-nav.next { right: 1.2rem; }
-
+.port-lightbox-content {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+  }
+.port-lightbox-content.slide-out-left { transform: translateX(-100%); opacity: 0; }
+.port-lightbox-content.slide-out-right { transform: translateX(100%); opacity: 0; }
+.port-lightbox-content.slide-in { transform: translateX(0); opacity: 1; }
 
 /* ══════════════════════════════════════════════
    7. Close / back — top of panel
@@ -334,7 +342,12 @@
 .port-panel-close:hover { color: #fff; background: rgba(255,80,80,0.18); border-color: rgba(255,80,80,0.45); }
 .port-panel-close.visible { display: flex; }
 .port-panel-close.room-open { opacity: 0; pointer-events: none; }
-
+#portLbImg {
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.slide-out-left { transform: translateX(-20px); opacity: 0; }
+.slide-out-right { transform: translateX(20px); opacity: 0; }
 
 /* ══════════════════════════════════════════════
    8. Keyframe animations
@@ -465,7 +478,7 @@ background-image: radial-gradient(
   oklch(0.18 0.08 350 / 0) 120%
   );
   background-clip: text; -webkit-background-clip: text; color: transparent;
-  filter: drop-shadow(0 0 50px oklch(0.7 0.25 20 / 0.18)); transition: --port-gy 0.1s linear;
+  filter: drop-shadow(0 0 50px oklch(53.581% 0.21263 23.831 / 0.425)); transition: --port-gy 0.1s linear;
 }
 
 
@@ -480,3 +493,20 @@ background-image: radial-gradient(
 #port-cursor-ring.hovering { width: 58px; height: 58px; border-color: rgba(0, 231, 255, 0.75); }
 #port-cursor-dot.hovering { width: 4px; height: 4px; background: #00e7ff; }
 #port-cursor-dot.hidden, #port-cursor-ring.hidden { opacity: 0; }
+
+/* Limpieza: cursor nativo en móviles, custom en desktop */
+@media (pointer: coarse) {
+  .port-panel, .port-panel * { cursor: auto !important; }
+  #port-cursor-dot, #port-cursor-ring { display: none !important; }
+}
+
+@media (pointer: fine) {
+  .port-panel, .port-panel * { cursor: none !important; }
+  
+  #port-cursor-dot, #port-cursor-ring {
+    position: fixed;
+    pointer-events: none; /* Fundamental: el cursor no debe bloquear el click */
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+  }
+}

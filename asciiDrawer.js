@@ -1,63 +1,42 @@
 /* ══════════════════════════════════════════════════
    asciiDrawer.js — ASCII dynamic background
+   Sebastián Castillo Portfolio — v1.3.2
    Scoped to #ascii-bg inside #morePanel.
    Depends on: config.js (CONFIG.ASCII)
    ══════════════════════════════════════════════════ */
 
 (function initAsciiDrawer() {
-  const asciiEl = document.getElementById('ascii-bg');
-  const panel   = document.getElementById('morePanel');
-  if (!asciiEl || !panel) return;
+  const canvas = document.getElementById('ascii-bg');
+  const panel = document.getElementById('morePanel');
+  if (!canvas || !panel) return;
 
+  const ctx = canvas.getContext('2d', { alpha: true });
   const C = CONFIG.ASCII;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const isMobile = window.matchMedia('(max-width: 768px)');
+  if (isMobile.matches) return;
+  const maxDpr = isMobile.matches ? 1.25 : 2;
 
-  let cols, rows;
-  let animating = false;
-
-  /* ── Grid dimensions ── */
-  function resize() {
-    const rect = asciiEl.getBoundingClientRect();
-    const w = rect.width  || panel.offsetWidth  || window.innerWidth;
-    const h = rect.height || panel.offsetHeight || window.innerHeight;
-    cols = Math.floor(w / C.CHAR_W);
-    rows = Math.floor(h / C.CHAR_H);
-  }
-
-  window.addEventListener('resize', resize);
-
-  /* Start animation when panel opens */
-  const openObserver = new MutationObserver(() => {
-    if (panel.classList.contains('open')) {
-      resize();
-      if (!animating) { animating = true; requestAnimationFrame(draw); }
-    }
-  });
-  openObserver.observe(panel, { attributes: true, attributeFilter: ['class'] });
-
-  resize();
-
-  /* ── Mouse position relative to panel ── */
-  const mouse = { x: 0, y: 0 };
-  panel.addEventListener('pointermove', e => {
-    const r = panel.getBoundingClientRect();
-    mouse.x = (e.clientX - r.left) / C.CHAR_W;
-    mouse.y = (e.clientY - r.top)  / C.CHAR_H;
-  });
-
-  /* ── Click explosions ── */
-  let explosions = [];
-  panel.addEventListener('click', e => {
-    const r = panel.getBoundingClientRect();
-    explosions.push({
-      x:      (e.clientX - r.left) / C.CHAR_W,
-      y:      (e.clientY - r.top)  / C.CHAR_H,
-      radius: 0,
-      life:   1,
-    });
-  });
-
-  /* ── Mutating string ── */
+  let cols = 0, rows = 0, rafId = 0, lastFrame = 0, lastMutation = 0;
   let currentString = C.BASE_STRING;
+  const mouse = { x: -999, y: -999 };
+  let explosions = [];
+
+  const fps = isMobile.matches ? 24 : 45;
+  const frameMs = 1000 / fps;
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.font = `${C.CHAR_H}px monospace`;
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#00ff9f';
+    cols = Math.floor(rect.width / C.CHAR_W);
+    rows = Math.floor(rect.height / C.CHAR_H);
+  }
 
   const mutations = [
     s => s.split('').reverse().join(''),
@@ -68,92 +47,114 @@
   ];
 
   function mutateString() {
-    const fn = mutations[Math.floor(Math.random() * mutations.length)];
-    currentString = fn(currentString);
+    currentString = mutations[Math.floor(Math.random() * mutations.length)](currentString);
     if (currentString.length < 2) currentString = C.BASE_STRING;
   }
 
-  /* ── Wave strings ── */
-  class WaveString {
-    constructor(index, total, depth) {
-      this.index      = index;
-      this.baseY      = (index / total) * rows; /* recalculated on draw */
-      this.amplitude  = 2 + depth * 4;
-      this.wavelength = 0.08;
-      this.speed      = 0.0 + depth * 0.002;
-      this.offset     = Math.random() * 100;
-      this.depth      = depth;
-      this.time       = 0;
-    }
+  const waveStrings = Array.from({ length: C.TOTAL_STRINGS }, (_, i) => ({
+    index: i,
+    amplitude: 2 + (0.6 + Math.random() * 0.8) * 4,
+    wavelength: 0.08,
+    speed: (0.6 + Math.random() * 0.8) * 0.002,
+    offset: Math.random() * 100,
+    depth: 0.6 + Math.random() * 0.8,
+  }));
 
-    update(time) { this.time = time; }
-
-    getY(x) {
-      /* Recompute baseY in case rows changed after resize */
-      const baseY = (this.index / C.TOTAL_STRINGS) * rows;
-
-      let y = baseY
-        + Math.sin(x * this.wavelength + this.time * this.speed + this.offset) * this.amplitude
-        + Math.sin(x * 0.04 + this.time * 0.0015) * (this.amplitude * 0.5);
-
-      /* Mouse repulsion */
-      const dx = x - mouse.x, dy = y - mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 10) y += (10 - dist) * 0.3 * this.depth;
-
-      return Math.floor(y);
-    }
-  }
-
-  /* Build wave string instances */
-  const waveStrings = Array.from({ length: C.TOTAL_STRINGS }, (_, i) =>
-    new WaveString(i, C.TOTAL_STRINGS, 0.6 + Math.random() * 0.8)
-  );
-
-  /* ── Render loop ── */
-  let lastMutation = 0;
+  function isActive() {
+  return panel.classList.contains('open') && !document.hidden;
+}
 
   function draw(time) {
-    if (!panel.classList.contains('open')) { animating = false; return; }
+    if (!isActive()) {
+      rafId = 0;
+      return;
+    }
 
-    const grid = Array.from({ length: rows }, () => Array(cols).fill(' '));
+    if (time - lastFrame < frameMs) {
+      rafId = requestAnimationFrame(draw);
+      return;
+    }
+    lastFrame = time;
 
-    /* Paint wave strings */
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     waveStrings.forEach(ws => {
-      ws.update(time);
       for (let x = 0; x < cols; x++) {
-        const y = ws.getY(x);
-        if (y >= 0 && y < rows) {
-          let charIndex = (x + Math.floor(time * 0.01)) % currentString.length;
-          let char = currentString[charIndex];
-          if (Math.random() < 0.02) char = '#'; /* random glitch char */
-          grid[y][x] = char;
+        const baseY = (ws.index / C.TOTAL_STRINGS) * rows;
+        let y = baseY
+          + Math.sin(x * ws.wavelength + time * ws.speed + ws.offset) * ws.amplitude
+          + Math.sin(x * 0.04 + time * 0.0015) * (ws.amplitude * 0.5);
+
+        const dx = x - mouse.x;
+        const dy = y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 10) y += (10 - dist) * 0.3 * ws.depth;
+
+        const row = Math.floor(y);
+        if (row >= 0 && row < rows) {
+          const charIndex = (x + Math.floor(time * 0.01)) % currentString.length;
+          const char = Math.random() < 0.02 ? '#' : currentString[charIndex];
+          ctx.fillText(char, x * C.CHAR_W, row * C.CHAR_H);
         }
       }
     });
 
-    /* Paint explosions */
     explosions.forEach(exp => {
       exp.radius += C.EXPLOSION_SPEED;
-      exp.life   -= C.EXPLOSION_DECAY;
+      exp.life -= C.EXPLOSION_DECAY;
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const dx = x - exp.x, dy = y - exp.y;
           if (Math.sqrt(dx * dx + dy * dy) < exp.radius && Math.random() < C.EXPLOSION_DENSITY) {
-            grid[y][x] = '@';
+            ctx.fillText('@', x * C.CHAR_W, y * C.CHAR_H);
           }
         }
       }
     });
     explosions = explosions.filter(e => e.life > 0);
 
-    asciiEl.textContent = grid.map(row => row.join('')).join('\n');
-
     if (time - lastMutation > C.MUTATION_INTERVAL_MS) {
       mutateString();
       lastMutation = time;
     }
 
-    requestAnimationFrame(draw);
+    rafId = requestAnimationFrame(draw);
   }
+
+  function start() {
+  if (!isActive() || rafId) return;
+  resize();
+  lastFrame = 0;
+  rafId = requestAnimationFrame(draw);
+}
+
+  function stop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+
+  new ResizeObserver(() => {
+  resize();
+  if (panel.classList.contains('open')) start();
+}).observe(panel);
+  new MutationObserver(() => panel.classList.contains('open') ? start() : stop())
+    .observe(panel, { attributes: true, attributeFilter: ['class'] });
+
+  panel.addEventListener('pointermove', e => {
+    const r = panel.getBoundingClientRect();
+    mouse.x = (e.clientX - r.left) / C.CHAR_W;
+    mouse.y = (e.clientY - r.top) / C.CHAR_H;
+  }, { passive: true });
+
+  panel.addEventListener('click', e => {
+    const r = panel.getBoundingClientRect();
+    explosions.push({
+      x: (e.clientX - r.left) / C.CHAR_W,
+      y: (e.clientY - r.top) / C.CHAR_H,
+      radius: 0,
+      life: 1,
+    });
+  });
+
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
 })();
