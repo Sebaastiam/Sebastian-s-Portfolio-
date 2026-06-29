@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════
    components.css
-   Sebastián Castillo Portfolio — v2.0
+   Sebastián Castillo Portfolio — v1.3.2
 
    Contenido:
      1.  Glass card            (.glassModule, .module-*)
@@ -15,6 +15,7 @@
      10. ASCII bg + scanlines  (#ascii-bg, .more-panel::after)
      11. Video embeds          (.feed-item--video, .feed-video-wrap)
      12. Responsive breakpoints
+     13. Keyframes animations rgb
 
    Requiere: base.css cargado primero (tokens de :root).
    ══════════════════════════════════════════════════════════ */
@@ -82,8 +83,7 @@
   cursor: grabbing;
   z-index: 9999;
   transform: scale(1.01);
-}
-.glassModule.touch-tap { /* handled by JS animation class */ }
+/*note:.glassModule.touch-tap handled by JS animation class /* Clase auxiliar añadida por JS para simular interacción táctil en móviles */ }
 
 /* Inner layout */
 .module-content {
@@ -109,7 +109,7 @@
   margin: 0;
   font-family: 'AuthenticDeclaration', cursive;
   font-weight: normal;
-  font-size: clamp(46px, 10vw, 70px);
+  font-size: clamp(70px, 10vw, 70px);
   letter-spacing: 0.03em;
   text-transform: none;
   color: #fff; /* oklch fallback */
@@ -121,33 +121,40 @@
 @supports (color: oklch(0.72 0.27 18)) {
   .module-title {
     background-image: radial-gradient(
-      in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      oklch(0.92 0.13 85)        0vh,
-      oklch(0.72 0.27 18)       20vh,
-      oklch(0.42 0.18 320)      50vh,
-      oklch(0.18 0.06 280 / 0)  90vh
-    );
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    text-shadow: none;
-    filter:
-      drop-shadow(0 0 22px oklch(0.7 0.25 20 / 0.38))
-      drop-shadow(0 2px 5px rgba(0,0,0,0.45));
+  in oklch circle at var(--gx, 40%) var(--gy, 30%),
+  oklch(0.94 0.16 110) 25%,
+  oklch(0.78 0.24 60) 50%,
+  oklch(0.45 0.22 25) 90%,
+  oklch(23.42% 0.09602 348.778 / 0.582) 120%
+  );
+  
+   background-clip: text;
+-webkit-background-clip: text;
+color: transparent;
+text-shadow: none;
+filter:
+  drop-shadow(0 0 22px var(--warm-glow))
+  drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
+animation: warmPurpleGlow 6s ease-in-out infinite;
   }
 }
-
+@media (max-width: 780) {
+  .module-title { font-size: 12} 
+}
 /* Body copy */
 .module-desc {
   margin: 0;
-  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-family: 'BebasNeue-Regular', system-ui, sans-serif;
   font-weight: 900;
-  font-size: 13px;
-  color: rgba(255,255,255,0.85);
+  font-size: 17x;
+  color: rgba(255, 255, 255, 0.925);
   max-width: 85%;
   line-height: 1.35;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.50);
+  letter-spacing: 2px;
+  text-shadow:
+    0 0 14px var(--warm-glow2),
+    0 2px 20px rgba(233, 3, 41, 0.788);
+  animation: warmYellowGlow 6s ease-in-out infinite;
 }
 
 /* Drag hint label */
@@ -182,11 +189,9 @@
 .module-back:hover { color: #fff; }
 
 /* Small-screen overrides */
-@media (max-width: 600px) {
-  /* clamp() already resolves .module-title and .glassModule at this bp */
-  .module-desc { font-size: 12px; }
+@media (max-width: 780px) {
+  .module-title { font-size: 40px  /* ejemplo: tamaño móvil razonable */}
 }
-
 
 /* ══════════════════════════════════════════════
    2. Shared buttons (.module-btn)
@@ -286,7 +291,7 @@
 }
 
 /* Subtle scroll-in vignette */
-#contactSection: before {
+#contactSection:before {
   content: '';
   position: absolute;
   inset: 0;
@@ -307,7 +312,7 @@
   --gx: 50%;
   --gy: 50%;
   font-family: 'AuthenticDeclaration', cursive;
-  font-size: clamp(28px, 6vw, 40px);
+  font-size: clamp(25.2px, 5.4vw, 36px);
   margin: 0;
   text-align: center;
   color: #fff;
@@ -518,7 +523,7 @@
   margin: 0;
   font-family: 'AuthenticDeclaration', cursive;
   font-weight: normal;
-  font-size: clamp(30px, 8vw, 50px);
+  font-size: clamp(21.9px, 5.84vw, 36.5px) !important;
   letter-spacing: 0.03em;
   text-transform: none;
   text-align: center;
@@ -528,10 +533,10 @@
   .cmodal-title {
     background-image: radial-gradient(
       in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      oklch(0.94 0.16 110)       0vh,
-      oklch(0.78 0.24 60)        5vh,
-      oklch(0.45 0.22 25)       10vh,
-      oklch(0.18 0.08 350 / 0)  30vh
+      oklch(0.92 0.13 85)        0vh,
+      oklch(0.72 0.27 18)       20vh,
+      oklch(0.42 0.18 320)      50vh,
+      oklch(0.18 0.06 280 / 0)  90vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -633,8 +638,11 @@ textarea.cmodal-input {
    7. "Audiovisuales" side trigger button
    ══════════════════════════════════════════════ */
 
+/* ══════════════════════════════════════════════
+   7. "Audiovisuales" side trigger button
+   ══════════════════════════════════════════════ */
+
 .more-trigger {
-  /* Retro palette local tokens */
   --mw-win-face:    #c0c0c0;
   --mw-win-hi:      #ffffff;
   --mw-win-dark:    #404040;
@@ -644,25 +652,26 @@ textarea.cmodal-input {
   --mw-cyan:        #00e7ff;
 
   position: fixed;
-  right: 0;
-  top: 50%;
+  top: 0;
+  left: 50%;
+  right: auto;
   z-index: 8;
-  transform: translateY(-50%);
-  padding: 0.75rem 0.52rem 0.75rem 0.62rem;
+  transform: translateX(-50%);
+  padding: 0.62rem 0.75rem;
   min-width: 0;
-  writing-mode: vertical-rl;
+  writing-mode: horizontal-tb;
   text-orientation: mixed;
   cursor: pointer;
   color: #fff;
   background:
-    linear-gradient(180deg,
+    linear-gradient(90deg,
       var(--mw-title-active) 0  68%,
       var(--mw-pink)        68% 84%,
       var(--mw-cyan)        84% 100%);
-  border-top:    2px solid var(--mw-win-hi);
+  border-top:    2px solid var(--mw-win-dark);
   border-left:   2px solid var(--mw-win-hi);
   border-right:  2px solid var(--mw-win-dark);
-  border-bottom: 2px solid var(--mw-win-dark);
+  border-bottom: 2px solid var(--mw-win-hi);
   box-shadow: 5px 5px 0 var(--mw-win-black), 9px 9px 0 var(--mw-pink);
   font-family: 'BarlowSC', system-ui, sans-serif;
   font-weight: 900;
@@ -670,23 +679,32 @@ textarea.cmodal-input {
   line-height: 1;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  transition: transform 0.35s ease, box-shadow 0.2s ease, right 0.45s cubic-bezier(.2,.8,.2,1);
+  transition: transform 0.35s ease, box-shadow 0.2s ease,
+              top 0.45s cubic-bezier(.2,.8,.2,1);
   text-shadow:
     0 0  8px rgba(0, 231, 255, 0.55),
     0 0 18px rgba(0, 231, 255, 0.25);
 }
+
 .more-trigger:hover,
 .more-trigger:focus-visible {
-  transform: translate(-4px, calc(-50% - 4px));
+  transform: translate(-50%, 4px);
   box-shadow: 8px 8px 0 var(--mw-win-black), 13px 13px 0 var(--mw-cyan);
   outline: none;
 }
+
 body.more-open .more-trigger {
-  right: min(97vw, 1056px);
+  top: min(97vh, 1056px);
   z-index: 130;
 }
 
-
+/* ── Móvil: comportamiento idéntico al desktop (ya centrado arriba) ── */
+@media (max-width: 768px) {
+  .more-trigger {
+    font-size: 18px;
+    padding: 0.5rem 0.65rem;
+  }
+}
 /* ══════════════════════════════════════════════
    8. Visual archive / more panel
    ══════════════════════════════════════════════ */
@@ -874,7 +892,7 @@ body.more-open .more-trigger {
 
 /* Retro title bar (::before) */
 .more-panel .feed-item::before {
-  content: "ARTICLE_" counter(feed, decimal-leading-zero) ".EXE";
+  content: "Zescru_" counter(feed, decimal-leading-zero) ".EXE";
   position: absolute;
   top:   var(--mw-outer-pad);
   left:  var(--mw-outer-pad);
@@ -1093,21 +1111,17 @@ body.more-open .more-trigger {
   position: absolute;
   inset: 0;
   z-index: 0;
-  margin: 0; padding: 0;
-  width: 100%; height: 100%;
-  font-family: monospace;
-  font-size: 12px;
-  line-height: 12px;
-  letter-spacing: 0px;
-  color: #00ff9f;
-  white-space: pre;
-  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  display: block;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
+
 .more-panel.open #ascii-bg {
   opacity: 0.18;
+
 }
 
 /* Scanlines overlay — scoped to the drawer */
@@ -1125,8 +1139,11 @@ body.more-open .more-trigger {
     transparent             4px
   );
 }
-
-
+@media (max-width: 768px) {
+  #ascii-bg {
+    display: none !important;
+  }
+}
 /* ══════════════════════════════════════════════
    11. Video feed items
    ══════════════════════════════════════════════ */
@@ -1203,5 +1220,54 @@ body.more-open .more-trigger {
   }
   .more-panel .feed-item:hover {
     transform: translate(-3px, -3px) !important;
+  }
+}
+/* ══════════════════════════════════════════════
+   13. keyframes rgb
+   ══════════════════════════════════════════════ */
+   @property --warm-glow {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: oklch(0.70 0.24 25);
+}
+
+@keyframes warmPurpleGlow {
+  0% {
+    --warm-glow: oklch(84.664% 0.17246 88.9); /* Sunlight (amarillo claro) */
+  }
+  25% {
+    --warm-glow: oklch(79.128% 0.1569 64.72); /* Golden (dorado) */
+  }
+  50% {
+    --warm-glow: oklch(71.344% 0.18236 35.265); /* Amber / naranja suave */
+  }
+  75% {
+    --warm-glow: oklch(67.746% 0.21051 24.717); /* Coral cálido, variación ligera */
+  }
+  100% {
+    --warm-glow: oklch(77.686% 0.16121 69.686); /* vuelve a Sunlight */
+  }
+}
+@property --warm-glow2 {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: oklch(74.984% 0.14871 21.212);
+}
+
+@keyframes warmYellowGlow {
+  0% {
+    --warm-glow2: oklch(70.78% 0.15973 54.323); /* Sunlight (amarillo claro) */
+  }
+  25% {
+    --warm-glow2: oklch(60.78% 0.24196 19.533); /* Golden (dorado) */
+  }
+  50% {
+    --warm-glow2: oklch(66.554% 0.2213 25.559); /* Amber / naranja suave */
+  }
+  75% {
+    --warm-glow2: oklch(44.912% 0.20174 301.86); /* Coral cálido, variación ligera */
+  }
+  100% {
+    --warm-glow2: oklch(64.682% 0.23129 13.294); /* vuelve a Sunlight */
   }
 }

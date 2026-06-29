@@ -1,12 +1,12 @@
 /* ══════════════════════════════════════════════════════════
    animations.css
-   Sebastián Castillo Portfolio — v2.0
+   Sebastián Castillo Portfolio — v1.3.2
 
    Todos los @keyframes y clases de animación del proyecto.
    Carga después de base.css y components.css.
 
    Contenido:
-     1. Slideshow Ken Burns   (panRight, panLeft, panUp, zoomIn, zoomOut)
+     1. Slideshow Ken Burns   (panRight, panLeft, panUp, panDown, zoomIn, zoomOut)
      2. Panel transitions     (fadeIn, fadeOut)
      3. Elastic button bounce (bounceIn, bounceOut, scaleDown)
      4. Scroll hint bounce    (hintBounce)

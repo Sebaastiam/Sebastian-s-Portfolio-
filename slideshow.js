@@ -1,6 +1,8 @@
 /* ══════════════════════════════════════════════════
    slideshow.js — Background slideshow + Ken Burns
+   Sebastián Castillo Portfolio — v1.3.2
    Depends on: config.js (CONFIG)
+   Sebastián Castillo Portfolio — v1.3.2
    ══════════════════════════════════════════════════ */
 
 (function initSlideshow() {
@@ -10,6 +12,7 @@
 
   let current = 0;
   let started = false;
+  let intervalId = 0;
 
   /* Apply Ken Burns class to a specific slide image */
   function applyAnim(index) {
@@ -20,6 +23,24 @@
     const anim = animSeq[index] || 'none';
     if (anim !== 'none') img.classList.add('anim-' + anim);
   }
+  function startCycle() {
+  if (intervalId || document.hidden) return;
+  intervalId = setInterval(() => {
+    slides[current].classList.remove('active');
+    current = (current + 1) % slides.length;
+    applyAnim(current);
+    slides[current].classList.add('active');
+  }, CONFIG.SLIDE_INTERVAL_MS);
+}
+
+function stopCycle() {
+  clearInterval(intervalId);
+  intervalId = 0;
+}
+
+document.addEventListener('visibilitychange', () => {
+  document.hidden ? stopCycle() : startCycle();
+});
 
   /* Start cycling — called once images are ready or fallback fires */
   function boot() {
@@ -27,12 +48,7 @@
     started = true;
     clearTimeout(fallback);
 
-    setInterval(() => {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      applyAnim(current);
-      slides[current].classList.add('active');
-    }, CONFIG.SLIDE_INTERVAL_MS);
+    startCycle()
   }
 
   /* Preload images to avoid flash on first transition */
