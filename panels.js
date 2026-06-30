@@ -249,6 +249,21 @@ function validateForm(form) {
 
   const trap = createFocusTrap(wrap);
   let previousFocus = null;
+  let formOpenedAt  = 0; // timestamp set when modal opens, used for bot-timing check
+
+  /* Bots that fill+submit forms programmatically typically do it in well
+     under a second; real humans take longer to read and type. Combined
+     with the honeypot field below, this filters most naive spam without
+     adding a CAPTCHA. Real protection still needs the matching check in
+     Apps Script — see doc comment near CONFIG.FORM_ENDPOINT. */
+  const MIN_HUMAN_FILL_MS = 1500;
+
+  function isLikelyBot() {
+    const honeypot = form.querySelector('[name="website"]');
+    if (honeypot && honeypot.value.trim() !== '') return true;
+    if (Date.now() - formOpenedAt < MIN_HUMAN_FILL_MS) return true;
+    return false;
+  }
 
   /* Live validation on blur */
   form.querySelectorAll('.cmodal-input').forEach(input => {
@@ -268,6 +283,7 @@ function validateForm(form) {
 
   function open() {
     previousFocus = document.activeElement;
+    formOpenedAt = Date.now();
     wrap.classList.add('open');
     wrap.removeAttribute('aria-hidden');
     document.documentElement.style.overflowY = 'hidden';
@@ -309,6 +325,16 @@ function validateForm(form) {
   form.addEventListener('submit', async e => {
     e.preventDefault();
 
+    /* Silently swallow likely-bot submissions: show the normal success
+       state (so a bot/scraper gets no signal anything was rejected) but
+       never actually send the request. */
+    if (isLikelyBot()) {
+      form.style.display    = 'none';
+      success.style.display = 'block';
+      setTimeout(shut, CONFIG.SUCCESS_DISPLAY_MS);
+      return;
+    }
+
     if (!validateForm(form)) {
       const firstInvalid = form.querySelector('.input--invalid');
       if (firstInvalid) firstInvalid.focus();
@@ -319,6 +345,11 @@ function validateForm(form) {
     formData.append('nombre',  form.nombre.value.trim());
     formData.append('email',   form.email.value.trim());
     formData.append('mensaje', form.mensaje.value.trim());
+    /* Sent so Apps Script can re-validate server-side — never trust the
+       client-side isLikelyBot() check alone, since anyone can call the
+       endpoint directly with fetch and skip the JS entirely. */
+    formData.append('website',  form.querySelector('[name="website"]').value);
+    formData.append('elapsed',  String(Date.now() - formOpenedAt));
 
     try {
       await fetch(CONFIG.FORM_ENDPOINT, { method: 'POST', mode: 'no-cors', body: formData });

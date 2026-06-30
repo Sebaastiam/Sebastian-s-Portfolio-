@@ -134,6 +134,18 @@ body {
   border: 0;
 }
 
+/* Honeypot trap field — off-canvas rather than display:none, since
+   some bots specifically skip fields hidden that way. Real users
+   never see or reach it (aria-hidden + tabindex="-1" + position). */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+}
+
 
 /* ── 5. Page layout skeleton ──────────────────────────────── */
 
@@ -147,8 +159,6 @@ body {
 .hero-spacer {
   height: 100vh;
 }
-
-
 
 /* ── 6. Background slideshow ──────────────────────────────── */
 #bgContainer {
@@ -181,7 +191,28 @@ body {
   background-repeat: no-repeat;
   will-change: transform;
 }
+.bg-slide video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
+/* Desktop: reduce 10% */
+@media (min-width: 950px) {
+  .bg-slide video {
+    width: 85%;   /* antes 100% → ahora 10% más chico */
+    height: 85%;
+  }
+}
+
+/* Móvil: que se ajuste mejor */
+@media (max-width: 768px) {
+  .bg-slide video {
+    width: 100%;   /* ocupa todo el ancho */
+    height: auto;  /* mantiene proporción */
+    object-fit: contain; /* evita cortes en pantallas pequeñas */
+  }
+}
 
 /* ── 7. Scroll hint ───────────────────────────────────────── */
 #scrollHint.scroll-hint {
