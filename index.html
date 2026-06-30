@@ -40,12 +40,13 @@
   </div>
 
   <div class="bg-slide">
-    <div class="bg-img" style="position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;">
-      <video autoplay muted loop playsinline style="width:110%;height:80%;object-fit:contain;">
-        <source src="./Video/VHS_20190821_10485600.MP4" type="video/mp4">
-      </video>
-    </div>
+  <div class="bg-img" style="position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;">
+    <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;">
+      <source src="./Video/TEST_1._720p.webm" type="video/webm">
+      Tu navegador no soporta video HTML5.
+    </video>
   </div>
+</div>
 
   <div class="bg-slide">
     <div class="bg-img" style="background-image: url('./images/galeria2/DSC00521.webp');"></div>
@@ -90,15 +91,6 @@
         aria-label="Abrir archivo visual audiovisuales">
   vlog/blog
 </button>
-
-<!-- ── Page content (gives scrollable height) ── -->
-<div id="pageContent">
-
-  <!-- Hero spacer: glass card floats fixed above this -->
-  <div class="hero-spacer" aria-hidden="true"></div>
-
-</div>
-<!-- /pageContent -->
 
   <!-- ── Page content (gives scrollable height) ── -->
   <div id="pageContent">
@@ -146,7 +138,7 @@
            style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
         <h1 class="module-title" id="moduleTitle">Sebastian Castillo</h1>
         <p class="module-desc">
-       He diseñado y creado esta estrategia transmedia para que puedas ver mis proyectos visuales y programación de una manera innovadora y ÚNICA.
+       He dado vida a plataforma para que veas mis proyectos audiovisuales y de programación de una manera original y unica.
         </p>
         <button class="module-btn" id="actionBtn">Muestre pues</button>
       </div>
@@ -227,6 +219,13 @@ Archivo WEB
                     required
                     aria-required="true"
                     aria-describedby="err-mensaje"></textarea>
+
+          <!-- Honeypot — invisible to humans, catches naive bots that fill every field.
+               tabindex="-1" + aria-hidden keeps it out of keyboard/SR flow. -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="inputWebsite">Website</label>
+            <input id="inputWebsite" type="text" name="website" tabindex="-1" autocomplete="off"/>
+          </div>
 
           <button type="submit"
                   class="module-btn"

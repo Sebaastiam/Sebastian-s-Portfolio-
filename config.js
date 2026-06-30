@@ -5,7 +5,13 @@
 
 const CONFIG = Object.freeze({
 
-  /* ── Google Apps Script endpoint for contact form ── */
+  /* ── Google Apps Script endpoint for contact form ──
+     SECURITY NOTE: this URL is necessarily public (the browser must call
+     it directly). The honeypot + timing fields sent from panels.js only
+     work if doPost() in the Apps Script project also checks them — see
+     the snippet in the project README / chat history for the exact code
+     to paste in. Without that server-side check, anyone can bypass the
+     client JS entirely and POST straight to this URL. */
   FORM_ENDPOINT: 'https://script.google.com/macros/s/AKfycbxpnQ42VMCpVnSakwY-JplaqeSFsjRB4s1U6_eWmSoa2K1tV_7dpvUfFbNWsuXU3HqbcQ/exec',
 
   /* ── Slideshow ── */
