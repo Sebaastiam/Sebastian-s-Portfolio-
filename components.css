@@ -13,7 +13,7 @@
      8.  More / archive panel  (.more-panel, .more-panel-inner, .more-feed)
      9.  Feed items            (.feed-item, retro-win chrome)
      10. ASCII bg + scanlines  (#ascii-bg, .more-panel::after)
-     11. Video embeds          (.feed-item--video, .feed-video-wrap)
+     11. Video embeds          (.feed-video-wrap)
      12. Responsive breakpoints
      13. Keyframes animations rgb
 
@@ -138,15 +138,12 @@ filter:
 animation: warmPurpleGlow 6s ease-in-out infinite;
   }
 }
-@media (max-width: 780) {
-  .module-title { font-size: 12} 
-}
 /* Body copy */
 .module-desc {
   margin: 0;
   font-family: 'BebasNeue-Regular', system-ui, sans-serif;
   font-weight: 900;
-  font-size: 17x;
+  font-size: 17px;
   color: rgba(255, 255, 255, 0.925);
   max-width: 85%;
   line-height: 1.35;
@@ -184,13 +181,13 @@ animation: warmPurpleGlow 6s ease-in-out infinite;
   padding: 25px;
   display: none; /* shown by JS */
   -webkit-tap-highlight-color: transparent;
-  text-shadow: 1 1px 3px rgba(0,0,0,0.45);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.45);
 }
 .module-back:hover { color: #fff; }
 
 /* Small-screen overrides */
 @media (max-width: 780px) {
-  .module-title { font-size: 40px  /* ejemplo: tamaño móvil razonable */}
+  .module-title { font-size: 40px; /* ejemplo: tamaño móvil razonable */ }
 }
 
 /* ══════════════════════════════════════════════
@@ -633,10 +630,6 @@ textarea.cmodal-input {
   text-align: center;
 }
 
-
-/* ══════════════════════════════════════════════
-   7. "Audiovisuales" side trigger button
-   ══════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
    7. "Audiovisuales" side trigger button
@@ -1147,16 +1140,6 @@ body.more-open .more-trigger {
 /* ══════════════════════════════════════════════
    11. Video feed items
    ══════════════════════════════════════════════ */
-
-/* Full-width video card */
-.feed-item--video {
-  grid-column: 1 / -1;
-  transform: none !important;
-  pointer-events: auto;
-}
-.feed-item--video:hover {
-  transform: translate(-4px, -4px) !important;
-}
 
 /* 16:9 video container */
 .feed-video-wrap {

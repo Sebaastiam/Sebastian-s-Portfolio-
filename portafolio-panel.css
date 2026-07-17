@@ -120,13 +120,10 @@
   transform: translateX(-50%) translateY(-10%) translateZ(0);
   flex-direction: column;
   align-items: center;
-  gap: 10 px;
+  gap: 10px;
   pointer-events: none;
   animation: portScrollHint 2.2s ease-in-out infinite;
 }
-.port-scroll-hint.offset-down {
-  transform: translateY(20px);
-  }
 .port-scroll-hint span {
   font-family: 'BarlowSC', system-ui, sans-serif;
   font-weight: 900;
@@ -316,14 +313,6 @@
 .port-lightbox-nav:hover { background: rgba(255,255,255,0.15); color: #fff; }
 .port-lightbox-nav.prev { left: 1.2rem; }
 .port-lightbox-nav.next { right: 1.2rem; }
-.port-lightbox-content {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-  will-change: transform, opacity;
-  }
-.port-lightbox-content.slide-out-left { transform: translateX(-100%); opacity: 0; }
-.port-lightbox-content.slide-out-right { transform: translateX(100%); opacity: 0; }
-.port-lightbox-content.slide-in { transform: translateX(0); opacity: 1; }
-
 /* ══════════════════════════════════════════════
    7. Close / back — top of panel
    ══════════════════════════════════════════════ */
@@ -346,8 +335,6 @@
   transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
-.slide-out-left { transform: translateX(-20px); opacity: 0; }
-.slide-out-right { transform: translateX(20px); opacity: 0; }
 
 /* ══════════════════════════════════════════════
    8. Keyframe animations

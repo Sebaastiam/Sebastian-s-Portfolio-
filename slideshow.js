@@ -2,7 +2,6 @@
    slideshow.js — Background slideshow + Ken Burns
    Sebastián Castillo Portfolio — v1.3.2
    Depends on: config.js (CONFIG)
-   Sebastián Castillo Portfolio — v1.3.2
    ══════════════════════════════════════════════════ */
 
 (function initSlideshow() {
