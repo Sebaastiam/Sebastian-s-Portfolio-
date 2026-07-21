@@ -3,7 +3,8 @@
    Portfolio Sebastián Castillo — v1.3.2
    ══════════════════════════════════════════════════ */
 
-const CONFIG = Object.freeze({
+window.PortfolioApp = window.PortfolioApp || {};
+window.PortfolioApp.CONFIG = Object.freeze({
 
   /* ── Site metadata ──
      Single source of truth for the version string. Previously this

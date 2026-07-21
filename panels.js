@@ -18,6 +18,10 @@
 /* ══════════════════════════════════════════════
    1. Glass card panel transitions
    ══════════════════════════════════════════════ */
+const APP = window.PortfolioApp || {};
+const CONFIG = APP.CONFIG || {};
+const HistoryManager = APP.HistoryManager;
+
 (function initCardPanels() {
   const defaultView = document.getElementById('defaultView');
   const btnPanel    = document.getElementById('btnPanel');
@@ -83,21 +87,29 @@
     document.getElementById('cmodalTitle'),
   ].filter(Boolean);
 
+  if (!targets.length) return;
+
   let targetX = 50, targetY = 50;
   let currentX = 50, currentY = 50;
+  let rafId = 0;
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   function tick() {
-    currentX = lerp(currentX, targetX, CONFIG.GRADIENT_LERP);
-    currentY = lerp(currentY, targetY, CONFIG.GRADIENT_LERP);
+    if (document.hidden) {
+      rafId = 0;
+      return;
+    }
+    const lerpFactor = Number(CONFIG.GRADIENT_LERP) || 0.055;
+    currentX = lerp(currentX, targetX, lerpFactor);
+    currentY = lerp(currentY, targetY, lerpFactor);
     const gx = currentX.toFixed(2) + '%';
     const gy = currentY.toFixed(2) + '%';
     targets.forEach(el => {
       el.style.setProperty('--gx', gx);
       el.style.setProperty('--gy', gy);
     });
-    requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(tick);
   }
 
   function update(clientX, clientY) {
@@ -105,13 +117,22 @@
     targetY = (clientY / window.innerHeight) * 100;
   }
 
-  document.addEventListener('pointermove', e => update(e.clientX, e.clientY));
+  document.addEventListener('pointermove', e => update(e.clientX, e.clientY), { passive: true });
   document.addEventListener('touchmove',
     e => update(e.touches[0].clientX, e.touches[0].clientY),
     { passive: true }
   );
 
-  tick();
+  function start() {
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }
+  function stop() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+  start();
 })();
 
 
@@ -172,7 +193,11 @@ function createFocusTrap(containerEl) {
 /* ══════════════════════════════════════════════
    5. Form validation helpers
    ══════════════════════════════════════════════ */
-const VALIDATION = CONFIG.VALIDATION;
+const VALIDATION = CONFIG.VALIDATION || {
+  NAME_MIN_LENGTH: 2,
+  MESSAGE_MIN_LENGTH: 10,
+  EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+};
 
 function validateField(input) {
   const name  = input.name;
@@ -200,26 +225,28 @@ function setFieldState(input, error) {
   const isInvalid = Boolean(error);
   input.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
 
-  const existingMsg = document.getElementById('err-' + input.name);
-  if (existingMsg) existingMsg.remove();
+  let msg = document.getElementById('err-' + input.name);
+  if (!msg) {
+    msg = document.createElement('span');
+    msg.id = 'err-' + input.name;
+    msg.className = 'sr-only input-error-msg';
+    input.insertAdjacentElement('afterend', msg);
+  }
 
   if (isInvalid) {
     input.classList.add('input--invalid');
     input.classList.remove('input--valid');
     input.classList.remove('input--shake');
-    void input.offsetWidth;
-    input.classList.add('input--shake');
+    requestAnimationFrame(() => input.classList.add('input--shake'));
     input.addEventListener('animationend', () => input.classList.remove('input--shake'), { once: true });
 
-    const msg = document.createElement('span');
-    msg.id          = 'err-' + input.name;
-    msg.className   = 'sr-only input-error-msg';
     msg.setAttribute('role', 'alert');
     msg.textContent = error;
-    input.insertAdjacentElement('afterend', msg);
   } else {
     input.classList.remove('input--invalid');
     input.classList.add('input--valid');
+    msg.removeAttribute('role');
+    msg.textContent = '';
   }
 
   return !isInvalid;
@@ -331,7 +358,7 @@ function validateForm(form) {
     if (isLikelyBot()) {
       form.style.display    = 'none';
       success.style.display = 'block';
-      setTimeout(shut, CONFIG.SUCCESS_DISPLAY_MS);
+      setTimeout(shut, CONFIG.SUCCESS_DISPLAY_MS || 2400);
       return;
     }
 
@@ -367,8 +394,8 @@ function validateForm(form) {
             input.classList.remove('input--invalid', 'input--valid');
             input.removeAttribute('aria-invalid');
           });
-        }, CONFIG.MODAL_RESET_DELAY_MS);
-      }, CONFIG.SUCCESS_DISPLAY_MS);
+        }, CONFIG.MODAL_RESET_DELAY_MS || 350);
+      }, CONFIG.SUCCESS_DISPLAY_MS || 2400);
 
     } catch (err) {
       console.error('[contact form]', err);

@@ -27,7 +27,8 @@
        (el navegador retrocede a la página anterior).
    ══════════════════════════════════════════════════════════════ */
 
-const HistoryManager = (() => {
+window.PortfolioApp = window.PortfolioApp || {};
+window.PortfolioApp.HistoryManager = (() => {
   'use strict';
 
   /* Stack interno: cada elemento es { id: string, closeFn: Function } */
@@ -110,7 +111,7 @@ const HistoryManager = (() => {
      En el caso (b) la entrada ya fue eliminada del stack,
      por lo que top === undefined y no se llama ningún closeFn.
   ──────────────────────────────────────────────────────────── */
-  window.addEventListener('popstate', (e) => {
+  window.addEventListener('popstate', () => {
     const top = _stack[_stack.length - 1];
 
     if (!top) {

@@ -389,7 +389,7 @@ Archivo WEB
   <!-- Static text above is a no-JS/pre-hydration fallback matching the
        previous hardcoded output. The inline script below (right after
        config.js loads) overwrites it with the real, single-source-of-
-       truth version + current year. See CONFIG.SITE_VERSION. -->
+       truth version + current year. See PortfolioApp.CONFIG.SITE_VERSION. -->
 
   <!-- ── Scripts ── -->
   <!-- Load order: config first, then independent modules -->
@@ -401,15 +401,16 @@ Archivo WEB
        "v1.3.2" in both JS file headers) and the hardcoded year. */
     (function () {
       var wm = document.getElementById('watermark');
-      if (!wm || typeof CONFIG === 'undefined') return;
+      var app = window.PortfolioApp || {};
+      if (!wm || !app.CONFIG) return;
       var year = new Date().getFullYear();
-      wm.textContent = year + ' — Sebastián Castillo / SITE V: ' + CONFIG.SITE_VERSION;
+      wm.textContent = year + ' — Sebastián Castillo / SITE V: ' + app.CONFIG.SITE_VERSION;
     })();
   </script>
   <!-- [historyManager] Debe cargar ANTES que panels.js y
-       portfolio-panel.js, para que HistoryManager esté disponible
+       portfolio-panel.js, para que PortfolioApp.HistoryManager esté disponible
        cuando esos módulos registren sus paneles. (No depende de
-       config.js — historyManager.js no referencia CONFIG.) -->
+       config.js — historyManager.js no referencia PortfolioApp.CONFIG.) -->
   <script src="historyManager.js"></script>
   <script src="slideshow.js"></script>
   <script src="drag.js"></script>

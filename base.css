@@ -105,12 +105,32 @@
      Documented to replace ad hoc magic numbers. Not every existing
      z-index has been migrated yet — see the Milestone 2 audit for
      the full list of un-migrated values (a separate future sweep). */
-  --z-base:        0;
-  --z-content:     1;
-  --z-card:        10;
-  --z-fixed-ui:    5;
-  --z-dragging:    100;
-  --z-skip-link:   9999;
+  --z-under-3:             -3;
+  --z-under-2:             -2;
+  --z-under-1:             -1;
+  --z-base:                 0;
+  --z-content:              1;
+  --z-page-content:         2;
+  --z-overlay-low:          3;
+  --z-watermark:            4;
+  --z-fixed-ui:             5;
+  --z-top-trigger:          8;
+  --z-card:                10;
+  --z-hover-lift:          20;
+  --z-panel-close:         22;
+  --z-sticky-room-header:  25;
+  --z-sticky-header:       30;
+  --z-dragging:           100;
+  --z-more-panel:         125;
+  --z-more-trigger-open:  130;
+  --z-port-panel:         150;
+  --z-port-room:          160;
+  --z-modal:              200;
+  --z-lightbox:           500;
+  --z-lightbox-nav:      1001;
+  --z-cursor-ring:       9998;
+  --z-cursor-dot:        9999;
+  --z-skip-link:         var(--z-cursor-dot);
 
   /* ── "Heat Wave" oklch gradient stops ──
      Shared by .contact-prompt / .contact-pill-label (components-main.css)
@@ -216,7 +236,7 @@ body {
 /* Gives the page scrollable height; sits above the fixed bg */
 #pageContent {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-page-content);
 }
 
 /* First 100 vh: glass card floats fixed above this spacer */
@@ -229,7 +249,7 @@ body {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  z-index: 0;
+  z-index: var(--z-base);
   pointer-events: none;
   overflow: hidden;
 }
@@ -253,6 +273,10 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  will-change: auto;
+}
+
+.bg-img.is-animating {
   will-change: transform;
 }
 .bg-slide video {
@@ -278,7 +302,7 @@ body {
   position: fixed;
   left: 50%;
   bottom: 26px;
-  z-index: 5;
+  z-index: var(--z-fixed-ui);
   display: flex !important;
   flex-direction: column;
   align-items: center;
@@ -322,30 +346,6 @@ body {
   animation-delay: 0.36s;
 }
 
-@keyframes hintDrop {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px) scaleX(0.82);
-    filter: blur(1px);
-  }
-
-  22% {
-    opacity: 1;
-    transform: translateY(0) scaleX(1);
-    filter: blur(0);
-  }
-
-  58% {
-    opacity: 0.95;
-    transform: translateY(6px) scaleX(1.08);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(17px) scaleX(0.9);
-    filter: blur(1.5px);
-  }
-}
 
 .scroll-hint__label {
   margin-top: 12px;
@@ -361,23 +361,12 @@ body {
   animation: labelPulse 1.7s ease-in-out infinite;
 }
 
-@keyframes labelPulse {
-  0%, 100% {
-    opacity: 0.34;
-    transform: translateY(0);
-  }
-
-  50% {
-    opacity: 0.82;
-    transform: translateY(2px);
-  }
-}
 /* ── 8. Watermark ─────────────────────────────────────────── */
 #watermark {
   position: fixed;
   bottom: 18px;
   right: 18px;
-  z-index: 4;
+  z-index: var(--z-watermark);
   pointer-events: none;
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -463,8 +452,4 @@ body {
     -webkit-backface-visibility: hidden;
   }
 
-  .bg-img {
-    will-change: auto;
-  }
 }
-

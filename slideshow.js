@@ -6,9 +6,11 @@
    ══════════════════════════════════════════════════ */
 
 (function initSlideshow() {
+  const CONFIG = (window.PortfolioApp && window.PortfolioApp.CONFIG) || {};
   const slides  = Array.from(document.querySelectorAll('.bg-slide'));
   const bgImgs  = Array.from(document.querySelectorAll('.bg-img'));
-  const animSeq = CONFIG.SLIDE_ANIM_SEQ;
+  const animSeq = CONFIG.SLIDE_ANIM_SEQ || [];
+  if (!slides.length || !bgImgs.length) return;
 
   let current = 0;
   let started = false;
@@ -16,12 +18,15 @@
 
   /* Apply Ken Burns class to a specific slide image */
   function applyAnim(index) {
+    bgImgs.forEach(el => el.classList.remove('is-animating'));
     const img = bgImgs[index];
     if (!img) return;
     img.className = 'bg-img';
-    void img.offsetWidth; /* force reflow to restart animation */
     const anim = animSeq[index] || 'none';
-    if (anim !== 'none') img.classList.add('anim-' + anim);
+    if (anim !== 'none') {
+      img.classList.add('is-animating');
+      img.classList.add('anim-' + anim);
+    }
   }
   function startCycle() {
   if (intervalId || document.hidden) return;
@@ -30,7 +35,7 @@
     current = (current + 1) % slides.length;
     applyAnim(current);
     slides[current].classList.add('active');
-  }, CONFIG.SLIDE_INTERVAL_MS);
+  }, CONFIG.SLIDE_INTERVAL_MS || 4000);
 }
 
 function stopCycle() {
@@ -57,7 +62,7 @@ document.addEventListener('visibilitychange', () => {
   const imgEls = bgImgs.filter(img => img.style.backgroundImage);
   const total  = imgEls.length || 1;
 
-  const fallback = setTimeout(boot, CONFIG.SLIDE_FALLBACK_MS);
+  const fallback = setTimeout(boot, CONFIG.SLIDE_FALLBACK_MS || 2500);
 
   imgEls.forEach(img => {
     const url = img.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/, '$1');

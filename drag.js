@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════
    drag.js — Draggable glass card + hover animations
    Sebastián Castillo Portfolio — v1.3.2
-   Depends on: config.js (CONFIG)
+   Depends on: none
    ══════════════════════════════════════════════════ */
 
 (function initDrag() {
@@ -10,6 +10,8 @@
 
   let originX = 0, originY = 0;
   let isDragging = false;
+  let dragWidth = 0, dragHeight = 0;
+  let tapTimer = 0;
 
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -22,6 +24,8 @@
     const rect = el.getBoundingClientRect();
     originX = e.clientX - rect.left;
     originY = e.clientY - rect.top;
+    dragWidth = rect.width;
+    dragHeight = rect.height;
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp, { once: true });
   }
@@ -29,8 +33,8 @@
   /* ── Move: clamp within viewport ── */
   function onMove(e) {
     if (!isDragging) return;
-    el.style.left = clamp(e.clientX - originX, 8, window.innerWidth  - el.offsetWidth  - 8) + 'px';
-    el.style.top  = clamp(e.clientY - originY, 8, window.innerHeight - el.offsetHeight - 8) + 'px';
+    el.style.left = clamp(e.clientX - originX, 8, window.innerWidth  - dragWidth  - 8) + 'px';
+    el.style.top  = clamp(e.clientY - originY, 8, window.innerHeight - dragHeight - 8) + 'px';
   }
 
   /* ── Up: end drag ── */
@@ -43,8 +47,10 @@
   /* ── Touch tap visual feedback ── */
   el.addEventListener('pointerdown', e => {
     if (e.target.closest('button, a, input, textarea, select')) return;
+    clearTimeout(tapTimer);
     el.classList.add('touch-tap');
-    setTimeout(() => el.classList.remove('touch-tap'), 160);
+    tapTimer = setTimeout(() => el.classList.remove('touch-tap'), 160);
+    onDown(e);
   });
 
   /* ── Hover: bounce in/out animations ── */
@@ -66,5 +72,4 @@
     el.style.top  = clamp(rect.top,  8, window.innerHeight - el.offsetHeight - 8) + 'px';
   });
 
-  el.addEventListener('pointerdown', onDown);
 })();

@@ -6,27 +6,31 @@
    ══════════════════════════════════════════════════ */
 
 (function initAsciiDrawer() {
+  const CONFIG = (window.PortfolioApp && window.PortfolioApp.CONFIG) || {};
   const canvas = document.getElementById('ascii-bg');
   const panel = document.getElementById('morePanel');
   if (!canvas || !panel) return;
 
   const ctx = canvas.getContext('2d', { alpha: true });
   const C = CONFIG.ASCII;
+  if (!C) return;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const isMobile = window.matchMedia('(max-width: 768px)');
   if (isMobile.matches) return;
   const maxDpr = isMobile.matches ? 1.25 : 2;
 
   let cols = 0, rows = 0, rafId = 0, lastFrame = 0, lastMutation = 0;
+  let panelRect = panel.getBoundingClientRect();
   let currentString = C.BASE_STRING;
   const mouse = { x: -999, y: -999 };
   let explosions = [];
 
-  const fps = isMobile.matches ? 24 : 45;
+  const fps = reduceMotion.matches ? 24 : 45;
   const frameMs = 1000 / fps;
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
+    panelRect = panel.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
     canvas.width = Math.max(1, Math.floor(rect.width * dpr));
     canvas.height = Math.max(1, Math.floor(rect.height * dpr));
@@ -134,27 +138,26 @@
   }
 
   new ResizeObserver(() => {
-  resize();
-  if (panel.classList.contains('open')) start();
-}).observe(panel);
+    resize();
+    if (panel.classList.contains('open')) start();
+  }).observe(panel);
   new MutationObserver(() => panel.classList.contains('open') ? start() : stop())
     .observe(panel, { attributes: true, attributeFilter: ['class'] });
 
   panel.addEventListener('pointermove', e => {
-    const r = panel.getBoundingClientRect();
-    mouse.x = (e.clientX - r.left) / C.CHAR_W;
-    mouse.y = (e.clientY - r.top) / C.CHAR_H;
+    mouse.x = (e.clientX - panelRect.left) / C.CHAR_W;
+    mouse.y = (e.clientY - panelRect.top) / C.CHAR_H;
   }, { passive: true });
 
   panel.addEventListener('click', e => {
-    const r = panel.getBoundingClientRect();
     explosions.push({
-      x: (e.clientX - r.left) / C.CHAR_W,
-      y: (e.clientY - r.top) / C.CHAR_H,
+      x: (e.clientX - panelRect.left) / C.CHAR_W,
+      y: (e.clientY - panelRect.top) / C.CHAR_H,
       radius: 0,
       life: 1,
     });
   });
 
+  reduceMotion.addEventListener('change', () => document.hidden ? stop() : start());
   document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
 })();

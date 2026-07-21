@@ -27,6 +27,8 @@
 
 (function initPortafolioPanel() {
   'use strict';
+  const APP = window.PortfolioApp || {};
+  const HistoryManager = APP.HistoryManager;
 
   /* ══════════════════════════════════════════════
      1. Data
@@ -268,6 +270,22 @@
       item.style.setProperty('--zoom-ox', ((e.clientX - rect.left) / rect.width  * 100).toFixed(1) + '%');
       item.style.setProperty('--zoom-oy', ((e.clientY - rect.top)  / rect.height * 100).toFixed(1) + '%');
     });
+    panel.addEventListener('pointerover', e => {
+      const item = e.target.closest('.port-grid-item');
+      if (item) item.classList.add('is-zooming');
+    });
+    panel.addEventListener('pointerout', e => {
+      const item = e.target.closest('.port-grid-item');
+      if (item) item.classList.remove('is-zooming');
+    });
+    panel.addEventListener('focusin', e => {
+      const item = e.target.closest('.port-grid-item');
+      if (item) item.classList.add('is-zooming');
+    });
+    panel.addEventListener('focusout', e => {
+      const item = e.target.closest('.port-grid-item');
+      if (item) item.classList.remove('is-zooming');
+    });
   }
 
   /* ══════════════════════════════════════════════
@@ -350,6 +368,9 @@
     document.querySelectorAll('.port-gallery-room.open').forEach(r => {
       r.classList.remove('open');
       r.setAttribute('aria-hidden', 'true');
+      if (typeof HistoryManager !== 'undefined') {
+        HistoryManager.unregister(r.id);
+      }
     });
 
     const room = document.getElementById(`room-${galleryId}`);
@@ -552,7 +573,6 @@
       const glowSpan = document.createElement('span');
       glowSpan.className = 'galeria-glow';
       glowSpan.setAttribute('aria-hidden', 'true');
-      btn.style.position = 'relative';
       btn.appendChild(glowSpan);
     }
 
@@ -587,10 +607,17 @@
     if (CSS.supports('color', 'oklch(0.5 0.2 200)')) title.classList.add('port-title--gradient');
 
     const inner = panel.querySelector('.port-panel-inner');
+    const header = panel.querySelector('.port-header');
     if (!inner) return;
+    let headerHeight = header ? header.offsetHeight : window.innerHeight;
+    if (header) {
+      new ResizeObserver(() => {
+        headerHeight = header.offsetHeight || window.innerHeight;
+      }).observe(header);
+    }
 
     function onScroll() {
-      const pct = Math.min(inner.scrollTop / (panel.querySelector('.port-header')?.offsetHeight || window.innerHeight), 1);
+      const pct = Math.min(inner.scrollTop / headerHeight, 1);
       title.style.setProperty('--port-gy', `${140 - pct * 180}vh`);
     }
     inner.addEventListener('scroll', onScroll, { passive: true });
@@ -616,18 +643,31 @@
     document.body.appendChild(ring);
 
     let rx = 0, ry = 0, tx = 0, ty = 0;
+    let rafId = 0;
     const lerp = (a, b, t) => a + (b - a) * t;
+    const hasOpenRoom = () => Boolean(document.querySelector('.port-gallery-room.open'));
+    const isActive = () => panel.classList.contains('open') || hasOpenRoom();
 
     function tick() {
       rx = lerp(rx, tx, 0.12); ry = lerp(ry, ty, 0.12);
       ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-      requestAnimationFrame(tick);
+      if (isActive()) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        rafId = 0;
+      }
     }
-    requestAnimationFrame(tick);
+    function start() {
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    }
 
     const INTERACTIVE = 'button, a, [role="button"], .port-grid-item, .port-room-thumb';
 
-    function onMove(e) { tx = e.clientX; ty = e.clientY; dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px'; }
+    function onMove(e) {
+      tx = e.clientX; ty = e.clientY;
+      dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px';
+      start();
+    }
     function onOver(e) { if (e.target.closest(INTERACTIVE)) { dot.classList.add('hovering'); ring.classList.add('hovering'); } }
     function onOut(e)  { if (e.target.closest(INTERACTIVE)) { dot.classList.remove('hovering'); ring.classList.remove('hovering'); } }
 
@@ -635,7 +675,7 @@
     panel.addEventListener('pointerover',  onOver);
     panel.addEventListener('pointerout',   onOut);
     panel.addEventListener('pointerleave', () => { dot.classList.add('hidden'); ring.classList.add('hidden'); });
-    panel.addEventListener('pointerenter', () => { dot.classList.remove('hidden'); ring.classList.remove('hidden'); });
+    panel.addEventListener('pointerenter', () => { dot.classList.remove('hidden'); ring.classList.remove('hidden'); start(); });
 
     /* También en las rooms (montadas en body) */
     document.addEventListener('pointermove', e => { if (e.target.closest('.port-gallery-room.open')) onMove(e); });
