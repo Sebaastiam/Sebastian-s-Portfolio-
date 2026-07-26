@@ -56,6 +56,7 @@ const CONFIG = Object.freeze({
     EXPLOSION_SPEED: 0.3,
     EXPLOSION_DECAY: 0.015,
     EXPLOSION_DENSITY: 0.25,
+    MAX_SIMULTANEOUS: 12, /* Milestone 3 addition — defensive cap so rapid clicking can't stack unbounded full-grid-adjacent draw cost; each explosion already self-decays in ~1.5s at default values */
     TOTAL_STRINGS: 22,
   },
 

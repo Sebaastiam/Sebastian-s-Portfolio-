@@ -12,6 +12,44 @@
      7. More / visual-archive panel    (initMorePanel)
 
    Depends on: config.js (CONFIG), historyManager.js (HistoryManager)
+
+   Milestone 3 (Performance Engineering) fixes applied — sections 1-3, 5:
+     Section 1 — animationend timeout fallback + rapid-re-click guard
+                 (see onTransitionEnd / `transitioning` flag).
+     Section 2 — rAF loop now pauses while tab is hidden; pointermove
+                 marked passive.
+     Section 3 — reviewed, no changes needed (already correct).
+     Section 4 — reviewed, no changes made. The one finding (repeated
+                 getComputedStyle per Tab press) was an explicit
+                 judgment call, not a clear-cut fix — cross-checked
+                 against portfolio-panel.js's usage and the risk of
+                 caching wrong (a trapped user unable to Tab to a
+                 legitimately-visible field) outweighs the low cost
+                 of not caching. Left as-is.
+     Section 5 — setFieldState now recreates the error span on BOTH
+                 the valid and invalid paths (was: only invalid),
+                 fixing a real regression of the Milestone 1
+                 aria-describedby fix that fired on every successful
+                 field validation. Also fixed animationend listener
+                 stacking on the shake animation (same pattern as
+                 section 1). Recreated span now also carries
+                 aria-live="polite" (was missing — a regression I
+                 caught in review; the original Milestone 1 static
+                 span had it).
+     Section 6 — contactTrigger's Space-key handler now calls
+                 preventDefault() (was likely also triggering a page
+                 scroll, since it's a div[role=button] with none of a
+                 real button's default key handling). Form submit now
+                 guards against rapid duplicate submissions
+                 (`submitting` flag) — same rapid-repeat-action
+                 pattern as sections 1 and 5, here guarding an actual
+                 network side-effect.
+     Section 7 — the autoplaying (muted) Vimeo embed is now paused via
+                 the Vimeo Player API when the panel closes, instead
+                 of continuing to decode/render indefinitely in the
+                 background. Player API script was already loaded in
+                 index.html, so no new dependency was needed.
+   All sections audited and implemented.
    ══════════════════════════════════════════════════════════ */
 
 
@@ -25,19 +63,50 @@
   const actionBtn   = document.getElementById('actionBtn');
   if (!defaultView || !btnPanel || !backBtn || !actionBtn) return;
 
+  /* Milestone 3 fixes:
+     - TRANSITION_FALLBACK_MS: fadeIn/fadeOut run 0.35s (animations.css) —
+       400ms gives a small buffer. If animationend doesn't fire for any
+       reason (interrupted animation, reduced-motion edge case, etc.),
+       this timeout runs the same completion logic instead of leaving
+       the panel stuck mid-transition indefinitely.
+     - `transitioning` guard: prevents rapid re-clicks (e.g. double-
+       clicking actionBtn before its first transition completes) from
+       attaching duplicate one-time animationend listeners. */
+  const TRANSITION_FALLBACK_MS = 400;
+  let transitioning = false;
+
+  /* Runs `fn` exactly once — whichever of animationend / fallback
+     timeout fires first — and cleans up the other. */
+  function onTransitionEnd(el, fn) {
+    let done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      clearTimeout(timeoutId);
+      el.removeEventListener('animationend', onEnd);
+      fn();
+    }
+    function onEnd() { finish(); }
+    el.addEventListener('animationend', onEnd, { once: true });
+    const timeoutId = setTimeout(finish, TRANSITION_FALLBACK_MS);
+  }
+
   function showPanel() {
+    if (transitioning) return;
+    transitioning = true;
     defaultView.classList.add('fade-out');
-    defaultView.addEventListener('animationend', () => {
+    onTransitionEnd(defaultView, () => {
       defaultView.style.display = 'none';
       defaultView.classList.remove('fade-out');
       btnPanel.style.display    = 'flex';
       backBtn.style.display     = 'block';
       btnPanel.classList.add('fade-in');
-      btnPanel.addEventListener('animationend', () => {
+      onTransitionEnd(btnPanel, () => {
         btnPanel.style.opacity = '1';
         btnPanel.classList.remove('fade-in');
-      }, { once: true });
-    }, { once: true });
+        transitioning = false;
+      });
+    });
 
     /* [historyManager] Registrar btnPanel al abrirse.
        Back de Android llamará showDefault() en lugar de salir. */
@@ -47,18 +116,21 @@
   }
 
   function showDefault() {
+    if (transitioning) return;
+    transitioning = true;
     btnPanel.classList.add('fade-out');
-    btnPanel.addEventListener('animationend', () => {
+    onTransitionEnd(btnPanel, () => {
       btnPanel.style.display  = 'none';
       btnPanel.style.opacity  = '0';
       btnPanel.classList.remove('fade-out');
       backBtn.style.display   = 'none';
       defaultView.style.display = 'flex';
       defaultView.classList.add('fade-in');
-      defaultView.addEventListener('animationend', () => {
+      onTransitionEnd(defaultView, () => {
         defaultView.classList.remove('fade-in');
-      }, { once: true });
-    }, { once: true });
+        transitioning = false;
+      });
+    });
 
     /* [historyManager] Desregistrar btnPanel al cerrarse manualmente
        (botón "← atrás" UI o cualquier vía distinta al Back del SO). */
@@ -85,10 +157,18 @@
 
   let targetX = 50, targetY = 50;
   let currentX = 50, currentY = 50;
+  let rafId = 0;
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   function tick() {
+    /* Milestone 3 fix: pause while the tab is hidden instead of
+       running this loop forever in the background — matches the
+       pattern already established in asciiDrawer.js. */
+    if (document.hidden) {
+      rafId = 0;
+      return;
+    }
     currentX = lerp(currentX, targetX, CONFIG.GRADIENT_LERP);
     currentY = lerp(currentY, targetY, CONFIG.GRADIENT_LERP);
     const gx = currentX.toFixed(2) + '%';
@@ -97,7 +177,7 @@
       el.style.setProperty('--gx', gx);
       el.style.setProperty('--gy', gy);
     });
-    requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(tick);
   }
 
   function update(clientX, clientY) {
@@ -105,11 +185,18 @@
     targetY = (clientY / window.innerHeight) * 100;
   }
 
-  document.addEventListener('pointermove', e => update(e.clientX, e.clientY));
+  document.addEventListener('pointermove', e => update(e.clientX, e.clientY), { passive: true });
   document.addEventListener('touchmove',
     e => update(e.touches[0].clientX, e.touches[0].clientY),
     { passive: true }
   );
+
+  /* Resume the loop when the tab becomes visible again — needed here
+     (unlike asciiDrawer.js) since there's no other observer/trigger
+     that would naturally restart it. */
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !rafId) rafId = requestAnimationFrame(tick);
+  });
 
   tick();
 })();
@@ -203,23 +290,49 @@ function setFieldState(input, error) {
   const existingMsg = document.getElementById('err-' + input.name);
   if (existingMsg) existingMsg.remove();
 
+  /* Milestone 3 fix (Finding A, High): the span is now recreated on
+     BOTH paths, not just the invalid one. Previously, once a field
+     validated successfully the span was deleted here and never
+     rebuilt — leaving aria-describedby="err-*" (set statically in
+     index.html, Milestone 1) pointing at a non-existent ID for the
+     rest of the session. Since this runs on every successful blur/
+     submit, that was the common case, not an edge case. */
+  const msg = document.createElement('span');
+  msg.id        = 'err-' + input.name;
+  msg.className = 'sr-only input-error-msg';
+  msg.setAttribute('aria-live', 'polite'); /* was missing — the original static span (index.html, Milestone 1) had this; without it, errors on fields validated more than once stop being announced to screen readers */
+  input.insertAdjacentElement('afterend', msg);
+
   if (isInvalid) {
     input.classList.add('input--invalid');
     input.classList.remove('input--valid');
+
+    /* Restart the shake animation visually every time (remove →
+       forced reflow → re-add, same technique already used correctly
+       in slideshow.js's applyAnim), but only attach ONE cleanup
+       listener even if this fires repeatedly in quick succession
+       while the field stays invalid (Milestone 3 fix, Finding D2 —
+       same duplicate-listener-stacking pattern already fixed in
+       section 1's showPanel/showDefault). */
     input.classList.remove('input--shake');
     void input.offsetWidth;
     input.classList.add('input--shake');
-    input.addEventListener('animationend', () => input.classList.remove('input--shake'), { once: true });
+    if (!input.dataset.shaking) {
+      input.dataset.shaking = '1';
+      input.addEventListener('animationend', () => {
+        input.classList.remove('input--shake');
+        delete input.dataset.shaking;
+      }, { once: true });
+    }
 
-    const msg = document.createElement('span');
-    msg.id          = 'err-' + input.name;
-    msg.className   = 'sr-only input-error-msg';
     msg.setAttribute('role', 'alert');
     msg.textContent = error;
-    input.insertAdjacentElement('afterend', msg);
   } else {
     input.classList.remove('input--invalid');
     input.classList.add('input--valid');
+    /* msg stays empty — no role="alert"/text needed when there's no
+       error to announce, but the element itself must still exist for
+       aria-describedby to resolve to something. */
   }
 
   return !isInvalid;
@@ -250,6 +363,10 @@ function validateForm(form) {
   const trap = createFocusTrap(wrap);
   let previousFocus = null;
   let formOpenedAt  = 0; // timestamp set when modal opens, used for bot-timing check
+  let submitting    = false; // Milestone 3 fix (Finding B): guards against rapid
+    // duplicate submissions — same rapid-repeat-action pattern already fixed
+    // in section 1 (transitioning) and section 5 (shake-listener dedup),
+    // here guarding an actual network side-effect instead of a cosmetic one.
 
   /* Bots that fill+submit forms programmatically typically do it in well
      under a second; real humans take longer to read and type. Combined
@@ -313,7 +430,14 @@ function validateForm(form) {
 
   if (trigger) {
     trigger.addEventListener('click',   open);
-    trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
+    trigger.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault(); /* Milestone 3 fix: without this, Space likely also
+          scrolls the page — contactTrigger is a div[role=button], which has
+          none of a real <button>'s default key handling built in. */
+        open();
+      }
+    });
   }
   if (overlay)  overlay.addEventListener('click', shut);
   if (closeBtn) closeBtn.addEventListener('click', shut);
@@ -324,6 +448,8 @@ function validateForm(form) {
   /* Form submit with validation */
   form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (submitting) return; /* Milestone 3 fix (Finding B) */
+    submitting = true;
 
     /* Silently swallow likely-bot submissions: show the normal success
        state (so a bot/scraper gets no signal anything was rejected) but
@@ -332,12 +458,14 @@ function validateForm(form) {
       form.style.display    = 'none';
       success.style.display = 'block';
       setTimeout(shut, CONFIG.SUCCESS_DISPLAY_MS);
+      submitting = false;
       return;
     }
 
     if (!validateForm(form)) {
       const firstInvalid = form.querySelector('.input--invalid');
       if (firstInvalid) firstInvalid.focus();
+      submitting = false;
       return;
     }
 
@@ -353,6 +481,7 @@ function validateForm(form) {
 
     try {
       await fetch(CONFIG.FORM_ENDPOINT, { method: 'POST', mode: 'no-cors', body: formData });
+      submitting = false; /* Milestone 3 fix (Finding B) */
 
       form.style.display    = 'none';
       success.style.display = 'block';
@@ -371,6 +500,7 @@ function validateForm(form) {
       }, CONFIG.SUCCESS_DISPLAY_MS);
 
     } catch (err) {
+      submitting = false; /* Milestone 3 fix (Finding B) */
       console.error('[contact form]', err);
       const errBanner = document.createElement('p');
       errBanner.setAttribute('role', 'alert');
@@ -394,6 +524,7 @@ function validateForm(form) {
 
   const trap = createFocusTrap(panel);
   let vimeoLoaded   = false;
+  let vimeoPlayer   = null; /* Milestone 3 fix (Finding C) */
   let previousFocus = null;
 
   function openPanel() {
@@ -418,7 +549,18 @@ function validateForm(form) {
         iframe.style.cssText  = 'position:absolute;top:0;left:0;width:100%;height:100%;';
         iframe.title          = CONFIG.VIMEO_TITLE;
         wrap.appendChild(iframe);
+
+        /* Milestone 3 fix (Finding C): without this, the muted
+           autoplay video keeps decoding/rendering in the background
+           indefinitely once the panel is closed — no audio leak
+           (muted=1 in CONFIG.VIMEO_SRC) but real, avoidable CPU/GPU
+           cost. Player API script is already loaded in index.html. */
+        if (typeof Vimeo !== 'undefined') {
+          vimeoPlayer = new Vimeo.Player(iframe);
+        }
       }
+    } else if (vimeoPlayer) {
+      vimeoPlayer.play().catch(() => {}); /* resume on reopen; ignore autoplay-policy rejections */
     }
 
     /* [historyManager] Registrar morePanel al abrirse.
@@ -435,6 +577,7 @@ function validateForm(form) {
     document.body.classList.remove('more-open');
     trap.deactivate();
     if (previousFocus) { previousFocus.focus(); previousFocus = null; }
+    if (vimeoPlayer) vimeoPlayer.pause().catch(() => {}); /* Milestone 3 fix (Finding C) */
 
     /* [historyManager] Desregistrar morePanel al cerrarse manualmente
        (botón ✕, Escape, o toggle cuando estaba abierto). */
