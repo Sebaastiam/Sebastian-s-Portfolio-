@@ -468,9 +468,8 @@
 /* ══════════════════════════════════════════════
    11. oklch Scroll Gradient
    ══════════════════════════════════════════════ */
-
 @property --port-gy {
-  syntax: '<percentage>';
+  syntax: '<length-percentage>';
   inherits: false;
   initial-value: 70%;
 }
@@ -489,8 +488,6 @@ background-image: radial-gradient(
   background-clip: text; -webkit-background-clip: text; color: transparent;
   filter: drop-shadow(0 0 50px oklch(53.581% 0.21263 23.831 / 0.425)); transition: --port-gy 0.1s linear;
 }
-
-
 /* ══════════════════════════════════════════════
    12. Custom cursor
    ══════════════════════════════════════════════ */
