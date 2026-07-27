@@ -596,7 +596,6 @@
     inner.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
   }
-
   /* ══════════════════════════════════════════════
      16. Custom cursor
      ══════════════════════════════════════════════ */
