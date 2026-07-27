@@ -584,25 +584,17 @@
   function initOklchScroll(panel) {
     const title = panel.querySelector('.port-title');
     if (!title) return;
-
-    /* Apply gradient class only if browser supports oklch */
-    const supportsOklch = CSS.supports('color', 'oklch(0.5 0.2 200)');
-    if (supportsOklch) title.classList.add('port-title--gradient');
+    if (CSS.supports('color', 'oklch(0.5 0.2 200)')) title.classList.add('port-title--gradient');
 
     const inner = panel.querySelector('.port-panel-inner');
     if (!inner) return;
 
     function onScroll() {
-      const scrollTop = inner.scrollTop;
-      const headerH   = panel.querySelector('.port-header')?.offsetHeight || window.innerHeight;
-      /* Map 0→headerH scroll range to 140vh→-40vh (matches reference) */
-      const pct   = Math.min(scrollTop / headerH, 1);
-      const gyVh  = 140 - pct * 180; /* 140vh at top, -40vh at bottom */
-      title.style.setProperty('--port-gy', `${gyVh.toFixed(1)}vh`);
+      const pct = Math.min(inner.scrollTop / (panel.querySelector('.port-header')?.offsetHeight || window.innerHeight), 1);
+      title.style.setProperty('--port-gy', `${140 - pct * 180}vh`);
     }
-
     inner.addEventListener('scroll', onScroll, { passive: true });
-    onScroll(); /* initial state */
+    onScroll();
   }
 
   /* ══════════════════════════════════════════════
