@@ -581,7 +581,7 @@
   /* ══════════════════════════════════════════════
      15. oklch scroll gradient
      ══════════════════════════════════════════════ */
-  function initOklchScroll(panel) {
+function initOklchScroll(panel) {
     const title = panel.querySelector('.port-title');
     if (!title) return;
     if (CSS.supports('color', 'oklch(0.5 0.2 200)')) title.classList.add('port-title--gradient');
@@ -591,12 +591,14 @@
 
     function onScroll() {
       const pct = Math.min(inner.scrollTop / (panel.querySelector('.port-header')?.offsetHeight || window.innerHeight), 1);
-      title.style.setProperty('--port-gy', `${140 - pct * 180}vh`);
+      
+      // FIX: Cambiamos 'vh' por '%' para respetar el CSS @property syntax: '<percentage>'
+      title.style.setProperty('--port-gy', `${140 - pct * 180}%`);
     }
+    
     inner.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
-  }
-
+}
   /* ══════════════════════════════════════════════
      16. Custom cursor
      ══════════════════════════════════════════════ */
