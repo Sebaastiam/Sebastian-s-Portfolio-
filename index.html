@@ -46,13 +46,13 @@
        base.css is in scope. -->
 
   <!-- CSS modular — orden de carga obligatorio -->
+  <link rel="stylesheet" href="photo-wall.css">          <!-- photo wall landing background -->
   <link rel="stylesheet" href="base.css">               <!-- tokens, reset, layout, a11y -->
   <link rel="stylesheet" href="components-main.css">    <!-- glass card, modal, contact, side-trigger (split from components.css — Milestone 2) -->
   <link rel="stylesheet" href="components-archive.css"> <!-- archive/blog panel, feed items, ASCII bg (split from components.css — Milestone 2) -->
   <link rel="stylesheet" href="animations.css">          <!-- @keyframes, anim utility classes -->
   <link rel="stylesheet" href="hero-v2.css">             <!-- hero avatar/photo inside glass card-->
   <link rel="stylesheet" href="portafolio-panel.css">    <!-- animations for left panel -->
-  <link rel="stylesheet" href="photo-wall.css">          <!-- photo wall landing background -->
 </head>
 <body>
 
@@ -354,9 +354,9 @@ Archivo WEB
 
   <!-- ── Scripts ── -->
   <!-- Load order: config first, then independent modules -->
+  <script src="config.js"></script>
   <script src="photo-wall-media.js"></script>
   <script src="photoWall.js"></script>
-    <script src="config.js"></script>
   <script>
     /* Engineering Pass v3.2 — Milestone 1 (#16, #21):
        Single source of truth for watermark text. Replaces the two
