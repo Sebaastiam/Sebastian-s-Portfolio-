@@ -1,0 +1,89 @@
+/* ══════════════════════════════════════════════════════════
+   hero-v2.css (v2) — Portfolio Hero Card Redesign
+   
+   • WHAT CHANGED: Drops the two-state reveal ("Muestre pues") in 
+     favor of a single-screen layout with all elements visible at once.
+   • HOW TO USE: Link after components-main.css & animations.css, 
+     add class="hero-v2" to #glassModule, and update avatar HTML per 
+     hero-v2-HTML_SNIPPET.txt. Remove class to revert.
+   • SAFETY: Zero JS changes required. Modifies no external CSS files, 
+     global tokens, or base keyframes.
+   ══════════════════════════════════════════════════════════ */
+
+
+/* ── Card shell — tint reduced to near-zero, entrance pop reuses
+   the existing bounceIn keyframe (pure CSS, no new JS) ── */
+.glassModule.hero-v2 {
+  background: rgba(255, 255, 255, 0.04); /* was ≈0.22 opacity tint — now near-zero */
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  animation: bounceIn 900ms linear both;
+}
+
+/* ── One-screen mode: hide the toggle mechanic entirely ── */
+.hero-v2 #actionBtn,
+.hero-v2 .module-back {
+  display: none;
+}
+
+/* defaultView and btnPanel are no longer two separate "states" —
+   both render together, always. Undoes whatever inline/JS-driven
+   display value panels.js might otherwise have set, since its
+   toggle functions are never triggered in this mode (their buttons
+   are hidden above), but this makes the one-screen intent explicit
+   and independent of that JS either way. */
+.hero-v2 #defaultView,
+.hero-v2 #btnPanel {
+  display: flex !important;
+}
+
+.hero-v2 .module-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ── Avatar ── */
+.hero-v2 .hero-avatar-wrap {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  padding: 3px;
+  margin-bottom: 4px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.hero-v2 .hero-avatar-wrap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Buttons: existing gradient hues, translucent + own blur +
+   rounded corners, same as the first draft — this part is unchanged ── */
+.hero-v2 #btnPanel .module-btn {
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.28), rgba(142, 84, 233, 0.28));
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #fff;
+  border-radius: 14px;
+}
+
+.hero-v2 #btnPanel .module-btn:hover {
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.40), rgba(142, 84, 233, 0.40));
+}
+
+/* Instagram removal — confirmed intentional. 1st child in nav order
+   (Instagram, Linktree, Archivo Web) per index.html. */
+.hero-v2 #btnPanel .module-btn:nth-child(1) {
+  display: none;
+}
