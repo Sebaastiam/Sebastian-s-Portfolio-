@@ -466,5 +466,6 @@ body {
   .bg-img {
     will-change: auto;
   }
+#bgContainer { display: none; }
 }
 
