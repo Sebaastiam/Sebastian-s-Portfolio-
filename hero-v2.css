@@ -66,8 +66,3 @@
   object-fit: cover;
   display: block;
 }
-/* Instagram removal — confirmed intentional. 1st child in nav order
-   (Instagram, Linktree, Archivo Web) per index.html. */
-.hero-v2 #btnPanel .module-btn:nth-child(1) {
-  display: none;
-}
