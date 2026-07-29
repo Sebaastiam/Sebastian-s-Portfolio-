@@ -374,22 +374,26 @@
   inherits: false;
 }
 
-/* El botón completo (<button> desde Milestone 1 — antes era <a>) */
+/* El botón RGB (Sobrescribe el efecto cristal si se usan juntas) */
 .module-btn--galeria {
   position: relative;
-  display: inline-block; /* Crucial para que respete paddings y dimensiones */
+  display: inline-block;
   overflow: visible !important;
   isolation: isolate;
-  font-family: 'BarlowSC', serif;
+  font-family: 'BarlowSC', serif; /* Ojo: aquí usas serif, arriba era sans-serif */
   font-weight: 700;
   font-size: 1.2rem;
   text-transform: uppercase;
   padding: 12px 28px;
   border-radius: 16px;
-  background: #0d0214; /* Fondo oscuro base */
   cursor: pointer;
   
-  /* Estilos directos para el texto */
+  /* ── OVERRIDES PARA APAGAR EL CRISTAL ── */
+  background: #0d0214 !important; /* Fondo oscuro base */
+  border: none !important;        /* Quita el borde de vidrio */
+  backdrop-filter: none !important; /* Quita el desenfoque */
+  -webkit-backdrop-filter: none !important;
+  
   color: #ffffff !important; 
   text-decoration: none;
   animation: galeriaTxtShimmer 6s ease-in-out infinite;
@@ -400,7 +404,7 @@
   content: '';
   position: absolute;
   inset: -2px;
-  z-index: -2; /* Se va al fondo */
+  z-index: -2;
   border-radius: 18px;
   background: conic-gradient(
     from var(--galeria-angle), 
@@ -413,7 +417,7 @@
 .module-btn--galeria .galeria-glow {
   position: absolute;
   inset: -15%;
-  z-index: -3; /* Detrás de todo */
+  z-index: -3;
   border-radius: 40%;
   background: conic-gradient(
     from var(--galeria-angle), 
@@ -425,42 +429,17 @@
   animation: galeriaSpinBorder 6s linear infinite, galeriaHueShift 8s linear infinite;
 }
 
-/* Capa de fondo interna para dar contraste (Tapa el centro del gradiente) */
+/* Capa de fondo interna (Sobrescribe el ::after del pop-in) */
 .module-btn--galeria::after {
   content: '';
   position: absolute;
   border-radius: 15px;
-  background: #0d0214; /* Mismo color oscuro del botón */
+  background: #0d0214 !important; /* Recupera el centro oscuro */
   inset: 1px;
-  z-index: -1; /* ¡CLAVE! Se mueve a negativo para que quede detrás del texto nativo del <a> */
-}
-
-/* --- Animaciones --- */
-
-@keyframes galeriaSpinBorder {
-  to {
-    --galeria-angle: 360deg;
-  }
-}
-
-@keyframes galeriaHueShift {
-  to {
-    filter: blur(32px) hue-rotate(360deg);
-  }
-}
-
-/* Shimmer de texto con sombras neón */
-@keyframes galeriaTxtShimmer {
-  0%, 100% { 
-    text-shadow: 0 0 8px rgba(255, 0, 85, 0.6), 0 0 18px rgba(255, 204, 0, 0.4); 
-  }
-  33% { 
-    text-shadow: 0 0 10px rgba(255, 85, 0, 0.8), 0 0 22px rgba(255, 0, 204, 0.5); 
-  }
-  66% { 
-    text-shadow: 0 0 8px rgba(204, 0, 255, 0.7), 0 0 18px rgba(255, 0, 85, 0.4); 
-  }
-}/* ══════════════════════════════════════════════
+  z-index: -1; 
+  box-shadow: none !important;
+  animation: none !important; /* Apaga la animación bounceOut del cristal */
+}}/* ══════════════════════════════════════════════
    10. 3D Ring Carousel
    ══════════════════════════════════════════════ */
 
