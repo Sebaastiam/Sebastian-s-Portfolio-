@@ -152,21 +152,6 @@ animation: warmPurpleGlow 6s ease-in-out infinite;
      and font-size:12 were both missing their "px" unit, making the
      whole block invalid and permanently inert. Removed; the correct
      version is the @media(max-width:780px) block a few lines down. */
-/* Body copy */
-.module-desc {
-  margin: 0;
-  font-family: 'BebasNeue-Regular', system-ui, sans-serif;
-  font-weight: 900;
-  font-size: 17px; /* was "17x" — invalid unit, silently dropped. Set per Milestone 2 review decision; flagging for your confirmation this is the intended size. */
-  color: rgba(255, 255, 255, 0.925);
-  max-width: 85%;
-  line-height: 1.35;
-  letter-spacing: 2px;
-  text-shadow:
-    0 0 14px var(--warm-glow2),
-    0 2px 20px rgba(233, 3, 41, 0.788);
-  animation: warmYellowGlow 6s ease-in-out infinite;
-}
 
 /* Drag hint label */
 .module-hint {
