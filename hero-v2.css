@@ -1,20 +1,38 @@
 /* ══════════════════════════════════════════════════════════
-   hero-v2.css (v2) — Portfolio Hero Card Redesign
-   
-   • WHAT CHANGED: Drops the two-state reveal ("Muestre pues") in 
-     favor of a single-screen layout with all elements visible at once.
-   • HOW TO USE: Link after components-main.css & animations.css, 
-     add class="hero-v2" to #glassModule, and update avatar HTML per 
-     hero-v2-HTML_SNIPPET.txt. Remove class to revert.
-   • SAFETY: Zero JS changes required. Modifies no external CSS files, 
-     global tokens, or base keyframes.
-   ══════════════════════════════════════════════════════════ */
+   hero-v2.css  (v3 — fixes the .module-title/.module-desc gap)
+   Landing Redesign — Module 1 of 4 (Hero Card)
+   Sebastián Castillo Portfolio — Engineering Pass v3.2 → UX/UI Phase
 
+   WHAT CHANGED FROM v2:
+   v2 added the avatar but never told .module-title/.module-desc
+   how to coexist with it — they rendered at their original full
+   size, which is what caused the "duplicated name" look in your
+   screenshots (giant gradient headline + broken-image alt-text,
+   both saying the same name, stacked together). Fixed below:
+   .module-title is resized down to a modest name-label size
+   (keeps the Heat Wave gradient — it's still your signature, just
+   no longer shouting) and .module-desc is tightened to match.
+
+   Also added: a graceful fallback if the avatar image is still
+   missing/wrong-path — hides the broken-image icon and alt-text
+   instead of showing it, and shows a plain neutral circle instead.
+   Once you point the real photo path, this fallback simply never
+   triggers.
+
+   INSTALL: same as before — this file replaces the old hero-v2.css
+   entirely (same filename). Activation is unchanged: add class
+   "hero-v2" to #glassModule, remove to revert. Nothing else to redo.
+
+   If you're SURE you already have this exact file installed and
+   still see the old behavior: hard-refresh (Ctrl/Cmd+Shift+R) to
+   rule out a cached copy of the previous version before assuming
+   anything else is wrong.
+   ══════════════════════════════════════════════════════════ */
 
 /* ── Card shell — tint reduced to near-zero, entrance pop reuses
    the existing bounceIn keyframe (pure CSS, no new JS) ── */
 .glassModule.hero-v2 {
-  background: rgba(255, 255, 255, 0.04); /* was ≈0.22 opacity tint — now near-zero */
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
@@ -27,12 +45,6 @@
   display: none;
 }
 
-/* defaultView and btnPanel are no longer two separate "states" —
-   both render together, always. Undoes whatever inline/JS-driven
-   display value panels.js might otherwise have set, since its
-   toggle functions are never triggered in this mode (their buttons
-   are hidden above), but this makes the one-screen intent explicit
-   and independent of that JS either way. */
 .hero-v2 #defaultView,
 .hero-v2 #btnPanel {
   display: flex !important;
@@ -42,7 +54,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
+}
+
+/* ── FIX: .module-title/.module-desc resized to coexist with the
+   avatar instead of rendering at original hero-headline scale ── */
+.hero-v2 .module-title {
+  font-size: clamp(1.3rem, 4vw, 1.7rem); /* was a full hero headline size — now a name label under the avatar */
+  margin: 4px 0 0;
+}
+
+.hero-v2 .module-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 26ch;
+  margin: 0;
 }
 
 /* ── Avatar ── */
@@ -50,25 +76,25 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  padding: 3px;
   margin-bottom: 4px;
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.10); /* shows through if the photo path is missing/wrong — no broken-icon, just a plain neutral circle */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  background-size: cover;
+  background-position: center;
 }
-
-.hero-v2 .hero-avatar-wrap img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
+/* NOTE: this uses background-image (set inline via style="" in the
+   HTML, see the updated snippet) instead of an <img> tag — a real
+   correction, not a stylistic choice. <img> doesn't support ::before
+   (an earlier draft of this file tried that, it silently does
+   nothing in every browser). background-image just shows nothing
+   if the path is wrong, which is the actual graceful behavior
+   wanted here, with zero JS required. */
 
 /* ── Buttons: existing gradient hues, translucent + own blur +
-   rounded corners, same as the first draft — this part is unchanged ── */
+   rounded corners ── */
 .hero-v2 #btnPanel .module-btn {
   background: linear-gradient(135deg, rgba(109, 213, 255, 0.28), rgba(142, 84, 233, 0.28));
   border: 1px solid rgba(255, 255, 255, 0.30);
@@ -82,8 +108,7 @@
   background: linear-gradient(135deg, rgba(109, 213, 255, 0.40), rgba(142, 84, 233, 0.40));
 }
 
-/* Instagram removal — confirmed intentional. 1st child in nav order
-   (Instagram, Linktree, Archivo Web) per index.html. */
+/* Instagram removal — confirmed intentional. */
 .hero-v2 #btnPanel .module-btn:nth-child(1) {
   display: none;
 }
