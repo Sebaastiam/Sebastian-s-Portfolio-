@@ -66,6 +66,26 @@
   object-fit: cover;
   display: block;
 }
+/* ── Buttons: existing gradient hues, translucent + own blur +
+   rounded corners, same as the first draft — this part is unchanged ── */
+.hero-v2 #btnPanel .module-btn {
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.28), rgba(142, 84, 233, 0.28));
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #fff;
+  border-radius: 14px;
+}
+
+.hero-v2 #btnPanel .module-btn:hover {
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.40), rgba(142, 84, 233, 0.40));
+}
+/* Corrección para ::after en hero-v2 */
+.hero-v2 #btnPanel .module-btn::after {
+  background: rgba(255, 255, 255, 0.15); /* Luz translúcida en vez de blanco puro */
+  box-shadow: none;                       /* Quita la sombra oscura pesada base */
+  border-radius: inherit;                 /* Hereda los 14px redondeados del botón */
+}
 /* Instagram removal — confirmed intentional. 1st child in nav order
    (Instagram, Linktree, Archivo Web) per index.html. */
 .hero-v2 #btnPanel .module-btn:nth-child(1) {
