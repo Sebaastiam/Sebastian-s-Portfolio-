@@ -190,7 +190,7 @@ animation: warmPurpleGlow 6s ease-in-out infinite;
 }
 
 /* ══════════════════════════════════════════════
-   2. Shared buttons (.module-btn)
+   2. Shared buttons (.module-btn) - Unified Glass
    ══════════════════════════════════════════════ */
 
 .module-btn {
@@ -198,11 +198,16 @@ animation: warmPurpleGlow 6s ease-in-out infinite;
   display: inline-block;
   min-width: 140px;
   padding: 12px 18px;
-  border-radius: 16px;
-  border: none;
+  border-radius: 14px; /* Updated from 16px to match the new design */
+  border: 1px solid rgba(255, 255, 255, 0.30); /* Added glass border */
   cursor: pointer;
-  background: linear-gradient(135deg, #6dd5ff, #8e54e9);
-  color: #111;
+  
+  /* Translucent gradient background */
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.28), rgba(142, 84, 233, 0.28));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  
+  color: #fff; /* Updated to white for contrast */
   font-family: 'BarlowSC', system-ui, sans-serif;
   font-weight: 700;
   font-size: 11px;
@@ -215,50 +220,53 @@ animation: warmPurpleGlow 6s ease-in-out infinite;
   box-shadow: 0 6px 18px rgba(0,0,0,0.16);
   text-decoration: none;
 }
+
+/* Translucent light layer for the pop-in animation */
 .module-btn::after {
   content: "";
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  border-radius: 16px;
+  border-radius: inherit; /* Automatically inherits the 14px border-radius */
   transition: 0.2s ease-in-out all;
-  background: #fff;
+  
+  /* Replaced solid white and heavy shadow with a subtle glass glow */
+  background: rgba(255, 255, 255, 0.15); 
+  box-shadow: none; 
   z-index: -1;
   transform-origin: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
   animation: bounceOut 1000ms linear both;
   pointer-events: none;
 }
+
 .module-btn:hover,
 .module-btn:focus-visible {
   letter-spacing: 0.34em;
-  color: #1e1e1e;
+  color: #fff; /* Kept white instead of dark grey (#1e1e1e) to ensure legibility on transparent backgrounds */
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.40), rgba(142, 84, 233, 0.40));
   outline: none;
 }
+
 .module-btn:hover::after,
 .module-btn:focus-visible::after {
   animation: bounceIn 1000ms linear both;
 }
+
 .module-btn:active {
   letter-spacing: 0.28em;
   transition: 120ms linear all;
   transform: translateY(0) scale(0.995);
 }
+
 .module-btn:active::after {
   animation: scaleDown 120ms linear both;
 }
+
 .module-btn:focus-visible {
-  /* Was rgba(100,150,255,0.12) — 12% alpha was likely invisible
-     against this site's translucent glass backgrounds (Milestone 2
-     audit, High severity). Raised to 0.65 as a visible starting
-     point; please spot-check against the live glass surfaces and
-     adjust if needed. */
+  /* Accessibility focus ring */
   box-shadow: 0 10px 28px rgba(0,0,0,0.28), 0 0 0 4px rgba(100,150,255,0.65);
   transform: translateY(-1px);
-}
-
-
-/* ══════════════════════════════════════════════
+}/* ══════════════════════════════════════════════
    3. Panel state helpers
    ══════════════════════════════════════════════ */
 
