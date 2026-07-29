@@ -364,7 +364,7 @@
 
 
 /* ══════════════════════════════════════════════
-   9. RGB Conic Halo — botón GALERÍAS
+   9. RGB Conic Halo — botón GALERÍAS (Corregido)
    ══════════════════════════════════════════════ */
 
 /* Registro de la propiedad para la animación limpia del gradiente */
@@ -379,8 +379,8 @@
   position: relative;
   display: inline-block;
   overflow: visible !important;
-  isolation: isolate;
-  font-family: 'BarlowSC', serif; /* Ojo: aquí usas serif, arriba era sans-serif */
+  isolation: isolate; /* Mantiene los z-index negativos contenidos dentro del botón */
+  font-family: 'BarlowSC', serif;
   font-weight: 700;
   font-size: 1.2rem;
   text-transform: uppercase;
@@ -388,10 +388,16 @@
   border-radius: 16px;
   cursor: pointer;
   
-  /* ── OVERRIDES PARA APAGAR EL CRISTAL ── */
-  background: #0d0214 !important; /* Fondo oscuro base */
-  border: none !important;        /* Quita el borde de vidrio */
-  backdrop-filter: none !important; /* Quita el desenfoque */
+  /* ── RESETEO PARA EL <button> ── */
+  appearance: none;
+  -webkit-appearance: none;
+  
+  /* ── EL CAMBIO CLAVE ── 
+     El fondo DEBE ser transparente. El color oscuro del centro 
+     lo pondrá el ::after. Si pones un color aquí, tapas los efectos. */
+  background: transparent !important; 
+  border: none !important;        
+  backdrop-filter: none !important; 
   -webkit-backdrop-filter: none !important;
   
   color: #ffffff !important; 
@@ -403,8 +409,8 @@
 .module-btn--galeria::before {
   content: '';
   position: absolute;
-  inset: -2px;
-  z-index: -2;
+  inset: -2px; /* Grosor del borde */
+  z-index: -2; /* Detrás del fondo oscuro central */
   border-radius: 18px;
   background: conic-gradient(
     from var(--galeria-angle), 
@@ -417,7 +423,7 @@
 .module-btn--galeria .galeria-glow {
   position: absolute;
   inset: -15%;
-  z-index: -3;
+  z-index: -3; /* La capa más profunda, detrás del borde */
   border-radius: 40%;
   background: conic-gradient(
     from var(--galeria-angle), 
@@ -429,16 +435,16 @@
   animation: galeriaSpinBorder 6s linear infinite, galeriaHueShift 8s linear infinite;
 }
 
-/* Capa de fondo interna (Sobrescribe el ::after del pop-in) */
+/* Capa de fondo interna (El centro oscuro del botón) */
 .module-btn--galeria::after {
   content: '';
   position: absolute;
-  border-radius: 15px;
-  background: #0d0214 !important; /* Recupera el centro oscuro */
-  inset: 1px;
-  z-index: -1; 
+  inset: 1px; /* Deja ver 1px del ::before para crear el "borde" */
+  border-radius: 15px; /* Ligeramente menor que el ::before (18px) */
+  background: #0d0214 !important; /* Este es el fondo oscuro real */
+  z-index: -1; /* Encima del borde y el glow, pero DEBAJO del texto */
   box-shadow: none !important;
-  animation: none !important; /* Apaga la animación bounceOut del cristal */
+  animation: none !important; 
 }
 /* ══════════════════════════════════════════════
    10. 3D Ring Carousel
