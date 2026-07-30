@@ -39,7 +39,7 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  animation: bounceIn 900ms linear both;
+  animation: bounceOut 700ms linear both;
 
   /* was clamp(360px, 65vh, 420px) from components-main.css — that's
      the base .glassModule height, sized for the OLD two-state layout
