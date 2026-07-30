@@ -109,14 +109,6 @@
   animation-play-state: paused;
 }
 
-/* ── Reduced motion — same principle already applied to the hero
-   glow animations in animations.css (Milestone 2) ── */
-@media (prefers-reduced-motion: reduce) {
-  .photo-wall__track {
-    animation-play-state: paused;
-  }
-}
-
 /* ── Mobile: fewer columns, since 3 tilted columns at phone width
    reads as visual noise rather than a wall ── */
 @media (max-width: 768px) {

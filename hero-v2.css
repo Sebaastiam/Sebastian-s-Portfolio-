@@ -25,6 +25,14 @@
   height: clamp(399px, 70.3vh, 494px);
 }
 
+/* FIX #3 — Restaurar el hover bounce en modo hero-v2.
+   .glassModule.hero-v2 y .glassModule:hover (en animations.css) tienen la
+   misma especificidad (0,2,0); como hero-v2.css carga después de
+   animations.css, la regla de arriba siempre ganaba el empate y bloqueaba
+   la animación de hover. Se sube la especificidad para este contexto. */
+.glassModule.hero-v2:hover {
+  animation: bounceIn 900ms linear both;
+}
 /* ── One-screen mode: ocultar controles de alternancia y forzar vista por defecto ── */
 .hero-v2 #actionBtn,
 .hero-v2 .module-back {
@@ -63,11 +71,15 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border: 5px solid rgba(255, 0, 0, 0.692);
-  box-shadow: 0 4px 14px rgba(243, 1, 1, 0.692);
+  box-shadow: 0 6px 18px rgba(243, 1, 1, 0.692);
   background-size: cover;
   background-position: center;
   flex-shrink: 0; /* evitar que el avatar se comprima si el espacio es limitado */
+  outline: 1px solid rgba(140, 190, 255, 0.5);
+  outline-offset: 2px; /* separación entre el botón y la línea */
 }
+
+
 
 /* Si usas <img> dentro del wrapper, esto asegura que rellene el círculo correctamente. */
 .hero-v2 .hero-avatar-wrap img {

@@ -15,7 +15,7 @@
 
 
 /* ── 1. Ken Burns — slideshow background movements ───────── */
-
+/*
 @keyframes panRight {
   from { transform: translateX(-14%); }
   to   { transform: translateX( 14%); }
@@ -39,16 +39,16 @@
 @keyframes panDown {
   from { transform: translateY(-10%); }
   to   { transform: translateY(10%); }
-}
+} */
 
 
 /* Applied by slideshow.js via classList */
-.bg-img.anim-panRight { animation: panRight 6s ease-in-out forwards; }
+/*.bg-img.anim-panRight { animation: panRight 6s ease-in-out forwards; }
 .bg-img.anim-panLeft  { animation: panLeft  6s ease-in-out forwards; }
 .bg-img.anim-panUp    { animation: panUp    6s ease-in-out forwards; }
 .bg-img.anim-zoomIn   { animation: zoomIn   6s ease-in-out forwards; }
 .bg-img.anim-zoomOut  { animation: zoomOut  6s ease-in-out forwards; }
-.bg-img.anim-panDown  { animation: panDown  6s ease-in-out forwards; }
+.bg-img.anim-panDown  { animation: panDown  6s ease-in-out forwards; } */
 
 /* ── 2. Panel transitions ─────────────────────────────────── */
 
@@ -144,42 +144,29 @@
 
 @property --warm-glow {
   syntax: '<color>';
-  inherits: false;
+  inherits: true;
   initial-value: oklch(0.70 0.24 25);
 }
 
 @keyframes warmPurpleGlow {
   0% {
-    --warm-glow: oklch(84.664% 0.17246 88.9); /* Sunlight (amarillo claro) */
+    --warm-glow: oklch(69.42% 0.31463 331.194); /* Sunlight (amarillo claro) */
   }
   25% {
-    --warm-glow: oklch(79.128% 0.1569 64.72); /* Golden (dorado) */
+    --warm-glow: oklch(65.44% 0.23167 26.46); /* Golden (dorado) */
   }
   50% {
-    --warm-glow: oklch(71.344% 0.18236 35.265); /* Amber / naranja suave */
+    --warm-glow: rgb(47, 0, 255); /* Amber / naranja suave */
   }
   75% {
-    --warm-glow: oklch(67.746% 0.21051 24.717); /* Coral cálido, variación ligera */
+    --warm-glow: oklch(34.467% 0.1924 290.805); /* Coral cálido, variación ligera */
   }
   100% {
-    --warm-glow: oklch(77.686% 0.16121 69.686); /* vuelve a Sunlight */
+    --warm-glow: oklch(87.027% 0.28955 141.531); /* vuelve a Sunlight */
   }
 }
 
-@keyframes warmPurpleGlow {
-  0% {
-    opacity: 0.85;
-    filter:
-      drop-shadow(0 0 15px var(--warm-glow, rgba(168, 85, 247, 0.4)))
-      drop-shadow(0 1px 5px rgba(255, 0, 0, 0.5));
-  }
-  100% {
-    opacity: 1;
-    filter:
-      drop-shadow(0 0 32px var(--warm-glow, rgba(236, 72, 153, 0.8)))
-      drop-shadow(0 1px 10px rgba(255, 0, 0, 0.9));
-  }
-}
+
 @property --warm-glow2 {
   syntax: '<color>';
   inherits: false;
@@ -191,16 +178,16 @@
     --warm-glow2: oklch(70.78% 0.15973 54.323); /* Sunlight (amarillo claro) */
   }
   25% {
-    --warm-glow2: oklch(60.78% 0.24196 19.533); /* Golden (dorado) */
+    --warm-glow2: oklch(64.333% 0.24229 27.491); /* Golden (dorado) */
   }
   50% {
-    --warm-glow2: oklch(66.554% 0.2213 25.559); /* Amber / naranja suave */
+    --warm-glow2: oklch(63.112% 0.25465 29.786); /* Amber / naranja suave */
   }
   75% {
-    --warm-glow2: oklch(44.912% 0.20174 301.86); /* Coral cálido, variación ligera */
+    --warm-glow2: oklch(89.073% 0.18324 96.195); /* Coral cálido, variación ligera */
   }
   100% {
-    --warm-glow2: oklch(64.682% 0.23129 13.294); /* vuelve a Sunlight */
+    --warm-glow2: oklch(68.601% 0.21045 41.127); /* vuelve a Sunlight */
   }
 }
 

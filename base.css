@@ -225,7 +225,7 @@ body {
 }
 
 /* ── 6. Background slideshow ──────────────────────────────── */
-#bgContainer {
+/*#bgContainer {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
@@ -243,10 +243,10 @@ body {
 }
 .bg-slide.active {
   opacity: 1;
-}
+} NOTE: THIS IS DEACTIVATED*/
 
-/* Oversized so Ken Burns never reveals edges */
-.bg-img {
+/* Oversized so Ken Burns never reveals edges */ ALSO DEACTIVATED
+/* .bg-img {
   position: absolute;
   width: 140%; height: 140%;
   top: -20%; left: -20%;
@@ -262,151 +262,42 @@ body {
 }
 
 /* Desktop: reduce 10% */
+/*
 @media (min-width: 950px) {
   .bg-slide video {
-    width: 85%;   /* antes 100% → ahora 10% más chico */
+    width: 85%;   
     height: 85%;
-  }
-}
+   */
 
 /* Móvil: que se ajuste mejor — merged into the section 9 mobile
    block below (Engineering Pass v3.2, Milestone 2 #8) so there's
    one canonical @media(max-width:768px) block instead of two. */
-
-/* ── 7. Scroll hint ───────────────────────────────────────── */
-.scroll-hint {
-  position: fixed;
-  left: 50%;
-  bottom: 26px;
-  z-index: 5;
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  pointer-events: none;
-  transform: translateX(-50%);
-  opacity: 1;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.scroll-hint.hidden {
-  opacity: 0;
-  transform: translateX(-50%) translateY(12px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.scroll-hint__chevron {
-  width: 28px;
-  height: 14px;
-  clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
-  opacity: 0;
-  mix-blend-mode: screen;
-  animation-name: hintDrop;
-  animation-duration: 1.7s;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  animation-iteration-count: infinite;
-}
-
-.scroll-hint__chevron:nth-of-type(1) {
-  background: #ffffff;
-  animation-delay: 0s;
-}
-
-.scroll-hint__chevron:nth-of-type(2) {
-  background: #ff0077;
-  animation-delay: 0.18s;
-}
-
-.scroll-hint__chevron:nth-of-type(3) {
-  background: #00e7ff;
-  animation-delay: 0.36s;
-}
-
-@keyframes hintDrop {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px) scaleX(0.82);
-    filter: blur(1px);
-  }
-
-  22% {
-    opacity: 1;
-    transform: translateY(0) scaleX(1);
-    filter: blur(0);
-  }
-
-  58% {
-    opacity: 0.95;
-    transform: translateY(6px) scaleX(1.08);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(17px) scaleX(0.9);
-    filter: blur(1.5px);
-  }
-}
-
-.scroll-hint__label {
-  margin-top: 12px;
-  font-family: 'BarlowSC', system-ui, sans-serif;
-  font-weight: 900;
-  font-size: 25px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: rgba(255, 0, 0, 0.932);
-  text-shadow:
-    0 1vh 10px rgba(255, 0, 119, 0.45),
-    0 1vh 14px rgba(0, 231, 255, 0.30);
-  animation: labelPulse 1.7s ease-in-out infinite;
-}
-
-@keyframes labelPulse {
-  0%, 100% {
-    opacity: 0.34;
-    transform: translateY(0);
-  }
-
-  50% {
-    opacity: 0.82;
-    transform: translateY(2px);
-  }
-}
+/*
 /* ── 8. Watermark ─────────────────────────────────────────── */
 #watermark {
   position: fixed;
   bottom: 18px;
   right: 18px;
-  z-index: 4;
+  z-index: 5px;
   pointer-events: none;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   font-family: 'BarlowSC', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 9px;
+  font-size: 20px;
   letter-spacing: 0.20em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255, 255, 255, 0.712);
   user-select: none;
   -webkit-user-select: none;
 }
-
-
 /* ── 9. Mobile performance (≤768px) ──────────────────────── */
 /*
    Heavy GPU operations (SVG distortion filter, backdrop-filter)
    are reduced on mobile to maintain 60 fps. All visual effects
    remain present — only fidelity is tuned down.
 */
-@media (max-width: 768px) {
-
-  /* Mobile video sizing (merged from the former standalone block —
-     Engineering Pass v3.2, Milestone 2 #8) */
-  .bg-slide video {
-    width: 100%;   /* ocupa todo el ancho */
-    height: auto;  /* mantiene proporción */
-    object-fit: contain; /* evita cortes en pantallas pequeñas */
-  }
+   @media (max-width: 768px) {
 
   /* Replace SVG glass-distortion with plain blur.
      NOTE (Engineering Pass v3.2, Milestone 2): the "html body" prefix
@@ -461,10 +352,6 @@ body {
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-  }
-
-  .bg-img {
-    will-change: auto;
   }
 }
 
