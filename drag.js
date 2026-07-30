@@ -89,18 +89,6 @@
     onDown(e);
   });
 
-  /* ── Hover: bounce in/out animations ── */
-  el.addEventListener('pointerenter', () => {
-    el.style.animation = 'none';
-    void el.offsetWidth;
-    el.style.animation = 'bounceIn 900ms linear both';
-  });
-  el.addEventListener('pointerleave', () => {
-    el.style.animation = 'none';
-    void el.offsetWidth;
-    el.style.animation = 'bounceOut 700ms linear both';
-  });
-
   /* ── Re-clamp position on window resize ── */
   window.addEventListener('resize', () => {
     const rect = el.getBoundingClientRect();
