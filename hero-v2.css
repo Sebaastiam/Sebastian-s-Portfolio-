@@ -1,24 +1,52 @@
 /* ══════════════════════════════════════════════════════════
-   hero-v2.css (v2) — Portfolio Hero Card Redesign
-   
-   • WHAT CHANGED: Drops the two-state reveal ("Muestre pues") in 
-     favor of a single-screen layout with all elements visible at once.
-   • HOW TO USE: Link after components-main.css & animations.css, 
-     add class="hero-v2" to #glassModule, and update avatar HTML per 
-     hero-v2-HTML_SNIPPET.txt. Remove class to revert.
-   • SAFETY: Zero JS changes required. Modifies no external CSS files, 
-     global tokens, or base keyframes.
+   hero-v2.css  (v4 — fixes the two real, diagnosed issues:
+   invisible buttons, avatar overflow on desktop)
+
+   ROOT CAUSES, confirmed against your actual current files:
+
+   1. INVISIBLE BUTTONS: #btnPanel's BASE style in components-main.css
+      sets opacity:0 (meant to pair with panels.js's old two-state
+      fade-in, which never runs in one-screen mode since actionBtn is
+      hidden). Every earlier version of this file forced display:flex
+      but never touched opacity — buttons were rendering, just fully
+      transparent. Fixed below.
+
+   2. AVATAR OVERFLOW ON DESKTOP: .module-title is a fixed 70px on
+      desktop vs 40px on mobile (existing @media rule, untouched —
+      title stays big as requested). At 70px, centered flex content
+      (avatar + title + buttons) needs more vertical room than the
+      card's capped height (420px max) provides, so the whole stack
+      overflows and the avatar (topmost) pokes out. Fixed below by
+      giving the card more height in hero-v2 mode specifically — NOT
+      by shrinking the title.
+
+   NOTE: button color/shape overrides (translucent bg, blur, border)
+   have been REMOVED from this file. Your components-main.css's
+   .module-btn base rule already has that exact styling now — keeping
+   a duplicate override here was two systems fighting over the same
+   element, which is likely why multi-file debugging felt
+   inconclusive. If you want to change button appearance going
+   forward, that's the one file to edit.
+
+   Everything else (activation via "hero-v2" class, avatar wrapper,
+   one-screen display logic) is unchanged in mechanism from before.
    ══════════════════════════════════════════════════════════ */
 
-
-/* ── Card shell — tint reduced to near-zero, entrance pop reuses
-   the existing bounceIn keyframe (pure CSS, no new JS) ── */
+/* ── Card shell — tint near-zero, entrance pop reuses bounceIn,
+   height increased (fix #2) to fit the big title without overflow ── */
 .glassModule.hero-v2 {
-  background: rgba(255, 255, 255, 0.04); /* was ≈0.22 opacity tint — now near-zero */
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
   animation: bounceIn 900ms linear both;
+
+  /* was clamp(360px, 65vh, 420px) from components-main.css — that's
+     the base .glassModule height, sized for the OLD two-state layout
+     (one thing visible at a time). This one-screen layout shows
+     avatar + title + buttons simultaneously, so it needs more room.
+     Title size is untouched — this gives it space instead. */
+  height: clamp(420px, 74vh, 520px);
 }
 
 /* ── One-screen mode: hide the toggle mechanic entirely ── */
@@ -27,15 +55,16 @@
   display: none;
 }
 
-/* defaultView and btnPanel are no longer two separate "states" —
-   both render together, always. Undoes whatever inline/JS-driven
-   display value panels.js might otherwise have set, since its
-   toggle functions are never triggered in this mode (their buttons
-   are hidden above), but this makes the one-screen intent explicit
-   and independent of that JS either way. */
 .hero-v2 #defaultView,
 .hero-v2 #btnPanel {
   display: flex !important;
+}
+
+/* FIX #1 — the actual missing piece. #btnPanel's base rule in
+   components-main.css sets opacity:0; nothing was ever overriding
+   it back to visible in one-screen mode. */
+.hero-v2 #btnPanel {
+  opacity: 1 !important;
 }
 
 .hero-v2 .module-content {
@@ -43,6 +72,12 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
+  /* Safety net: if content is ever still taller than the card on a
+     very short viewport, overflow the bottom only, rather than
+     centering (which overflows top AND bottom, the avatar-poking-out
+     symptom this whole fix addresses). */
+  justify-content: flex-start;
+  padding-top: 4px;
 }
 
 /* ── Avatar ── */
@@ -50,19 +85,41 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  padding: 3px;
   margin-bottom: 4px;
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.10); /* shows through if no photo routed yet — plain neutral circle, not a broken-image icon */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0; /* don't let the flex column squash the avatar if space is tight */
 }
 
+/* If you're using the <img>-tag version instead of background-image,
+   this makes it fill the circle correctly — harmless if unused. */
 .hero-v2 .hero-avatar-wrap img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
   display: block;
+}
+
+/* Description — you removed it from the HTML manually, so this has
+   nothing to hide right now. Left in as a defensive no-op in case
+   the element ever comes back (e.g. re-adding it later, or a future
+   edit restoring it) — costs nothing if #defaultView has no
+   .module-desc child. */
+.hero-v2 .module-desc {
+  display: none;
+}
+
+/* Instagram removal — this was working before purely because the
+   whole panel was invisible (opacity:0) along with everything else.
+   Now that opacity is fixed, this needs to stay explicit or
+   Instagram reappears alongside Linktree/Archivo Web. Nav order per
+   index.html: Instagram, Linktree, Archivo Web — 1st child. */
+.hero-v2 #btnPanel .module-btn:nth-child(1) {
+  display: none;
 }
