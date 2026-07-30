@@ -46,7 +46,7 @@
      (one thing visible at a time). This one-screen layout shows
      avatar + title + buttons simultaneously, so it needs more room.
      Title size is untouched — this gives it space instead. */
-  height: clamp(420px, 74vh, 520px);
+  height: clamp(399px, 70.3vh, 494px);
 }
 
 /* ── One-screen mode: hide the toggle mechanic entirely ── */
@@ -71,26 +71,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   /* Safety net: if content is ever still taller than the card on a
      very short viewport, overflow the bottom only, rather than
      centering (which overflows top AND bottom, the avatar-poking-out
      symptom this whole fix addresses). */
   justify-content: flex-start;
-  padding-top: 4px;
+  padding-top: 30px;
 }
 
 /* ── Avatar ── */
 .hero-v2 .hero-avatar-wrap {
-  width: 96px;
-  height: 96px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
   background: rgba(255, 255, 255, 0.10); /* shows through if no photo routed yet — plain neutral circle, not a broken-image icon */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  border: 5px solid rgba(255, 0, 0, 0.692);
+  box-shadow: 0 4px 14px rgba(243, 1, 1, 0.692);
   background-size: cover;
   background-position: center;
   flex-shrink: 0; /* don't let the flex column squash the avatar if space is tight */
@@ -106,14 +106,7 @@
   display: block;
 }
 
-/* Description — you removed it from the HTML manually, so this has
-   nothing to hide right now. Left in as a defensive no-op in case
-   the element ever comes back (e.g. re-adding it later, or a future
-   edit restoring it) — costs nothing if #defaultView has no
-   .module-desc child. */
-.hero-v2 .module-desc {
-  display: none;
-}
+
 
 /* Instagram removal — this was working before purely because the
    whole panel was invisible (opacity:0) along with everything else.
