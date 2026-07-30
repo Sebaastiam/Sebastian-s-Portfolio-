@@ -127,7 +127,7 @@
   letter-spacing: 0.03em;
   text-transform: none;
 /*. Invocación global (garantiza animación incluso en fallbacks) */
-  animation: warmPurpleYellow 6s ease-in-out infinite alternate;
+  animation: warmPurpleGlow 6s ease-in-out infinite alternate;
 }
     /* Fallback visual para navegadores sin soporte OKLCH */
 .module-title {
