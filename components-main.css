@@ -126,17 +126,20 @@
   font-size: clamp(70px, 10vw, 70px);
   letter-spacing: 0.03em;
   text-transform: none;
-
+/*. Invocación global (garantiza animación incluso en fallbacks) */
+  animation: warmPurpleYellow 6s ease-in-out infinite alternate;
+}
+    /*Resplandor mediante filtro (compatible con texto transparente) */
+    filter:
+      drop-shadow(0 0 22px var(--warm-glow))
+      drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
+  }
   /* Fallback visual para navegadores sin soporte OKLCH */
   color: #fff;
   text-shadow:
     0 1px   3px rgba(0, 0, 0, 0.40),
     0 0   18px rgba(180, 210, 255, 0.20),
     0 0   40px rgba(140, 180, 255, 0.10);
-
-  /* 2. Invocación global (garantiza animación incluso en fallbacks) */
-  animation: warmPurpleGlow 6s ease-in-out infinite alternate;
-}
 
 /* 3. Renderizado avanzado con OKLCH y degradado en texto */
 @supports (color: oklch(0.72 0.27 18)) {
@@ -156,11 +159,6 @@
     /* Anula text-shadow para que no tape el fondo recortado */
     text-shadow: none;
 
-    /* Resplandor mediante filtro (compatible con texto transparente) */
-    filter:
-      drop-shadow(0 0 22px var(--warm-glow))
-      drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
-  }
 }
 
 /* Ajuste Responsive (Engineering Pass v3.2) */
