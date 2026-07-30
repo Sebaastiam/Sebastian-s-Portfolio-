@@ -166,6 +166,20 @@
   }
 }
 
+@keyframes warmPurpleGlow {
+  0% {
+    opacity: 0.85;
+    filter:
+      drop-shadow(0 0 15px var(--warm-glow, rgba(168, 85, 247, 0.4)))
+      drop-shadow(0 1px 5px rgba(255, 0, 0, 0.5));
+  }
+  100% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 32px var(--warm-glow, rgba(236, 72, 153, 0.8)))
+      drop-shadow(0 1px 10px rgba(255, 0, 0, 0.9));
+  }
+}
 @property --warm-glow2 {
   syntax: '<color>';
   inherits: false;
