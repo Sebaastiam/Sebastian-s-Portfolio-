@@ -139,7 +139,7 @@
 
 
 /* ── 6. Warm glow color-cycle (relocated from components.css,
-   Milestone 2 Pack 2B-3 #9 — consumed by .module-title/.module-desc
+   Milestone 2 Pack 2B-3 #9 / rgb / — consumed by .module-title/.module-desc
    in components.css section 1) ────────────────────────────────── */
 
 @property --warm-glow {
