@@ -62,13 +62,6 @@
   <!-- photo wall / landing background that replaced BGSlide -->
 <div class="photo-wall" id="photoWall"></div>
 
-<!-- ── Scroll hint (decorative) ── -->
-<div id="scrollHint" class="scroll-hint" role="img" aria-label="Scroll hacia abajo">
-  <div class="scroll-hint__chevron"></div>
-  <div class="scroll-hint__chevron"></div>
-  <div class="scroll-hint__chevron"></div>
-  <span class="scroll-hint__label">scroll</span>
-</div>
 <!-- ── Side button — Blog/Vlog panel trigger ── -->
 <button class="more-trigger"
         id="moreTrigger"
@@ -102,6 +95,7 @@
 
   </div>
   <!-- /pageContent -->
+<div id="watermark"></div>
 
   <!-- ── Glass card ── -->
   <div class="glassModule hero-v2"
@@ -141,6 +135,7 @@
         class="module-btn module-btn--galeria"
         id="galeriasBtn"
         aria-label="Abrir portafolio y galerías">
+  <span class="galeria-glow" aria-hidden="true"></span>
 Archivo Visual
      </button>
       </nav>
@@ -340,18 +335,8 @@ Archivo Visual
     </defs>
   </svg>
 
-  <!-- ── Watermark (decorative) ── -->
-  <div id="watermark" aria-hidden="true">2026 — Sebastián Castillo / SITE V: 1.0 </div>
-  <!-- Static text above is a no-JS/pre-hydration fallback matching the
-       previous hardcoded output. The inline script below (right after
-       config.js loads) overwrites it with the real, single-source-of-
-       truth version + current year. See CONFIG.SITE_VERSION. -->
-
   <!-- ── Scripts ── -->
   <!-- Load order: config first, then independent modules -->
-  <script src="config.js"></script>
-  <script src="photo-wall-media.js"></script>
-  <script src="photoWall.js"></script>
   <script>
     /* Engineering Pass v3.2 — Milestone 1 (#16, #21):
        Single source of truth for watermark text. Replaces the two
@@ -362,8 +347,12 @@ Archivo Visual
       if (!wm || typeof CONFIG === 'undefined') return;
       var year = new Date().getFullYear();
       wm.textContent = year + ' — Sebastián Castillo / SITE V: ' + CONFIG.SITE_VERSION;
-    })();
+    })(); 
   </script>
+  <script src="config.js"></script>
+  <script src="photo-wall-media.js"></script>
+  <script src="photoWall.js"></script>
+  
   <!-- [historyManager] Debe cargar ANTES que panels.js y
        portfolio-panel.js, para que HistoryManager esté disponible
        cuando esos módulos registren sus paneles. (No depende de

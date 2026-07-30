@@ -11,7 +11,7 @@ const CONFIG = Object.freeze({
      ("SITE V: 1.0"), and the header comments of config.js and
      historyManager.js (both said "v1.3.2"). Bump this value on
      release instead of hand-editing multiple files. */
-  SITE_VERSION: '1.3.2',
+  SITE_VERSION: '1.4.0',
 
   /* ── Google Apps Script endpoint for contact form ──
      SECURITY NOTE: this URL is necessarily public (the browser must call
@@ -23,11 +23,11 @@ const CONFIG = Object.freeze({
   FORM_ENDPOINT: 'https://script.google.com/macros/s/AKfycbxpnQ42VMCpVnSakwY-JplaqeSFsjRB4s1U6_eWmSoa2K1tV_7dpvUfFbNWsuXU3HqbcQ/exec',
 
   /* ── Slideshow ── */
-  SLIDE_INTERVAL_MS: 4000,
-  SLIDE_FALLBACK_MS: 2500,
+  /*SLIDE_INTERVAL_MS: 4000,
+  SLIDE_FALLBACK_MS: 2500,*/
 
   /* ── Ken Burns animation sequence (one entry per slide, in order) ── */
-  SLIDE_ANIM_SEQ: ['panLeft', 'panUp', 'none', 'panUp', 'panRight', 'panDown', 'panRight', 'none'],
+  /*SLIDE_ANIM_SEQ: ['panLeft', 'panUp', 'none', 'panUp', 'panRight', 'panDown', 'panRight', 'none'],*/
 
   /* ── Vimeo embed ── */
   VIMEO_SRC: 'https://player.vimeo.com/video/1200016508?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1',

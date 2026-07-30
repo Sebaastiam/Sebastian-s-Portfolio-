@@ -364,7 +364,7 @@
 
 
 /* ══════════════════════════════════════════════
-   9. RGB Conic Halo — botón GALERÍAS (Corregido)
+   9. RGB Conic Halo — botón GALERÍAS (Glass azul, estandarizado)
    ══════════════════════════════════════════════ */
 
 /* Registro de la propiedad para la animación limpia del gradiente */
@@ -374,77 +374,82 @@
   inherits: false;
 }
 
-/* El botón RGB (Sobrescribe el efecto cristal si se usan juntas) */
+/* Extiende .module-btn: mismo cristal, mismo mecanismo de pop,
+   tinte azul + tipografía/tamaño propios de este botón. */
 .module-btn--galeria {
   position: relative;
-  display: inline-block;
   overflow: visible !important;
-  isolation: isolate; /* Mantiene los z-index negativos contenidos dentro del botón */
+  isolation: isolate;
   font-family: 'BarlowSC', serif;
   font-weight: 700;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  padding: 12px 28px;
-  border-radius: 16px;
-  cursor: pointer;
-  
-  /* ── RESETEO PARA EL <button> ── */
-  appearance: none;
-  -webkit-appearance: none;
-  
-  /* ── EL CAMBIO CLAVE ── 
-     El fondo DEBE ser transparente. El color oscuro del centro 
-     lo pondrá el ::after. Si pones un color aquí, tapas los efectos. */
-  background: transparent !important; 
-  border: none !important;        
-  backdrop-filter: none !important; 
-  -webkit-backdrop-filter: none !important;
-  
-  color: #ffffff !important; 
-  text-decoration: none;
-  animation: galeriaTxtShimmer 6s ease-in-out infinite;
+  font-size: 11px;
+  padding: 12px 18px;      /* override del padding base de .module-btn */
+  border-radius: 10px;     /* override del radius base de .module-btn */
+  /* Glass azul — misma fórmula que .module-btn, tinte desplazado a azul */
+  background: linear-gradient(135deg, rgba(82, 70, 238, 0.616), rgba(21, 179, 190, 0.63));
+  border: 1px solid rgba(51, 38, 170, 0.692);
 }
 
-/* Borde animado con gradiente Cyberpunk Cálido */
+.module-btn--galeria:hover,
+.module-btn--galeria:focus-visible {
+  background: linear-gradient(135deg, rgba(80, 255, 109, 0.45), rgba(200, 30, 123, 0.45));
+}
+
+/* Capa de "pop" — mismo mecanismo que .module-btn::after,
+   solo que con tinte azul en vez de blanco puro. */
+.module-btn--galeria::after {
+  background: rgba(255, 217, 217, 0.144);
+}
+
+.module-btn--galeria:hover::after,
+.module-btn--galeria:focus-visible::after {
+  animation: bounceIn 1000ms linear both;
+}
+
+.module-btn--galeria:active::after {
+  animation: scaleDown 120ms linear both;
+}
+
+/* Aro RGB — mismo aro de siempre, atenuado */
 .module-btn--galeria::before {
   content: '';
   position: absolute;
-  inset: -2px; /* Grosor del borde */
-  z-index: -2; /* Detrás del fondo oscuro central */
-  border-radius: 18px;
+  inset: -2px;
+  z-index: -2;
+  border-radius: inherit;
   background: conic-gradient(
-    from var(--galeria-angle), 
-    #ff0055, #ff5500, #ffcc00, #ff00cc, #9900ff, #ff0055
+    from var(--galeria-angle),
+    #ff005580, #ff550080, #ffcc0080, #ff00cc80, #9900ff80, #ff005580
   );
-  animation: galeriaSpinBorder 6s linear infinite;
+  opacity: 0.55; /* atenuado — antes al 100% */
+  animation: galeriaSpinBorder 10s linear infinite; /* rotación más lenta y discreta */
 }
 
-/* Efecto de resplandor (Glow) de fondo */
+/* Glow exterior — mismo glow, atenuado */
 .module-btn--galeria .galeria-glow {
   position: absolute;
   inset: -15%;
-  z-index: -3; /* La capa más profunda, detrás del borde */
+  z-index: -2;
   border-radius: 40%;
   background: conic-gradient(
-    from var(--galeria-angle), 
-    #ff0055, #ff5500, #ffcc00, #ff00cc, #9900ff, #ff0055
+    from var(--galeria-angle),
+    #ff005580, #ff550080, #ffcc0080, #ff00cc80, #9900ff80, #ff005580
   );
-  filter: blur(15px);
-  opacity: 0.75;
+  filter: blur(22px); /* más blur = más suave, menos protagonismo */
+  opacity: 1;       /* atenuado — antes 0.75 */
   pointer-events: none;
-  animation: galeriaSpinBorder 6s linear infinite, galeriaHueShift 8s linear infinite;
+  animation: galeriaSpinBorder 10s linear infinite; /* comparte el mismo ángulo, quedan sincronizados */
+}
+.module-btn--galeria {
+  outline: 1px solid rgba(140, 190, 255, 0.5);
+  outline-offset: 2px; /* separación entre el botón y la línea */
 }
 
-/* Capa de fondo interna (El centro oscuro del botón) */
-.module-btn--galeria::after {
-  content: '';
-  position: absolute;
-  inset: 1px; /* Deja ver 1px del ::before para crear el "borde" */
-  border-radius: 15px; /* Ligeramente menor que el ::before (18px) */
-  background: #0d0214 !important; /* Este es el fondo oscuro real */
-  z-index: -1; /* Encima del borde y el glow, pero DEBAJO del texto */
-  box-shadow: none !important;
-  animation: none !important; 
+/* --- Animación propia que se conserva: el giro del aro/glow --- */
+@keyframes galeriaSpinBorder {
+  to {
+    --galeria-angle: 360deg;
+  }
 }
 /* ══════════════════════════════════════════════
    10. 3D Ring Carousel
