@@ -29,6 +29,16 @@ const CONFIG = Object.freeze({
   /* ── Ken Burns animation sequence (one entry per slide, in order) ── */
   /*SLIDE_ANIM_SEQ: ['panLeft', 'panUp', 'none', 'panUp', 'panRight', 'panDown', 'panRight', 'none'],*/
 
+  /* ── Load screen (Landing Redesign Module 4) ──
+     MAX_WAIT_MS: hard fallback — never blocks the visitor past this,
+     regardless of what's still loading. Same role as SLIDE_FALLBACK_MS.
+     MIN_DISPLAY_MS: floor so the load screen never flash-vanishes on
+     a fast connection, which reads as a glitch rather than a good sign. */
+  LOAD_SCREEN: {
+    MAX_WAIT_MS: 4000,
+    MIN_DISPLAY_MS: 500,
+  },
+
   /* ── Vimeo embed ── */
   VIMEO_SRC: 'https://player.vimeo.com/video/1200016508?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1',
   VIMEO_TITLE: 'LA ESCUELA NOCTURNA REMAKE',
