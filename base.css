@@ -113,7 +113,7 @@
   --z-skip-link:   9999;
 
   /* ── "Heat Wave" oklch gradient stops ──
-     Shared by .contact-prompt / .contact-pill-label (components-main.css)
+     Shared by .contact-prompt (components-main.css)
      and .port-title--gradient (portafolio-panel.css) — 3 consumers
      across 2 files, promoted to :root since they don't share a
      common DOM ancestor. */
@@ -137,6 +137,7 @@
 html {
   background: #111;
   scrollbar-width: none;          /* Firefox: hide scrollbar */
+  scroll-behavior: smooth;
 }
 html::-webkit-scrollbar {
   display: none;                  /* WebKit: hide scrollbar */
@@ -309,8 +310,7 @@ body {
      extra type-selector prefix raises specificity just enough to win
      regardless of file order, without resorting to !important. */
   html body .glassModule::after,
-  html body .cmodal-panel::after,
-  html body .contact-pill::after {
+  html body .cmodal-panel::after {
     filter: none;
     -webkit-filter: none;
     backdrop-filter: blur(3px); /* valor unificado */
@@ -343,8 +343,7 @@ body {
   }
 
   html body .glassModule::before,
-  html body .cmodal-panel::before,
-  html body .contact-pill::before {
+  html body .cmodal-panel::before {
     box-shadow: inset 0 0 14px -6px rgba(255, 1, 1, 0.404);
   }
 
@@ -354,4 +353,3 @@ body {
     -webkit-backface-visibility: hidden;
   }
 }
-

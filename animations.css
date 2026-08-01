@@ -106,7 +106,7 @@
 }
 
 /* Applied to .glassModule by drag.js via style.animation */
-.glassModule:hover        { animation: bounceIn  900ms linear both; }
+/*.glassModule:hover        { animation: bounceIn  900ms linear both;} ¡¡¡DEACTIVATED FOR INITSCROLL!!! */
 .glassModule:active       { animation: scaleDown 120ms linear both; cursor: grabbing; }
 .glassModule.touch-tap    { animation: scaleDown 120ms linear both; }
 
