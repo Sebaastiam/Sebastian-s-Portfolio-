@@ -32,7 +32,7 @@
    ══════════════════════════════════════════════ */
 
 .glassModule {
-  position: fixed;
+  position: absolute;
   z-index: var(--z-card); /* was bare 10 — now references base.css's z-index scale */
   /* Fluid sizing: 280px → 340px wide, 360px → 420px tall */
   width:  clamp(280px, 90vw, 340px);
@@ -309,13 +309,11 @@
    ══════════════════════════════════════════════ */
 
 #contactSection {
-  height: auto;
-  min-height: clamp(50vh, 75vh, 90vh);
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  padding-bottom: 1vh;
   box-sizing: border-box;
   position: relative;
 }
@@ -333,125 +331,128 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  margin-bottom: 3vh; /* Shift slightly above center without using transform (avoids drag bug) */
   z-index: 3;
+}
 
   /* --heat-stop-1..4 previously declared here — promoted to
      base.css :root (Milestone 2) since a 3rd consumer
      (portafolio-panel.css) doesn't share this element as an
      ancestor. Same values, single source now. */
-}
+
 
 /* "Contacto" heading — fluid size, oklch gradient */
-.contact-prompt {
-  --gx: 50%;
-  --gy: 50%;
+.contact-sticker {
+  --sticker-outline: clamp(3px, 0.11em, 5px);
+  display: inline-grid;
+  grid-template-areas: 'label';
+  isolation: isolate;
   font-family: 'AuthenticDeclaration', cursive;
-  font-size: clamp(25.2px, 5.4vw, 36px);
+  font-size: clamp(32px, 6.2vw, 52px);
+  font-style: italic;
+  letter-spacing: 0.015em;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+.contact-sticker::before,
+.contact-sticker::after,
+.contact-sticker > * { grid-area: label; }
+.contact-sticker::before {
+  content: attr(data-text);
+  color: #fff;
+  -webkit-text-stroke: var(--sticker-outline) #fff;
+  paint-order: stroke fill;
+  z-index: 1;
+}
+.contact-sticker::after {
+  content: attr(data-text);
+  color: transparent;
+  -webkit-text-stroke: 0.025em rgba(19, 13, 22, 0.9);
+  text-shadow: 0.07em 0.08em 0.04em rgba(0, 0, 0, 0.72);
+  transform: translate(0.035em, 0.045em);
+  z-index: 0;
+}
+.contact-prompt {
   margin: 0;
   text-align: center;
   color: #fff;
-  letter-spacing: 0.02em;
+  position: relative;
+  z-index: 2;
 }
 @supports (color: oklch(0.75 0.25 220)) {
   .contact-prompt {
-    background-image: radial-gradient(
-      in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      var(--heat-stop-1)   0vh,
-      var(--heat-stop-2)   5vh,
-      var(--heat-stop-3)  15vh,
-      var(--heat-stop-4)  50vh
-    );
+    background-image: linear-gradient(104deg, var(--heat-stop-3) 0%, var(--heat-stop-2) 31%, oklch(0.98 0.01 90) 49.5%, oklch(0.98 0.01 90) 50.5%, var(--heat-stop-1) 69%, oklch(0.68 0.22 330) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
-    filter:
-      drop-shadow(0 0 16px oklch(0.75 0.25 220 / 0.32))
-      drop-shadow(0 2px 4px rgba(0,0,0,0.40));
   }
 }
-
-/* Glass pill "hablemos" */
-.contact-pill {
-  position: relative;
-  isolation: isolate;
-  border-radius: 30px;
-  padding: 20px 54px;
+/* Floating contact button replacing the pill */
+.float-btn {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  appearance: none;
+  background: none;
+  border: none;
   cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: var(--card-shadow);
-  transition: box-shadow 0.25s ease, transform 0.2s ease;
-}
-.contact-pill:hover {
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-5px);
-}
-.contact-pill:active {
-  transform: translateY(-2px) scale(0.98);
-}
-
-/* Glass tint + neon border */
-.contact-pill::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  box-shadow:
-    inset 0 0 20px -5px rgba(255,255,255,0.72),
-    inset 0 0 12px 0   rgba(142, 84, 233, 0.30),
-          0 0 15px 0   rgba(142, 84, 233, 0.40);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
-    rgba(var(--tint-color), var(--tint-opacity));
-  border: 1px solid rgba(142, 84, 233, 0.60);
-  pointer-events: none;
-}
-/* Distortion backdrop */
-.contact-pill::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  backdrop-filter: blur(var(--frost-blur));
-  -webkit-backdrop-filter: blur(var(--frost-blur));
-  filter: url(#glass-distortion);
-  -webkit-filter: url("#glass-distortion");
+  padding: 14px 22px;
+  z-index: 10;
   isolation: isolate;
-  pointer-events: none;
+  
+  /* Initial hidden state for the animation */
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease 0.2s, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
+  
+}
+.float-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+}
+.float-btn:hover .contact-sticker {
+  transform: rotate(-1.5deg) translateY(-0.04em);
+}
+.float-btn:focus-visible {
+  outline: 3px solid oklch(0.92 0.17 95);
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+.float-btn.dragging {
+  cursor: grabbing;
 }
 
-/* Pill label — oklch Heat Wave gradient */
-.contact-pill-label {
-  --gx: 50%;
-  --gy: 50%;
-  position: relative;
-  z-index: 1;
-  display: block;
-  font-family: 'BarlowSC', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.90);
+/* Glass Module overrides inside Contact Section */
+body #contactSection .glassModule {
+  position: relative; /* overrides absolute positioning without !important */
+  left: 0;
+  top: 0;
+  z-index: 5;
+  margin-bottom: 0; /* Reset margin since it's side-by-side now */
+  
+  /* Initial hidden state */
+  opacity: 0;
+  transform: translateY(40px) scale(0.9);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: none !important; /* disable bounceOut from hero-v2.css */
 }
-@supports (color: oklch(0.70 0.28 340)) {
-  .contact-pill-label {
-    background-image: radial-gradient(
-      in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      var(--heat-stop-1)    0vh,
-      var(--heat-stop-2)   50vh,
-      var(--heat-stop-3)   90vh,
-      var(--heat-stop-4)  150vh
-    );
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 14px oklch(0.7 0.28 340 / 0.32));
-  }
+
+/* ── Animation Triggered by IntersectionObserver ── */
+#contactSection.is-active .glassModule {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: bounceOut 700ms linear both !important;
+}
+body #contactSection.is-active .glassModule:hover,
+body #contactSection.is-active .glassModule:focus-within {
+  animation: bounceIn 900ms linear both !important;
+}
+body #contactSection.is-active .glassModule.dragging {
+  animation: none !important;
+}
+#contactSection.is-active .float-btn {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 
@@ -480,48 +481,28 @@
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.48);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px); /* was 7px — mismatched from the
-  standard value above (Milestone 2 audit, High). Standardized per your
-  review decision; noted as provisional/open to revisiting later. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   cursor: pointer;
 }
 
-/* Glass panel */
+/* Opaque contact panel — glass effects intentionally removed. */
 .cmodal-panel {
   position: relative;
   z-index: 1;
   width: clamp(290px, 90vw, 340px);
   border-radius: var(--card-radius);
   isolation: isolate;
-  box-shadow: var(--card-shadow-hover);
+  background: linear-gradient(145deg, #261d2b, #161119);
+  border: 1px solid oklch(0.72 0.18 18 / 0.58);
+  box-shadow: 0 26px 72px rgba(0, 0, 0, 0.52);
   touch-action: none;
 }
 .cmodal-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  box-shadow: inset 0 0 20px -5px rgba(255,255,255,0.72);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
-    rgba(var(--tint-color), var(--tint-opacity));
-  border: 1px solid rgba(var(--tint-color), 0.14);
-  pointer-events: none;
+  content: none;
 }
 .cmodal-panel::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  backdrop-filter: blur(var(--frost-blur));
-  -webkit-backdrop-filter: blur(var(--frost-blur));
-  filter: url(#glass-distortion);
-  -webkit-filter: url("#glass-distortion");
-  isolation: isolate;
-  pointer-events: none;
+  content: none;
 }
 
 .cmodal-body {
