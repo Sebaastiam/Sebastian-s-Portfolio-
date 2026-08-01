@@ -203,6 +203,16 @@
         Rooms → directamente en document.body.
         position:fixed en CSS → nunca dentro del
         containing block de .port-panel.
+
+     PERF FIX: antes esta función insertaba las 58 imágenes de las 6
+     galerías completas (6 salas position:fixed de pantalla completa)
+     en el DOM de una sola vez, apenas cargaba la página — aunque el
+     usuario nunca abriera el portafolio. Ahora solo se construye el
+     "cascarón" de cada sala (header + contenedor vacío); las miniaturas
+     de una galería se insertan recién la primera vez que esa sala en
+     particular se abre (ver buildRoomThumbs + openRoom). Las 6 portadas
+     del grid sí se mantienen aquí — son solo 6 imágenes y hacen falta
+     desde que se abre el panel por primera vez.
      ══════════════════════════════════════════════ */
   function buildGridAndRooms(panel) {
     const grid = panel.querySelector('#portGrid');
@@ -225,18 +235,13 @@
       `;
       grid.appendChild(item);
 
-      /* — Room: se monta en body, position:fixed via CSS — */
+      /* — Room: solo el cascarón, sin miniaturas todavía — */
       const room = document.createElement('div');
       room.className = 'port-gallery-room';
       room.id = `room-${gallery.id}`;
+      room.dataset.galleryIdx = String(idx);
       room.setAttribute('aria-label', `Galería: ${gallery.title}`);
       room.setAttribute('aria-hidden', 'true');
-
-      const thumbsHtml = gallery.images.map((src, i) => `
-        <div class="port-room-thumb" data-index="${i}" data-gallery="${idx}" role="button" tabindex="0" aria-label="Ver imagen ${i + 1}">
-          <img src="${src}" alt="Fotografía ${i + 1} de ${gallery.title}" loading="lazy" decoding="async"/>
-        </div>
-      `).join('');
 
       room.innerHTML = `
         <header class="port-room-header">
@@ -250,11 +255,25 @@
             </button>
           </div>
         </header>
-        <div class="port-room-grid">${thumbsHtml}</div>
+        <div class="port-room-grid" id="roomGrid-${gallery.id}"></div>
       `;
 
       document.body.appendChild(room);
     });
+  }
+
+  /* Inserta las miniaturas de UNA galería — la primera vez que su sala se
+     abre, nunca antes. `dataset.built` evita reconstruirlas en aperturas
+     posteriores de la misma sala. */
+  function buildRoomThumbs(gallery, idx) {
+    const grid = document.getElementById(`roomGrid-${gallery.id}`);
+    if (!grid || grid.dataset.built) return;
+    grid.dataset.built = '1';
+    grid.innerHTML = gallery.images.map((src, i) => `
+      <div class="port-room-thumb" data-index="${i}" data-gallery="${idx}" role="button" tabindex="0" aria-label="Ver imagen ${i + 1}">
+        <img src="${src}" alt="Fotografía ${i + 1} de ${gallery.title}" loading="lazy" decoding="async"/>
+      </div>
+    `).join('');
   }
 
   /* ══════════════════════════════════════════════
@@ -354,6 +373,9 @@
 
     const room = document.getElementById(`room-${galleryId}`);
     if (!room) return;
+
+    const idx = Number(room.dataset.galleryIdx);
+    if (GALLERIES[idx]) buildRoomThumbs(GALLERIES[idx], idx);
 
     room.scrollTop = 0;
     room.classList.add('open');
@@ -556,7 +578,7 @@
       btn.appendChild(glowSpan);
     }
 
-    btn.addEventListener('click', e => { e.preventDefault(); openPanel(); });
+    btn.addEventListener('click', e => { e.preventDefault(); ensurePanelBuilt(); openPanel(); });
   }
   /* ══════════════════════════════════════════════
      14. 3D Ring Carousel
@@ -650,12 +672,25 @@
 
   /* ══════════════════════════════════════════════
      17. Init
+
+     PERF FIX: antes init() construía TODO (lightbox + panel + grid +
+     las 6 salas) en cada carga de página, sin importar si el usuario
+     llegaba a tocar "GALERÍAS" o no — compitiendo por el hilo principal
+     justo con photo-wall/scroll-narrative/ascii en el arranque. Ahora
+     solo se conecta el botón (barato: no toca imágenes); el resto se
+     construye una única vez, perezosamente, en el primer clic.
      ══════════════════════════════════════════════ */
-  function init() {
+  let panelBuilt = false;
+  function ensurePanelBuilt() {
+    if (panelBuilt) return;
+    panelBuilt = true;
     buildLightbox();
     const panel = buildPanel();
     buildGridAndRooms(panel);
     wireEvents(panel);
+  }
+
+  function init() {
     wireGaleriasButton();
   }
 

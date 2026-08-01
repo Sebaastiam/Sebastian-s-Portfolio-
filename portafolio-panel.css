@@ -388,6 +388,9 @@
   /* Glass azul — misma fórmula que .module-btn, tinte desplazado a azul */
   background: linear-gradient(135deg, rgba(82, 70, 238, 0.616), rgba(21, 179, 190, 0.63));
   border: 1px solid rgba(51, 38, 170, 0.692);
+  /* Force a dedicated GPU layer for the entire button */
+  will-change: transform;
+  transform: translateZ(0); 
 }
 
 .module-btn--galeria:hover,
@@ -439,6 +442,9 @@
   opacity: 1;       /* atenuado — antes 0.75 */
   pointer-events: none;
   animation: galeriaSpinBorder 10s linear infinite; /* comparte el mismo ángulo, quedan sincronizados */
+  /* Isolate the heavy blur filter calculation */
+  will-change: filter; 
+  transform: translateZ(0);
 }
 .module-btn--galeria {
   outline: 1px solid rgba(140, 190, 255, 0.5);
@@ -511,6 +517,9 @@ background-image: radial-gradient(
   );
   background-clip: text; -webkit-background-clip: text; color: transparent;
   filter: drop-shadow(0 0 50px oklch(53.581% 0.21263 23.831 / 0.425)); transition: --port-gy 0.1s linear;
+  /* NEW: Hardware acceleration specifically for the heavy filter and clip */
+  will-change: filter, transform;
+  transform: translateZ(0);
 }
 
 /* MOBILE PERF FIX: drop-shadow() recalcula en cada frame de scroll (--port-gy se
@@ -528,9 +537,20 @@ background-image: radial-gradient(
 
 .port-panel, .port-panel * { cursor: none !important; }
 .port-panel button, .port-panel a, .port-panel [role="button"] { cursor: none !important; }
-#port-cursor-dot { position: fixed; width: 8px; height: 8px; border-radius: 50%; background: #fff; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.2s ease; mix-blend-mode: difference; }
-#port-cursor-ring { position: fixed; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.55); pointer-events: none; z-index: 9998; transform: translate(-50%, -50%); transition: width 0.38s cubic-bezier(0.16,1,0.3,1), height 0.38s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease, opacity 0.3s ease; mix-blend-mode: difference; }
-#port-cursor-ring.hovering { width: 58px; height: 58px; border-color: rgba(0, 231, 255, 0.75); }
+#port-cursor-dot { 
+  position: fixed; width: 8px; height: 8px; border-radius: 50%; 
+  background: #fff; pointer-events: none; z-index: 9999; 
+  transform: translate(-50%, -50%); 
+  transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.2s ease; 
+  /* mix-blend-mode removed */
+}
+#port-cursor-ring { 
+  position: fixed; width: 36px; height: 36px; border-radius: 50%; 
+  border: 1.5px solid rgba(255,255,255,0.55); pointer-events: none; z-index: 9998; 
+  transform: translate(-50%, -50%); 
+  transition: width 0.38s cubic-bezier(0.16,1,0.3,1), height 0.38s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease, opacity 0.3s ease; 
+  /* mix-blend-mode removed */
+}#port-cursor-ring.hovering { width: 58px; height: 58px; border-color: rgba(0, 231, 255, 0.75); }
 #port-cursor-dot.hovering { width: 4px; height: 4px; background: #00e7ff; }
 #port-cursor-dot.hidden, #port-cursor-ring.hidden { opacity: 0; }
 
