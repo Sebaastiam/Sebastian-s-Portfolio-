@@ -445,6 +445,24 @@
   outline-offset: 2px; /* separación entre el botón y la línea */
 }
 
+/* MOBILE PERF FIX: este botón vive dentro del glass card, que en modo hero-v2 está
+   SIEMPRE visible (no solo cuando se abre un panel) — el aro (::before) y el glow
+   (.galeria-glow, con blur(22px)) giran infinito desde que carga la página, para
+   siempre, sin relación con si el usuario está mirando el botón. En Android el blur
+   animado es particularmente caro. En móvil: sin giro, sin blur — un aro/glow fijo
+   y tenue en vez de animado, se sigue viendo intencional pero cuesta ~0 en reposo. */
+@media (max-width: 768px) {
+  .module-btn--galeria::before,
+  .module-btn--galeria .galeria-glow {
+    animation: none;
+    --galeria-angle: 0deg;
+  }
+  .module-btn--galeria .galeria-glow {
+    filter: none;
+    opacity: 0.5;
+  }
+}
+
 /* --- Animación propia que se conserva: el giro del aro/glow --- */
 @keyframes galeriaSpinBorder {
   to {
@@ -461,6 +479,14 @@
 @keyframes carouselSpin { to { --carousel-spin: 360deg; } }
 .port-carousel-ring img { position: absolute; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; transform: rotateY(calc(var(--i) * var(--slide-deg))) translateX(var(--img-tx)) rotateY(90deg); box-shadow: 0 8px 28px rgba(0,0,0,0.55); }
 @media (max-width: 700px) { .port-carousel-ring { --img-tx: 200%; } }
+
+/* PERF FIX: el carrusel vive dentro de .port-panel, que solo se traslada fuera de
+   pantalla al cerrarse (translateX, no display:none) — sin esto, la animación 3D
+   infinita seguía girando para siempre incluso con el panel cerrado, desde la
+   primera vez que se abría. Puro desperdicio: nadie lo ve cuando está cerrado. */
+.port-panel:not(.open) .port-carousel-ring {
+  animation-play-state: paused;
+}
 
 
 /* ══════════════════════════════════════════════
@@ -485,6 +511,16 @@ background-image: radial-gradient(
   );
   background-clip: text; -webkit-background-clip: text; color: transparent;
   filter: drop-shadow(0 0 50px oklch(53.581% 0.21263 23.831 / 0.425)); transition: --port-gy 0.1s linear;
+}
+
+/* MOBILE PERF FIX: drop-shadow() recalcula en cada frame de scroll (--port-gy se
+   actualiza en cada evento de scroll dentro del panel — ver initOklchScroll en
+   portfolio-panel.js). El degradado de texto se conserva; el filtro (el costo real) se
+   quita. */
+@media (max-width: 768px) {
+  .port-title--gradient {
+    filter: none;
+  }
 }
 /* ══════════════════════════════════════════════
    12. Custom cursor

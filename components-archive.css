@@ -526,3 +526,36 @@
     transform: translate(-3px, -3px) !important;
   }
 }
+
+/* PERF FIX ("las ventanas" del feed): cada .feed-item dispara, en :hover, una cascada
+   de transform/box-shadow/filter sobre ~6 elementos (la tarjeta, sus botones de
+   ventana, el título, la fecha, el párrafo...). En touch esto no es un hover real —
+   puede quedar "pegado" tras un tap hasta tocar otro lado, repintando ese costo sin
+   que el usuario lo esté mirando. En touch: la cascada de hover queda desactivada. */
+@media (pointer: coarse) {
+  .more-panel .feed-item,
+  .more-panel .feed-item::after,
+  .more-panel .feed-item h3,
+  .more-panel .feed-item h3::before,
+  .more-panel .feed-source,
+  .more-panel .pub-date,
+  .more-panel .feed-item p,
+  .more-panel .feed-item p::after {
+    transition: none;
+  }
+  .more-panel .feed-item:hover {
+    box-shadow:
+      var(--mw-shadow) var(--mw-shadow) 0 var(--mw-win-black),
+      calc(var(--mw-shadow) + 6px) calc(var(--mw-shadow) + 6px) 0 var(--mw-accent);
+    filter: none;
+  }
+  .more-panel .feed-item:hover::after,
+  .more-panel .feed-item:hover h3,
+  .more-panel .feed-item:hover h3::before,
+  .more-panel .feed-item:hover .feed-source,
+  .more-panel .feed-item:hover .pub-date,
+  .more-panel .feed-item:hover p,
+  .more-panel .feed-item:hover p::after {
+    transform: none;
+  }
+}
