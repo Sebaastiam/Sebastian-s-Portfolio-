@@ -46,14 +46,15 @@
        base.css is in scope. -->
 
   <!-- CSS modular — orden de carga obligatorio -->
+  <link rel="stylesheet" href="base.css">               <!-- tokens, reset, layout, a11y -->
+  <link rel="stylesheet" href="components-main.css">    <!-- glass card, modal, contact, side-trigger (split from components.css — Milestone 2) -->
+  <link rel="stylesheet" href="components-archive.css"> <!-- archive/blog panel, feed items, ASCII bg (split from components.css — Milestone 2) -->
   <link rel="stylesheet" href="loadScreen.css">          <!-- LOADSCREEN -->
   <link rel="stylesheet" href="photo-wall.css">          <!-- photo wall landing background -->
   <link rel="stylesheet" href="animations.css">          <!-- @keyframes, anim utility classes -->
   <link rel="stylesheet" href="hero-v2.css">             <!-- hero avatar/photo inside glass card-->
-  <link rel="stylesheet" href="base.css">               <!-- tokens, reset, layout, a11y -->
-  <link rel="stylesheet" href="components-main.css">    <!-- glass card, modal, contact, side-trigger (split from components.css — Milestone 2) -->
-  <link rel="stylesheet" href="components-archive.css"> <!-- archive/blog panel, feed items, ASCII bg (split from components.css — Milestone 2) -->
   <link rel="stylesheet" href="portafolio-panel.css">    <!-- animations for left panel -->
+  <link rel="stylesheet" href="scroll-narrative.css">   <!-- Scroll de inicio /EXPERIMENTAL-->    
   
 </head>
 <body>
@@ -67,7 +68,7 @@
   <a class="skip-link" href="#contactSection">Ir al contenido principal</a>
   <!-- photo wall / landing background that replaced BGSlide -->
 <div class="photo-wall" id="photoWall"></div>
-
+<div class="narrative" id="scrollNarrative"></div>
 <!-- ── Side button — Blog/Vlog panel trigger ── -->
 <button class="more-trigger"
         id="moreTrigger"
@@ -87,15 +88,44 @@
     <!-- ── Contact section ── -->
     <main id="contactSection" aria-label="Sección de contacto">
       <div class="contact-wrapper">
-        <h3 class="contact-prompt">Contacto</h3>
-        <div class="contact-pill"
-             id="contactTrigger"
-             role="button"
-             tabindex="0"
-             aria-haspopup="dialog"
-             aria-label="Abrir formulario de contacto">
-          <span class="contact-pill-label" aria-hidden="true">hablemos</span>
+        
+        <!-- ── Glass card ── -->
+        <div class="glassModule hero-v2"
+             id="glassModule"
+             role="region"
+             aria-label="Tarjeta de presentación — arrastrable">
+
+          <div class="module-content">
+            <button class="module-back" id="backBtn" aria-label="Volver a presentación principal">← atrás</button>
+            <div id="defaultView" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
+              <h1 class="module-title" id="moduleTitle">Sebastian Castillo</h1>
+              <div class="hero-avatar-wrap">
+                <img src="images/profile.png" alt="Sebastián Castillo" width="96" height="96" loading="eager">
+              </div>
+              <button class="module-btn" id="actionBtn">Muestre pues</button>
+            </div>
+            <nav id="btnPanel" aria-label="Links externos">
+              <a href="https://instagram.com/zescru" target="_blank" rel="noopener noreferrer" class="module-btn">INSTAGRAM</a>
+              <a href="https://linktr.ee/zescru" target="_blank" rel="noopener noreferrer" class="module-btn">LINKTREE</a>
+              <button type="button" class="module-btn module-btn--galeria" id="galeriasBtn" aria-label="Abrir portafolio y galerías">
+                <span class="galeria-glow" aria-hidden="true"></span>
+                Archivo Visual
+              </button>
+            </nav>
+          </div>
         </div>
+        <!-- /glassModule -->
+
+        <!-- Floating Contact Button -->
+        <button class="float-btn"
+                id="contactTrigger"
+                aria-haspopup="dialog"
+                aria-label="Abrir formulario de contacto">
+          <span class="contact-sticker" data-text="Contacto">
+            <span class="contact-prompt">Contacto</span>
+          </span>
+        </button>
+
       </div>
     </main>
 
@@ -103,52 +133,7 @@
   <!-- /pageContent -->
 <div id="watermark"></div>
 
-  <!-- ── Glass card ── -->
-  <div class="glassModule hero-v2"
-       id="glassModule"
-       role="region"
-       aria-label="Tarjeta de presentación — arrastrable"
-       style="left:calc(50vw - 170px);top:calc(50vh - 210px);">
 
-    <div class="module-content">
-      <button class="module-back"
-              id="backBtn"
-              aria-label="Volver a presentación principal">
-        ← atrás
-      </button>
-
-      <!-- Default view -->
-      <div id="defaultView"
-           style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
-        <h1 class="module-title" id="moduleTitle">Sebastian Castillo</h1>
-        <div class="hero-avatar-wrap">
-    <img src="images/profile.png" alt="Sebastián Castillo" width="96" height="96" loading="eager">
-        </div>
-        <button class="module-btn" id="actionBtn">Muestre pues</button>
-      </div>
-
-      <!-- Links panel -->
-      <nav id="btnPanel" aria-label="Links externos">
-        <a href="https://instagram.com/zescru"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="module-btn">INSTAGRAM</a>
-        <a href="https://linktr.ee/zescru"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="module-btn">LINKTREE</a>
-<button type="button"
-        class="module-btn module-btn--galeria"
-        id="galeriasBtn"
-        aria-label="Abrir portafolio y galerías">
-  <span class="galeria-glow" aria-hidden="true"></span>
-Archivo Visual
-     </button>
-      </nav>
-
-    </div>
-  </div>
-  <!-- /glassModule -->
 
   <!-- ── Contact modal ── -->
   <div class="cmodal-wrap"
@@ -359,6 +344,8 @@ Archivo Visual
   <script src="photo-wall-media.js"></script>
   <script src="loadScreen.js"></script>
   <script src="photoWall.js"></script>
+  <script src="scroll-narrative-config.js"></script>
+  <script src="scrollNarrative.js"></script>
   
   <!-- [historyManager] Debe cargar ANTES que panels.js y
        portfolio-panel.js, para que HistoryManager esté disponible
