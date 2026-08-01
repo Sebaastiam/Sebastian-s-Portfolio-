@@ -599,6 +599,13 @@
      16. Custom cursor
      ══════════════════════════════════════════════ */
   function initCursor(panel) {
+    /* MOBILE PERF FIX: un cursor personalizado no tiene sentido en touch (no hay
+       hover persistente), y CSS ya lo oculta con @media (pointer: coarse) en
+       portafolio-panel.css — pero el requestAnimationFrame de abajo no tenía
+       ninguna condición de salida (a diferencia de los otros loops del proyecto,
+       que sí respetan document.hidden). En Android corría para siempre, moviendo
+       elementos invisibles. Con este guard, en móvil ni siquiera se crea. */
+    if (window.matchMedia('(pointer: coarse)').matches) return;
     if (document.getElementById('port-cursor-dot')) return;
 
     const dot = document.createElement('div');

@@ -82,6 +82,23 @@
   pointer-events: none;
 }
 
+/* MOBILE PERF FIX: el filtro SVG (feTurbulence + feGaussianBlur + feDisplacementMap)
+   casi nunca tiene aceleración GPU en Android — se renderiza por software, y como este
+   elemento es ARRASTRABLE, cada frame de drag lo recalcula sobre toda el área de la
+   tarjeta. Es el motivo #1 por el que "al llegar al glass module, el rendimiento baja".
+   En móvil se elimina el filtro SVG y el backdrop-filter (que también es costoso en
+   Android), y se sustituye por un tinte plano — mantiene el look de "cristal" sin el
+   costo de recalcular una textura por frame. */
+@media (max-width: 768px) {
+  .glassModule::after {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    filter: none;
+    -webkit-filter: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+  }
+}
+
 /* Drag states */
 .glassModule:hover   { box-shadow: var(--card-shadow-hover); }
 .glassModule:active  { cursor: grabbing; }
@@ -161,6 +178,24 @@
       drop-shadow(0 0 22px var(--warm-glow2))
       drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
   
+  }
+}
+
+/* MOBILE PERF FIX: drop-shadow() animado (via warmYellowGlow, infinito cada 6s) es de
+   los filtros más caros que existen — recalcula el contorno del texto en cada frame,
+   para siempre, sobre un elemento SIEMPRE visible (el título del glass card). Sumado
+   al gradiente oklch que además se actualiza en cada frame por el rastreo de puntero
+   (ver panels.js → initGradientTracking, ya deshabilitado en móvil), este único
+   elemento acumulaba trabajo de repintado continuo e indefinido. En móvil: drop-shadow
+   fijo (sin animar) y sin transición — el "glow" se ve, pero ya no cuesta nada en reposo. */
+@media (max-width: 768px) {
+  @supports (color: oklch(0.72 0.27 18)) {
+    .module-title {
+      animation: none;
+      filter:
+        drop-shadow(0 0 22px oklch(64.333% 0.24229 27.491))
+        drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
+    }
   }
 }
 /* Ajuste Responsive (Engineering Pass v3.2) */

@@ -148,6 +148,15 @@
    2. oklch gradient — mouse/touch tracking
    ══════════════════════════════════════════════ */
 (function initGradientTracking() {
+  /* MOBILE PERF FIX: este efecto persigue el mouse — no tiene sentido en touch,
+     y sin esta salida corría un requestAnimationFrame para siempre (solo se
+     pausaba con la pestaña oculta), actualizando --gx/--gy en hasta 4 elementos
+     en cada frame, incluido .module-title (que además tiene su propio costo de
+     drop-shadow animado — ver components-main.css). En móvil el gradiente se
+     queda estático en el valor por defecto (50%/50%, ya declarado en el CSS)
+     en vez de perseguir el dedo del usuario, que sería peor UX que no tenerlo. */
+  if (window.matchMedia('(max-width: 768px)').matches) return;
+
   const targets = [
     document.getElementById('moduleTitle'),
     document.querySelector('.contact-prompt'),
@@ -526,6 +535,12 @@ function validateForm(form) {
   let vimeoLoaded   = false;
   let vimeoPlayer   = null; /* Milestone 3 fix (Finding C) */
   let previousFocus = null;
+  /* MOBILE PERF FIX: en Android, un iframe de Vimeo autoreproduciéndose (aunque
+     mudo) sigue decodificando video en segundo plano mientras el panel está
+     abierto — un costo real de CPU/GPU que se suma justo encima de todo lo
+     demás en este panel (canvas ASCII, feed con muchas tarjetas). En móvil
+     nunca se autoreproduce: se carga en pausa, el usuario le da play si quiere. */
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
   function openPanel() {
     previousFocus = document.activeElement;
@@ -542,7 +557,9 @@ function validateForm(form) {
       const wrap = document.getElementById('feedVimeoWrap');
       if (wrap) {
         const iframe = document.createElement('iframe');
-        iframe.src            = CONFIG.VIMEO_SRC;
+        iframe.src            = isMobile
+          ? CONFIG.VIMEO_SRC.replace('autoplay=1', 'autoplay=0')
+          : CONFIG.VIMEO_SRC;
         iframe.frameBorder    = '0';
         iframe.allow          = 'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share';
         iframe.referrerPolicy = 'strict-origin-when-cross-origin';
@@ -559,7 +576,7 @@ function validateForm(form) {
           vimeoPlayer = new Vimeo.Player(iframe);
         }
       }
-    } else if (vimeoPlayer) {
+    } else if (vimeoPlayer && !isMobile) {
       vimeoPlayer.play().catch(() => {}); /* resume on reopen; ignore autoplay-policy rejections */
     }
 
