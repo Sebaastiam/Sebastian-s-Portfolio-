@@ -1,0 +1,207 @@
+/* ══════════════════════════════════════════════════════════
+   scroll-narrative.css
+   Landing Redesign — Module 3 of 4 (Scroll Narrative)
+   Sebastián Castillo Portfolio — Engineering Pass v3.2 → UX/UI Phase
+   ══════════════════════════════════════════════════════════ */
+
+/* Contenedor padre de la narrativa de scroll */
+.narrative {
+  position: relative; /* Crea un contexto de apilamiento propio para contener las paradas */
+  z-index: 1;         /* Nivel 1: Se posiciona justo sobre la base estática (photo-wall z-index: 0) */
+}
+
+/* Cada parada individual (carril de scroll) */
+.narrative-stop {
+  position: relative; /* Base de posicionamiento para los elementos hijos */
+  --stop-height: 220vh; /* Cuánto scroll físico dura esta parada (viewport = 100vh, así que el "recorrido" real
+                            es --stop-height - 100vh = 120vh de scroll). A más --stop-height, más scroll hace
+                            falta para que el zoom (ver ZOOM_START/BLUR_START en scrollNarrative.js) avance.
+                            Ej: 180vh (scroll moderado) / 300vh (dolly muy extendido). Es una custom property
+                            (no una `height` normal) para que margin-top de abajo se recalcule solo si la cambias. */
+  height: var(--stop-height);
+  z-index: var(--stack-order, 1); /* Orden de apilamiento dinámico por parada */
+}
+
+/* Solapa cada parada con la anterior: la hace empezar a asomar (spawn) justo cuando la
+   anterior lleva la MITAD de su propio scroll — nunca antes, nunca después. Como el
+   solape siempre es exactamente la mitad del recorrido de una parada, en cualquier
+   instante del scroll hay como máximo 2 paradas presentes en pantalla, nunca 3.
+   Fórmula: -0.5 * (--stop-height - 100vh). Si tocas --stop-height arriba, este valor
+   se recalcula solo — no hay que tocar dos números a mano. */
+.narrative-stop:not(:first-child) {
+  margin-top: calc((var(--stop-height) - 100vh) / -2);
+}
+
+/* El marco visible que se queda "pegado" mientras el usuario hace scroll dentro de los 200vh */
+.narrative-stop__frame {
+  position: sticky;        /* Mantiene el marco congelado en pantalla de forma nativa */
+  top: 0;                  /* Se ancla exactamente al borde superior del viewport */
+  height: 100vh;           /* Mantiene siempre el tamaño exacto de 1 pantalla física */
+  overflow: hidden;        /* Recorta los bordes de la imagen cuando hace zoom o cae para evitar scrollbars accidentales */
+  display: flex;           /* Flexbox para alinear elementos internos */
+  align-items: flex-end;   /* Alinea el texto en la parte inferior por defecto. 
+                              Ej: flex-end (abajo) / center (centro) / flex-start (arriba) */
+  justify-content: center; /* Centra horizontalmente el contenido */
+}
+
+/* ── Fondo Principal (Solid Base: Imagen o Video) ── */
+.narrative-stop__bg {
+  position: absolute; /* Ocupa todo el espacio del contenedor sticky */
+  inset: 0;           /* Abreviatura de top:0; right:0; bottom:0; left:0; */
+  z-index: 0;         /* Capa de fondo profunda */
+  
+  /* Inyección de variables calculadas por JS en cada fotograma.
+     Sin traslación en Y a propósito: es puro travelling de eje Z (dolly zoom-in),
+     el zoom (--scale) es la única fuente de movimiento. */
+  transform: scale(var(--scale, 1));
+  filter: blur(var(--blur, 0px));
+  opacity: var(--opacity, 1);
+  
+  will-change: auto;  /* Estado de descanso para no sobrecargar memoria GPU cuando la parada no está visible */
+  
+  /* 💡 Transición ultra-corta para amortiguar los saltos del wheel del mouse */
+  transition: transform 0.15s ease-out, filter 0.15s ease-out, opacity 0.2s linear;
+}
+
+.narrative-stop__bg img,
+.narrative-stop__bg video {
+  width: 100%;        /* Escala completa en ancho */
+  height: 100%;       /* Escala completa en alto */
+  object-fit: cover;  /* Cubre todo el contenedor sin deformar la relación de aspecto de la foto/video */
+}
+
+/* Color o degradado temporal cuando no hay imagen asignada */
+.narrative-stop__bg--placeholder {
+  background: linear-gradient(160deg, #1a1620, #241c2e 60%, #14121a); /* Fondo oscuro cinemático */
+}
+
+/* ── Capas Ópticas Intermedias / Objetos con Transparencia ── */
+.narrative-stop__layer {
+  position: absolute;
+  /* Sobredimensionamiento defensivo: evita que al desplazar o rotar la capa se vean bordes blancos vacíos */
+  inset: -10% -5%;    /* Ej: 0% (tamaño exacto) / -5% (margen corto) / -15% (margen amplio para gran desplazamiento) */
+  z-index: 1;         /* Se sitúa por encima del background (z-index: 0) */
+  
+  /* Igual que el bg: sin traslación en Y, sólo escala (travelling de eje Z) */
+  transform: scale(var(--scale, 1));
+  filter: blur(var(--blur, 0px));
+  opacity: var(--opacity, 1);
+  will-change: auto;
+  transition: transform 0.15s ease-out, filter 0.15s ease-out, opacity 0.2s linear;
+}
+
+/* Activa la aceleración de hardware por GPU ÚNICAMENTE cuando la parada está activa en pantalla */
+.narrative-stop.is-active .narrative-stop__bg,
+.narrative-stop.is-active .narrative-stop__layer {
+  will-change: transform, filter, opacity; /* Le avisa al navegador que prepare la GPU para animar estas propiedades */
+}
+
+.narrative-stop__layer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Placeholders de prueba visual para capas sin asset final ── */
+.narrative-stop__layer--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;            /* Tamaño de etiqueta. Ej: 11px (discreta) / 16px (notoria) */
+  letter-spacing: 0.12em;     /* Espaciado entre letras para estética técnica. Ej: 0.05em (normal) / 0.2em (amplio) */
+  text-transform: uppercase;  /* Transforma texto a mayúsculas */
+  color: rgba(255,255,255,0.35); /* Blanco con 35% de opacidad */
+}
+
+.narrative-stop__layer--placeholder::before {
+  content: attr(data-layer-label); /* Lee dinámicamente el texto del atributo HTML data-layer-label */
+}
+
+/* Tintes cromáticos por capa para diferenciar la profundidad visual en pruebas */
+.narrative-stop__layer--placeholder[data-layer-depth="1"] { background: rgba(120, 90, 200, 0.10); } /* Tinte Violeta */
+.narrative-stop__layer--placeholder[data-layer-depth="2"] { background: rgba(200, 120, 90, 0.10); } /* Tinte Naranja */
+.narrative-stop__layer--placeholder[data-layer-depth="3"] { background: rgba(90, 200, 160, 0.10); } /* Tinte Menta */
+
+/* ── Textos / Títulos de cada parada narrativa ── */
+.narrative-stop__text {
+  position: relative;
+  z-index: 2;                 /* Por encima de fondos (0) y capas (1) */
+  text-align: center;
+  padding: 0 1.5rem 12vh;     /* 12vh de margen inferior para despejar el borde de la pantalla. 
+                                 Ej: 5vh (muy abajo) / 15vh (más elevado al centro) */
+  opacity: 0;                 /* Oculto por defecto hasta que la parada entra a pantalla */
+  transform: translateY(24px);/* Desplazado 24px hacia abajo para hacer un leve salto de entrada. 
+                                 Ej: 10px (salto sutil) / 50px (entrada dramática) */
+  transition: opacity 0.6s ease, transform 0.6s ease; /* Transición suave de 0.6s al revelarse */
+}
+
+/* Revelado de texto mediante clase activada por IntersectionObserver */
+.narrative-stop.is-active .narrative-stop__text {
+  opacity: 1;                 /* Se vuelve 100% visible */
+  transform: translateY(0);   /* Sube a su posición original */
+}
+
+.narrative-stop__header {
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 900;           /* Ultra bold */
+  font-size: clamp(1.8rem, 6vw, 3.2rem); /* Tamaño fluido: Mínimo 1.8rem, ideal 6% del ancho, Máximo 3.2rem */
+  letter-spacing: 0.02em;     /* Espaciado de título */
+  color: #fff;
+  margin: 0 0 8px;            /* 8px separación con la descripción. Ej: 4px (cercano) / 16px (espaciado) */
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5); /* Sombra para legibilidad sobre imágenes claras */
+}
+
+.narrative-stop__desc {
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;            /* Ej: 12px (pequeño/captura) / 16px (estándar lectura) */
+  line-height: 1.5;           /* Altura de línea para lectura cómoda (150%) */
+  color: rgba(255,255,255,0.75); /* Blanco al 75% para no competir con el título */
+  max-width: 34ch;            /* Ancho máximo recomendado: 34 caracteres por línea para párrafos legibles */
+  margin: 0 auto;             /* Centra el bloque de texto horizontalmente */
+}
+
+/* ── Parada Final: Configuración de Aterrizaje de glassModule (Hero Card) ── */
+.narrative-stop--hero .narrative-stop__frame {
+  align-items: center;        /* En la última parada, centra verticalmente la tarjeta en pantalla */
+}
+
+.narrative-stop--hero .glassModule.hero-v2 {
+  position: relative;  /* Anula el position: absolute de base para que fluya en el flexbox */
+  z-index: 2;          /* Se posiciona por encima del background y de las capas narrativas */
+  opacity: 0;          /* Invisible hasta ser revelado */
+  animation: none;     /* Sin animación inicial */
+  will-change: auto;   /* Anula el will-change: transform agresivo para no crear capas de GPU en conflicto */
+  transition: none;    /* Desactiva las transiciones de base para no pelear con el scroll */
+  cursor: default;     /* Cursor normal mientras la tarjeta no sea interactiva */
+}
+
+/* Estado activo de la tarjeta en la parada final */
+.narrative-stop--hero.is-active .glassModule.hero-v2 {
+  opacity: 1;          /* Revelado completo */
+  animation: bounceIn 900ms linear both; /* Dispara la animación de rebote de 0.9s */
+  cursor: grab;        /* Restaura el cursor de mano para indicar que es arrastrable (drag.js) */
+}
+
+/* ── Accesibilidad: Preferencia de Movimiento Reducido (Comentado/Desactivado) ── */
+/* @media (prefers-reduced-motion: reduce) {
+  .narrative-stop__bg,
+  .narrative-stop__layer {
+    transform: none !important;
+    filter: none !important;
+  }
+  .narrative-stop--hero.is-active .glassModule.hero-v2 {
+    animation: none;
+  }
+} */
+
+/* ── Adaptación a Pantallas Móviles (≤768px) ── */
+@media (max-width: 768px) {
+  /* Sin override de --stop-height aquí a propósito: vh ya es relativo al viewport de cada
+     dispositivo, así que el mismo valor da el mismo travelling largo (y el mismo solape del
+     50%, que se recalcula solo vía calc()) tanto en desktop como en móvil. Si en el pulgar se
+     siente demasiado largo, se puede reintroducir un override de --stop-height aquí (ej. 170vh)
+     — el margin-top de solape se ajusta automáticamente, no hay que tocarlo aparte. */
+}
