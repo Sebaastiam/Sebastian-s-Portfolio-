@@ -1,0 +1,121 @@
+/* ══════════════════════════════════════════════════════════
+   photo-wall.css
+   Landing Redesign — Module 2 of 4 (Photo Wall background)
+   Sebastián Castillo Portfolio — Engineering Pass v3.2 → UX/UI Phase
+
+   Reference: "Vertical Slide Gallery Wall" (CodePen, DeyJordan) —
+   structure adapted, not copied verbatim. Media distribution/typing
+   is handled by photoWall.js reading photo-wall-media.js; this file
+   is pure presentation.
+
+   will-change DISCIPLINE (per this project's own prior audit
+   findings — the .bg-img mistake from Milestone 2 is not repeated
+   here): will-change is added/removed via class toggle by
+   photoWall.js, only while the wall is actually in view. It is NOT
+   set unconditionally in this stylesheet.
+   ══════════════════════════════════════════════════════════ */
+
+.photo-wall {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  display: flex;
+  gap: 12px;
+  padding: 0 12px;
+
+  /* Tilted wall-on-an-angle, matching the reference's composition */
+  perspective: 1200px;
+}
+
+.photo-wall__inner {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  transform: rotate(-4deg) rotateX(8deg) rotateY(-6deg) scale(1.15);
+  transform-origin: center center;
+}
+
+.photo-wall__col {
+  flex: 1;
+  overflow: hidden;
+  height: 130vh; /* taller than viewport — the tilt/rotate needs headroom so no gap shows at the edges */
+}
+
+.photo-wall__track {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: photoWallScroll 38s linear infinite;
+}
+
+/* Middle column runs the opposite direction, matching the
+   reference's alternating pattern — reads as more dynamic than all
+   three columns drifting the same way. */
+.photo-wall__col:nth-child(2) .photo-wall__track {
+  animation-direction: reverse;
+  animation-duration: 44s; /* slightly different speed, avoids the 3 columns ever visually syncing */
+}
+.photo-wall__col:nth-child(3) .photo-wall__track {
+  animation-duration: 34s;
+}
+
+@keyframes photoWallScroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); } /* -50% because photoWall.js duplicates each column's item list once, for a seamless loop */
+}
+
+.photo-wall__item {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.photo-wall__item img,
+.photo-wall__item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Edge vignette — fades the wall into the page background top/bottom,
+   same visual job as the reference's ::before/::after treatment */
+.photo-wall::before,
+.photo-wall::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 22vh;
+  z-index: 1;
+  pointer-events: none;
+}
+.photo-wall::before {
+  top: 0;
+  background: linear-gradient(to bottom, #111 0%, transparent 100%);
+}
+.photo-wall::after {
+  bottom: 0;
+  background: linear-gradient(to top, #111 0%, transparent 100%);
+}
+
+/* ── Pause state — toggled by photoWall.js via IntersectionObserver
+   and visibilitychange, NOT decorative, this is the actual
+   off-screen/hidden-tab pause mechanism ── */
+.photo-wall.is-paused .photo-wall__track {
+  animation-play-state: paused;
+}
+
+/* ── Mobile: fewer columns, since 3 tilted columns at phone width
+   reads as visual noise rather than a wall ── */
+@media (max-width: 768px) {
+  .photo-wall__col:nth-child(3) {
+    display: none;
+  }
+  .photo-wall__inner {
+    transform: rotate(-3deg) rotateX(6deg) rotateY(-4deg) scale(1.1);
+  }
+}

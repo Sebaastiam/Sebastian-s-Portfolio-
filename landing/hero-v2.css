@@ -1,0 +1,97 @@
+/* ══════════════════════════════════════════════════════════
+   hero-v2.css — v4
+   Resumen de cambios:
+   - Corrige botones invisibles (fix #1): #btnPanel tenía opacity:0 en el CSS base; ahora
+     se restaura a visible en modo one‑screen (.hero-v2).
+   - Evita overflow del avatar en escritorio (fix #2): no se reduce el tamaño del título;
+     se aumenta la altura de la tarjeta en .hero-v2 para dar espacio al stack (avatar + título + botones).
+   - Se eliminó la duplicación de estilos de botones en este archivo; la apariencia de botones
+     se mantiene en components-main.css para evitar conflictos entre ficheros.
+   Notas:
+   - Mecanismos de activación por clase .hero-v2 y la lógica de visualización de una sola pantalla
+     permanecen sin cambios funcionales.
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Card shell: altura aumentada para acomodar título grande y evitar overflow ── */
+.glassModule.hero-v2 {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  animation: bounceOut 700ms linear both;
+
+  /* Altura específica para el modo one-screen: suficiente para avatar + título + botones.
+     Se ajustó desde el valor base en components-main.css para evitar que el contenido sobresalga. */
+  height: clamp(399px, 70.3vh, 494px);
+}
+
+/* FIX #3 — Restaurar el hover bounce en modo hero-v2.
+   .glassModule.hero-v2 y .glassModule:hover (en animations.css) tienen la
+   misma especificidad (0,2,0); como hero-v2.css carga después de
+   animations.css, la regla de arriba siempre ganaba el empate y bloqueaba
+   la animación de hover. Se sube la especificidad para este contexto. */
+.glassModule.hero-v2:hover {
+  animation: bounceIn 900ms linear both;
+}
+/* ── One-screen mode: ocultar controles de alternancia y forzar vista por defecto ── */
+.hero-v2 #actionBtn,
+.hero-v2 .module-back {
+  display: none;
+}
+
+.hero-v2 #defaultView,
+.hero-v2 #btnPanel {
+  display: flex !important;
+}
+
+/* FIX #1 — Restaurar visibilidad del panel de botones en modo hero-v2.
+   El estilo base dejaba #btnPanel con opacity:0; aquí se fuerza opacity:1. */
+.hero-v2 #btnPanel {
+  opacity: 1 !important;
+}
+
+.hero-v2 .module-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  /* Evitar centrar verticalmente cuando el viewport es muy corto: priorizar
+     el desbordamiento por abajo para que el avatar no sobresalga por arriba. */
+  justify-content: flex-start;
+  padding-top: 30px;
+}
+
+/* ── Avatar: círculo fijo, no se encoge en el flex column ── */
+.hero-v2 .hero-avatar-wrap {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.10); /* placeholder neutro si no hay foto */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 5px solid rgba(255, 0, 0, 0.692);
+  box-shadow: 0 6px 18px rgba(243, 1, 1, 0.692);
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0; /* evitar que el avatar se comprima si el espacio es limitado */
+  outline: 1px solid rgba(140, 190, 255, 0.5);
+  outline-offset: 2px; /* separación entre el botón y la línea */
+}
+
+
+
+/* Si usas <img> dentro del wrapper, esto asegura que rellene el círculo correctamente. */
+.hero-v2 .hero-avatar-wrap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Ocultar Instagram explícitamente en hero-v2
+   (antes no era necesario porque todo el panel estaba en opacity:0). */
+.hero-v2 #btnPanel .module-btn:nth-child(1) {
+  display: none;
+}

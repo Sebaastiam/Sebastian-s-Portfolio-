@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Sebastián Castillo</title>
+  <meta name="description" content="Portafolio de Sebastián Castillo — proyectos audiovisuales, fotografía y desarrollo, presentados en una plataforma original."/>
+  <!-- DRAFT — Open Graph / Twitter Card. Wording + og:image are
+       content decisions; review before relying on these for real
+       social-share previews (Instagram/WhatsApp/Linktree links are
+       already in the page content, so this matters here). -->
+  <meta property="og:title" content="Sebastián Castillo — Portafolio"/>
+  <meta property="og:description" content="Proyectos audiovisuales, fotografía y desarrollo en una plataforma original."/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+
+  <!-- ── Resource hints for third-party origins ──
+       preconnect for gtag (fires within the first few hundred ms
+       of parse); dns-prefetch for Vimeo since its player script
+       loads on-demand at the end of <body> / when the blog panel
+       opens, so a full preconnect held open unused would waste a
+       connection slot. -->
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="dns-prefetch" href="https://player.vimeo.com">
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ENFJQFPJ6S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ENFJQFPJ6S');
+</script>
+
+  <link rel="preload" href="images/Authentic%20Declaration.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+  <link rel="preload" href="images/BarlowSemiCondensed-Black.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+  <link rel="preload" href="images/BarlowSemiCondensed-Bold.ttf"  as="font" type="font/ttf" crossorigin="anonymous">
+  <link rel="preload" href="images/BebasNeue-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+  <!-- ENGINEERING NOTE (v3.2 Milestone 1): these preload as font/ttf.
+       TTF is uncompressed relative to WOFF2 (typically 30-50%+ larger)
+       and these are render-blocking-critical (preload), directly
+       affecting FCP/LCP. Converting requires the actual font binaries
+       + updating @font-face src in base.css — not done here since the
+       font files weren't part of this file batch. Flagged in the
+       Milestone 1 audit as High severity; recommend prioritizing once
+       base.css is in scope. -->
+
+  <!-- CSS modular — orden de carga obligatorio -->
+  <link rel="stylesheet" href="./landing/base.css">               <!-- tokens, reset, layout, a11y -->
+  <link rel="stylesheet" href="./panels/components-main.css">    <!-- glass card, modal, contact, side-trigger (split from components.css — Milestone 2) -->
+  <link rel="stylesheet" href="./panels/components-archive.css"> <!-- archive/blog panel, feed items, ASCII bg (split from components.css — Milestone 2) -->
+  <link rel="stylesheet" href="./loadscreen/loadScreen.css">          <!-- LOADSCREEN -->
+  <link rel="stylesheet" href="./photowall/photo-wall.css">          <!-- photo wall landing background -->
+  <link rel="stylesheet" href="./landing/animations.css">          <!-- @keyframes, anim utility classes -->
+  <link rel="stylesheet" href="./landing/hero-v2.css">             <!-- hero avatar/photo inside glass card-->
+  <link rel="stylesheet" href="./panels/portafolio-panel.css">    <!-- animations for left panel -->
+  <link rel="stylesheet" href="./scroll/scroll-narrative.css">   <!-- Scroll de inicio /EXPERIMENTAL-->    
+  
+</head>
+<body>
+  <div id="loadScreen">
+    <div class="load-orb"></div>
+    <span class="load-label">cargando</span>
+  </div>
+
+  <!-- everything else follows, unchanged -->
+  <!-- ── Skip link for keyboard / screen-reader users ── -->
+  <a class="skip-link" href="#contactSection">Ir al contenido principal</a>
+  <!-- photo wall / landing background that replaced BGSlide -->
+<div class="photo-wall" id="photoWall"></div>
+<div class="narrative" id="scrollNarrative"></div>
+<!-- ── Side button — Blog/Vlog panel trigger ── -->
+<button class="more-trigger"
+        id="moreTrigger"
+        type="button"
+        aria-controls="morePanel"
+        aria-expanded="false"
+        aria-label="Abrir archivo visual audiovisuales">
+  vlog/blog
+</button>
+
+  <!-- ── Page content (gives scrollable height) ── -->
+  <div id="pageContent">
+
+    <!-- Hero spacer: glass card floats fixed above this -->
+    <div class="hero-spacer" aria-hidden="true"></div>
+
+    <!-- ── Contact section ── -->
+    <main id="contactSection" aria-label="Sección de contacto">
+      <div class="contact-wrapper">
+        
+        <!-- ── Glass card ── -->
+        <div class="glassModule hero-v2"
+             id="glassModule"
+             role="region"
+             aria-label="Tarjeta de presentación — arrastrable">
+
+          <div class="module-content">
+            <button class="module-back" id="backBtn" aria-label="Volver a presentación principal">← atrás</button>
+            <div id="defaultView" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
+              <h1 class="module-title" id="moduleTitle">Sebastian Castillo</h1>
+              <div class="hero-avatar-wrap">
+                <img src="images/profile.png" alt="Sebastián Castillo" width="96" height="96" loading="eager">
+              </div>
+              <button class="module-btn" id="actionBtn">Muestre pues</button>
+            </div>
+            <nav id="btnPanel" aria-label="Links externos">
+              <a href="https://instagram.com/zescru" target="_blank" rel="noopener noreferrer" class="module-btn">INSTAGRAM</a>
+              <a href="https://linktr.ee/zescru" target="_blank" rel="noopener noreferrer" class="module-btn">LINKTREE</a>
+              <button type="button" class="module-btn module-btn--galeria" id="galeriasBtn" aria-label="Abrir portafolio y galerías">
+                <span class="galeria-glow" aria-hidden="true"></span>
+                Archivo Visual
+              </button>
+            </nav>
+          </div>
+        </div>
+        <!-- /glassModule -->
+
+        <!-- Floating Contact Button -->
+        <button class="float-btn"
+                id="contactTrigger"
+                aria-haspopup="dialog"
+                aria-label="Abrir formulario de contacto">
+          <span class="contact-sticker" data-text="Contacto">
+            <span class="contact-prompt">Contacto</span>
+          </span>
+        </button>
+
+      </div>
+    </main>
+
+  </div>
+  <!-- /pageContent -->
+<div id="watermark"></div>
+
+
+
+  <!-- ── Contact modal ── -->
+  <div class="cmodal-wrap"
+       id="contactModal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="cmodalTitle"
+       aria-hidden="true">
+
+    <div class="cmodal-overlay" id="cmodalOverlay" aria-hidden="true"></div>
+
+    <div class="cmodal-panel">
+      <button class="cmodal-close"
+              id="cmodalClose"
+              aria-label="Cerrar formulario de contacto">
+        ✕ cerrar
+      </button>
+
+      <div class="cmodal-body">
+        <h2 class="cmodal-title" id="cmodalTitle">Hablemos</h2>
+
+        <form class="cmodal-form" id="cmodalForm" novalidate>
+
+          <!-- Nombre -->
+          <label for="inputNombre" class="sr-only">Tu nombre</label>
+          <input id="inputNombre"
+                 class="cmodal-input"
+                 type="text"
+                 name="nombre"
+                 placeholder="tu nombre"
+                 autocomplete="name"
+                 required
+                 aria-required="true"
+                 aria-describedby="err-nombre"/>
+          <span id="err-nombre" class="sr-only" aria-live="polite"></span>
+
+          <!-- Email -->
+          <label for="inputEmail" class="sr-only">Tu email</label>
+          <input id="inputEmail"
+                 class="cmodal-input"
+                 type="email"
+                 name="email"
+                 placeholder="tu email"
+                 autocomplete="email"
+                 required
+                 aria-required="true"
+                 aria-describedby="err-email"/>
+          <span id="err-email" class="sr-only" aria-live="polite"></span>
+
+          <!-- Mensaje -->
+          <label for="inputMensaje" class="sr-only">Tu mensaje</label>
+          <textarea id="inputMensaje"
+                    class="cmodal-input"
+                    name="mensaje"
+                    placeholder="tu mensaje"
+                    required
+                    aria-required="true"
+                    aria-describedby="err-mensaje"></textarea>
+          <span id="err-mensaje" class="sr-only" aria-live="polite"></span>
+
+          <!-- Honeypot — invisible to humans, catches naive bots that fill every field.
+               tabindex="-1" + aria-hidden keeps it out of keyboard/SR flow. -->
+          <div class="hp-field">
+            <label for="inputWebsite">Website</label>
+            <input id="inputWebsite" type="text" name="website" tabindex="-1" autocomplete="off"/>
+          </div>
+
+          <button type="submit"
+                  class="module-btn"
+                  style="width:100%;min-width:unset;margin-top:2px;">
+            Enviar
+          </button>
+        </form>
+
+        <div class="cmodal-success"
+             id="cmodalSuccess"
+             role="status"
+             aria-live="polite">
+          <p>¡Gracias!<br>Te contactaré<br>muy pronto 🤝</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /contactModal -->
+
+  <!-- ── Blog/Vlog panel ── -->
+  <aside class="more-panel"
+         id="morePanel"
+         aria-hidden="true"
+         aria-label="Archivo visual — audiovisuales">
+
+    <canvas id="ascii-bg" aria-hidden="true"></canvas>
+
+    <div class="more-panel-inner">
+      <header class="more-panel-header">
+        <span>Noticias y Audiovisuales </span>
+        <button class="more-close"
+                id="moreClose"
+                type="button"
+                aria-label="Cerrar archivo visual">
+          ✕
+        </button>
+      </header>
+
+      <div class="more-feed" role="feed" aria-label="Archivo de proyectos">
+
+        <article class="feed-item">
+          <h3>
+            <a href="https://www.youtube.com/watch?v=KYLLRByK2sg&t=5s&pp=ygUhZXNjdWVsYSBub2N0dXJuYSBjb3J0byBkb2N1bWVudGFs"
+               target="_blank"
+               rel="noopener noreferrer">
+              Documental Graffiti: La escuela Nocturna
+            </a>
+          </h3>
+          <h4 class="feed-source">
+            <a href="https://www.youtube.com/watch?v=KYLLRByK2sg&t=5s&pp=ygUhZXNjdWVsYSBub2N0dXJuYSBjb3J0byBkb2N1bWVudGFs" target="_blank" rel="noopener noreferrer">Corto Documental</a>
+          </h4>
+          <time class="pub-date" datetime="2019">dura: 8:29"</time>
+          <p>Corto Independiente que recoge obras y experiencias de los grafiteros en las calles en el año 2019,
+             con entrevistas muy profundas e imágenes inéditas. Este es un remake hecho en 2023. enteramente grabado, editado y co-producido por Sebastián Castillo, con dirección de Gabriel Esteban Rozo <a href="https://youtu.be/KYLLRByK2sg" target="_blank" rel="noopener noreferrer"> ACÁ x si no lo puedes ver! </a> </p>
+        </article>
+
+        <article class="feed-item feed-item--vimeo" id="feedVimeoItem">
+          <h3>La Escuela Nocturna Remake</h3>
+          <h4 class="feed-source">
+            <a href="https://www.youtube.com/watch?v=KYLLRByK2sg&t=5s"
+               target="_blank"
+               rel="noopener noreferrer">
+              Activa el sonido del video
+            </a>
+          </h4>
+          <time class="pub-date" datetime="2019">2019</time>
+          <div class="feed-video-wrap" id="feedVimeoWrap" aria-label="Video: La Escuela Nocturna Remake">
+            <!-- iframe inyectado dinámicamente al abrir el panel -->
+          </div>
+        </article>
+
+        <article class="feed-item">
+          <h3>
+            <a href="https://github.com/Sebaastiam/Sebastian-s-Portfolio-" target="_blank" rel="noopener noreferrer">
+              QUIERES SABER COMO SE LLEVÓ ACABO ESTE PROYECTO?
+            </a>
+          </h3>
+          <h4 class="feed-source">
+            <a href="https://github.com/Sebaastiam/Sebastian-s-Portfolio-" target="_blank" rel="noopener noreferrer"> UX/UI on git</a>
+          </h4>
+          <time class="pub-date" datetime="2026-08-06">Jun 8, 2026</time>
+          <p>Puedes ver todo el repositorio modular que se montó en tiempo récord <a href="https://github.com/Sebaastiam/Sebastian-s-Portfolio-" target="_blank" rel="noopener noreferrer"> ACÁ</a> esto me permitió alojar mi propio archivo web y portafolio en Github, además de futuros proyectos .</p>
+<img src="images/fumgus.gif" alt="graffiti" width="300">
+</article>
+        <article class="feed-item">
+          <h3>
+            <a href="https://wa.me/573336451709">
+  ->>> Escríbeme por WhatsApp <<<-
+               click acá!
+              Contacto Whatsapp
+            </a>
+          </h3>
+          <h4 class="feed-source">
+            <a href="https://wa.me/573336451709" target="_blank" rel="noopener noreferrer">CHAT WHATSAPP</a>
+          </h4>
+          <time class="pub-date" datetime="2026-04-06">April 6, 2026</time>
+          <p>¿Eres artista? necesitas ayuda o soporte en proyectos visuales o de desarrollo, o simplemente quieres preguntar? escríbeme! <a href="https://wa.me/573336451709"> CLICK O TAP ACÁ
+</a>
+  <a href="https://wa.me/573336451709" target="_blank" rel="noopener noreferrer">
+  <img src="images/aNIMATED.gif" alt="graffiti" width="300">
+</a>
+</article>
+      </div>
+      <!-- /more-feed -->
+    </div>
+    <!-- /more-panel-inner -->
+  </aside>
+  <!-- /morePanel -->
+
+  <!-- ── SVG distortion filter (decorative) ── -->
+  <svg xmlns="http://www.w3.org/2000/svg"
+       width="0" height="0"
+       style="position:absolute;overflow:hidden"
+       aria-hidden="true"
+       focusable="false">
+    <defs>
+      <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008"
+                      numOctaves="1" seed="9000" result="noise"/>
+        <feGaussianBlur in="noise" stdDeviation="2" result="blurred"/>
+        <feDisplacementMap in="SourceGraphic" in2="blurred"
+                           scale="77" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- ── Scripts ── -->
+  <!-- Load order: config first, then independent modules -->
+  <script>
+    /* Engineering Pass v3.2 — Milestone 1 (#16, #21):
+       Single source of truth for watermark text. Replaces the two
+       previously-hardcoded values ("SITE V: 1.0" in the DOM vs
+       "v1.3.2" in both JS file headers) and the hardcoded year. */
+    (function () {
+      var wm = document.getElementById('watermark');
+      if (!wm || typeof CONFIG === 'undefined') return;
+      var year = new Date().getFullYear();
+      wm.textContent = year + ' — Sebastián Castillo / SITE V: ' + CONFIG.SITE_VERSION;
+    })(); 
+  </script>
+  <script src="./landing/config.js"></script>
+  <script src="./photowall/photo-wall-media.js"></script>
+  <script src="./loadscreen/loadScreen.js"></script>
+  <script src="./photowall/photoWall.js"></script>
+  <script src="./scroll/scroll-narrative-config.js"></script>
+  <script src="./scroll/scrollNarrative.js"></script>
+  
+  <!-- [historyManager] Debe cargar ANTES que panels.js y
+       portfolio-panel.js, para que HistoryManager esté disponible
+       cuando esos módulos registren sus paneles. (No depende de
+       config.js — historyManager.js no referencia CONFIG.) -->
+  <script src="./landing/historyManager.js"></script>
+  <script src="./landing/drag.js"></script>
+  <script src="./panels/panels.js"></script>
+  <script src="-/panels/portfolio-panel.js"></script> 
+  <script src="./landing/asciiDrawer.js"></script>
+  <script src="https://player.vimeo.com/api/player.js" defer></script>
+/* slideshow.js are missing in link but not in file, review landing folder for it */
+</body>
+</html>
