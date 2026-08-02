@@ -20,28 +20,28 @@
 /* ── 1. Custom fonts ──────────────────────────────────────── */
 @font-face {
   font-family: 'AuthenticDeclaration';
-  src: url('images/Authentic Declaration.ttf') format('truetype');
+  src: url("../fonts/AuthenticDeclaration.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'BarlowSC';
-  src: url('images/BarlowSemiCondensed-Black.ttf') format('truetype');
+  src: url("../fonts/BarlowSemiCondensed-Black.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'BarlowSC';
-  src: url('images/BarlowSemiCondensed-Bold.ttf') format('truetype');
+  src: url("../fonts/BarlowSemiCondensed-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'BebasNeue-Regular';
-  src: url('images/BebasNeue-Regular.ttf') format('truetype');
+  src: url("../fonts/BebasNeue-Regular.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
