@@ -408,12 +408,21 @@
   transform: translate(0.035em, 0.045em);
   z-index: 0;
 }
-.contact-prompt {
-  margin: 0;
-  text-align: center;
-  color: #fff;
-  position: relative;
-  z-index: 2;
+@supports (color: oklch(0.75 0.25 220)) {
+  .contact-prompt {
+    background-image: radial-gradient(
+      in oklch circle at var(--gx, 50%) var(--gy, 50%),
+      var(--heat-stop-3) 0%,
+      var(--heat-stop-2) 30%,
+      oklch(0.98 0.01 90) 55%,
+      var(--heat-stop-1) 75%,
+      oklch(0.68 0.22 330) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+}
 }
 @supports (color: oklch(0.75 0.25 220)) {
   .contact-prompt {
