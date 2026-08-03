@@ -28,7 +28,7 @@
   const screen = document.getElementById('loadScreen');
   if (!screen) return;
 
-  const cfg = (typeof CONFIG !== 'undefined' && CONFIG.LOAD_SCREEN) || { MAX_WAIT_MS: 4000, MIN_DISPLAY_MS: 500 };
+  const cfg = (typeof CONFIG !== 'undefined' && CONFIG.LOAD_SCREEN) || { MAX_WAIT_MS: 8000, MIN_DISPLAY_MS: 4500 };
   const startTime = Date.now();
   let resolved = false;
 
