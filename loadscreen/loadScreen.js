@@ -110,3 +110,8 @@ if (avatarPath && !isPlaceholder) {
     img.onload = img.onerror = () => resolve();
   }));
 }
+// Esperar todas las promesas y luego ocultar
+Promise.all(waits).then(hide).catch(hide);
+
+// Fallback por timeout duro
+setTimeout(hide, cfg.MAX_WAIT_MS);
