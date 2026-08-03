@@ -31,7 +31,7 @@ const PHOTO_WALL_MEDIA = [
   './images/galeria1/4.webp',
   './images/galeria4/20180224013950_IMG_2165_2.webp',
   './images/galeria2/DSC01268.webp',
-  './Video/3d_720p.webm',
+  './Video/3d_540p.webm',
 
   /* Add more below this line, same format, one per line: */
   // './images/galeria3/your-photo.webp',
