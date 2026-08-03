@@ -23,10 +23,18 @@ import { readFile, writeFile, mkdir, readdir, stat, rm } from 'node:fs/promises'
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
 import * as esbuild from 'esbuild';
 import postcss from 'postcss';
 import { minify as minifyHtml } from 'html-minifier-terser';
+import sharp from 'sharp';
+import { optimize as optimizeSvg } from 'svgo';
+import gifsiclePath from 'gifsicle';
 import { plugins as postcssPlugins } from '../postcss.config.js';
+
+const execFileAsync = promisify(execFile);
 
 const rootDir = path.resolve(fileURLToPath(import.meta.url), '../..');
 const distDir = path.join(rootDir, 'dist');
@@ -42,6 +50,7 @@ const SOURCE_ENTRIES = [
   'photowall',
   'scroll',
   'fonts',
+  'images',
 ];
 
 const FONT_EXTENSIONS = new Set(['.woff2', '.woff', '.ttf', '.otf', '.eot']);
@@ -136,6 +145,46 @@ async function buildJs(srcPath, outPath, relPath) {
   stats.bytesAfter += Buffer.byteLength(code);
 }
 
+async function optimizeRaster(srcPath, outPath, ext) {
+  const src = await readFile(srcPath);
+  let out;
+  if (ext === '.png') {
+    // Lossless recompression — same pixels, smaller file.
+    out = await sharp(src).png({ compressionLevel: 9, palette: true }).toBuffer();
+  } else {
+    // .jpg/.jpeg — mozjpeg at a visually-safe quality.
+    out = await sharp(src).jpeg({ quality: 82, mozjpeg: true }).toBuffer();
+  }
+  // If re-encoding didn't actually help (already optimized), keep the original.
+  if (out.length >= src.length) out = src;
+  await ensureDirFor(outPath);
+  await writeFile(outPath, out);
+  stats.copied += 1;
+  stats.bytesBefore += src.length;
+  stats.bytesAfter += out.length;
+}
+
+async function optimizeGif(srcPath, outPath) {
+  const src = await readFile(srcPath);
+  await ensureDirFor(outPath);
+  // -O3: lossless, most thorough optimization; keeps animation intact.
+  await execFileAsync(gifsiclePath, ['-O3', srcPath, '-o', outPath]);
+  const out = await readFile(outPath);
+  stats.copied += 1;
+  stats.bytesBefore += src.length;
+  stats.bytesAfter += out.length;
+}
+
+async function optimizeSvgFile(srcPath, outPath) {
+  const src = await readFile(srcPath, 'utf8');
+  const result = optimizeSvg(src, { path: srcPath });
+  await ensureDirFor(outPath);
+  await writeFile(outPath, result.data, 'utf8');
+  stats.copied += 1;
+  stats.bytesBefore += Buffer.byteLength(src);
+  stats.bytesAfter += Buffer.byteLength(result.data);
+}
+
 async function copyAsIs(srcPath, outPath) {
   await ensureDirFor(outPath);
   const buf = await readFile(srcPath);
@@ -173,10 +222,17 @@ async function main() {
         await buildCss(srcPath, outPath);
       } else if (ext === '.js') {
         await buildJs(srcPath, outPath, relPath);
-      } else if (FONT_EXTENSIONS.has(ext) || IMAGE_EXTENSIONS.has(ext)) {
-        // Fonts are shipped as WOFF2 (already compressed) and there are no
-        // raster/vector images in the current source — nothing unsafe to
-        // re-encode, so these pass through untouched.
+      } else if (FONT_EXTENSIONS.has(ext)) {
+        // WOFF2 is already compressed — nothing safe to gain by re-encoding.
+        await copyAsIs(srcPath, outPath);
+      } else if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
+        await optimizeRaster(srcPath, outPath, ext);
+      } else if (ext === '.gif') {
+        await optimizeGif(srcPath, outPath);
+      } else if (ext === '.svg') {
+        await optimizeSvgFile(srcPath, outPath);
+      } else if (IMAGE_EXTENSIONS.has(ext)) {
+        // .webp, .ico, etc. — no safe lossless optimizer wired in, pass through.
         await copyAsIs(srcPath, outPath);
       } else {
         console.warn(`[build] unrecognized file type, copying as-is: ${relPath}`);
