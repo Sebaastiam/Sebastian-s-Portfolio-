@@ -1,69 +1,38 @@
-/* ══════════════════════════════════════════════════════════
-   loadScreen.js
-   Landing Redesign — Module 4 of 4 (Load Screen)
-   Sebastián Castillo Portfolio — Engineering Pass v3.2 → UX/UI Phase
-   Depends on: config.js (CONFIG.LOAD_SCREEN), photo-wall-media.js
-   (PHOTO_WALL_MEDIA) — must load after both.
+// Hero avatar opportunistic check (reemplaza la sección anterior)
+const avatarEl = document.querySelector('.hero-avatar-wrap');
+let avatarPath = null;
 
-   WHAT THIS WAITS ON:
-   - document.fonts.ready — custom fonts
-   - Every file in PHOTO_WALL_MEDIA — images/videos
-   - Hero avatar image (if routed)
-   - loadscreen.css and loadscreen.js
-   - Hard timeout (MAX_WAIT_MS) so a slow/failed asset never traps
-   - Minimum display floor (MIN_DISPLAY_MS) so it never flash-vanishes
-   ══════════════════════════════════════════════════════════ */
-
-(function initLoadScreen() {
-  const screen = document.getElementById('loadScreen');
-  if (!screen) return;
-
-  const cfg = (typeof CONFIG !== 'undefined' && CONFIG.LOAD_SCREEN) || { MAX_WAIT_MS: 4000, MIN_DISPLAY_MS: 4000 };
-  const startTime = Date.now();
-  let resolved = false;
-
-  function hide() {
-    if (resolved) return;
-    resolved = true;
-    const elapsed = Date.now() - startTime;
-    const remaining = Math.max(0, cfg.MIN_DISPLAY_MS - elapsed);
-    setTimeout(() => {
-      screen.classList.add('is-hiding');
-      screen.addEventListener('animationend', () => screen.remove(), { once: true });
-      /* Fallback removal in case animationend doesn't fire for any
-         reason (matches the same defensive pattern already applied
-         in panels.js's onTransitionEnd) — not relying on the event
-         alone for something this important to clean up. */
-      setTimeout(() => { if (screen.isConnected) screen.remove(); }, 500);
-    }, remaining);
+if (avatarEl) {
+  // 1) data-avatar preferido (útil si el routing inyecta la ruta)
+  if (avatarEl.dataset && avatarEl.dataset.avatar) {
+    avatarPath = avatarEl.dataset.avatar;
   }
 
-  /* ── Build the list of readiness promises ── */
-  const waits = [];
-
-  // Fonts
-  if (document.fonts && document.fonts.ready) {
-    waits.push(document.fonts.ready);
+  // 2) <img> dentro del contenedor
+  if (!avatarPath) {
+    const avatarImg = avatarEl.querySelector('img.hero-avatar-img');
+    if (avatarImg && avatarImg.src) avatarPath = avatarImg.src;
   }
 
-  // Media (images/videos)
-  if (typeof PHOTO_WALL_MEDIA !== 'undefined') {
-    const VIDEO_EXT = /\.(webm|mp4)$/i;
-    PHOTO_WALL_MEDIA.forEach(path => {
-      waits.push(new Promise(resolve => {
-        if (VIDEO_EXT.test(path)) {
-          const v = document.createElement('video');
-          v.src = path;
-          v.onloadedmetadata = v.onerror = () => resolve();
-        } else {
-          const img = new Image();
-          img.src = path;
-          img.onload = img.onerror = () => resolve();
-        }
-      }));
-    });
+  // 3) background-image CSS
+  if (!avatarPath) {
+    const bg = avatarEl.style.backgroundImage || getComputedStyle(avatarEl).backgroundImage;
+    const match = /url\(["']?(.*?)["']?\)/.exec(bg || '');
+    if (match && match[1]) avatarPath = match[1];
   }
+}
 
-  // Hero avatar opportunistic check
-  const avatarEl = document.querySelector('.hero-avatar-wrap');
-  if (avatar
+// 4) fallback explícito a la ruta conocida
+if (!avatarPath) {
+  avatarPath = './images/profile.png';
+}
+
+// Evitar placeholders comunes
+const isPlaceholder = /YOUR-PHOTO-FILENAME|placeholder|default-avatar/i.test(avatarPath);
+if (avatarPath && !isPlaceholder) {
+  waits.push(new Promise(resolve => {
+    const img = new Image();
+    img.src = avatarPath;
+    img.onload = img.onerror = () => resolve();
+  }));
+}
