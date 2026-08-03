@@ -279,7 +279,7 @@ body {
   position: fixed;
   bottom: 18px;
   right: 18px;
-  z-index: 5;
+  z-index: var(--z-fixed-ui); /* = 5, coherente con la escala de base.css sección 2 */
   pointer-events: none;
   writing-mode: vertical-rl;
   text-orientation: mixed;
