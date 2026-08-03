@@ -279,7 +279,7 @@ body {
   position: fixed;
   bottom: 18px;
   right: 18px;
-  z-index: 5px;
+  z-index: 5;
   pointer-events: none;
   writing-mode: vertical-rl;
   text-orientation: mixed;
