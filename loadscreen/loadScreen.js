@@ -5,30 +5,20 @@
    Depends on: config.js (CONFIG.LOAD_SCREEN), photo-wall-media.js
    (PHOTO_WALL_MEDIA) — must load after both.
 
-   WHAT THIS WAITS ON (the "smart parameter" from the original
-   planning conversation):
-   - document.fonts.ready — your custom fonts (AuthenticDeclaration,
-     BarlowSC, BebasNeue)
-   - Every file in PHOTO_WALL_MEDIA — images via load/error, videos
-     via loadedmetadata/error (own independent preload, doesn't
-     depend on photoWall.js's own DOM — same pattern as
-     slideshow.js's boot())
-   - The hero avatar image, IF one is actually routed yet (checked
-     opportunistically — doesn't block on this if it's still a
-     placeholder, since you mentioned routing isn't done)
-
-   PLUS a hard timeout (CONFIG.LOAD_SCREEN.MAX_WAIT_MS) so a single
-   slow/failed asset can never trap a visitor indefinitely — same
-   role as slideshow.js's SLIDE_FALLBACK_MS — and a minimum display
-   floor (CONFIG.LOAD_SCREEN.MIN_DISPLAY_MS) so it never flash-
-   vanishes on a fast connection.
+   WHAT THIS WAITS ON:
+   - document.fonts.ready — custom fonts
+   - Every file in PHOTO_WALL_MEDIA — images/videos
+   - Hero avatar image (if routed)
+   - loadscreen.css and loadscreen.js
+   - Hard timeout (MAX_WAIT_MS) so a slow/failed asset never traps
+   - Minimum display floor (MIN_DISPLAY_MS) so it never flash-vanishes
    ══════════════════════════════════════════════════════════ */
 
 (function initLoadScreen() {
   const screen = document.getElementById('loadScreen');
   if (!screen) return;
 
-  const cfg = (typeof CONFIG !== 'undefined' && CONFIG.LOAD_SCREEN) || { MAX_WAIT_MS: 4000, MIN_DISPLAY_MS: 500 };
+  const cfg = (typeof CONFIG !== 'undefined' && CONFIG.LOAD_SCREEN) || { MAX_WAIT_MS: 4000, MIN_DISPLAY_MS: 4000 };
   const startTime = Date.now();
   let resolved = false;
 
@@ -48,13 +38,15 @@
     }, remaining);
   }
 
-  /* ── Build the list of real, measurable readiness promises ── */
+  /* ── Build the list of readiness promises ── */
   const waits = [];
 
+  // Fonts
   if (document.fonts && document.fonts.ready) {
     waits.push(document.fonts.ready);
   }
 
+  // Media (images/videos)
   if (typeof PHOTO_WALL_MEDIA !== 'undefined') {
     const VIDEO_EXT = /\.(webm|mp4)$/i;
     PHOTO_WALL_MEDIA.forEach(path => {
@@ -72,22 +64,6 @@
     });
   }
 
-  /* Opportunistic hero avatar check — only waits on it if a real
-     path is actually set (not still the placeholder filename). */
+  // Hero avatar opportunistic check
   const avatarEl = document.querySelector('.hero-avatar-wrap');
-  if (avatarEl) {
-    const bg = avatarEl.style.backgroundImage || getComputedStyle(avatarEl).backgroundImage;
-    const match = /url\(["']?(.*?)["']?\)/.exec(bg || '');
-    if (match && match[1] && !/YOUR-PHOTO-FILENAME/.test(match[1])) {
-      waits.push(new Promise(resolve => {
-        const img = new Image();
-        img.src = match[1];
-        img.onload = img.onerror = () => resolve();
-      }));
-    }
-  }
-
-  /* ── Race: real readiness vs. hard timeout, whichever comes first ── */
-  Promise.all(waits).then(hide);
-  setTimeout(hide, cfg.MAX_WAIT_MS);
-})();
+  if (avatar
