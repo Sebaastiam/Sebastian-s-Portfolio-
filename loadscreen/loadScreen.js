@@ -37,6 +37,23 @@
     });
   }
 
+  /* ── Helper compartido: precarga una ruta como <img> o <video>
+     según extensión, resuelve en load/error, nunca rechaza ── */
+  const VIDEO_EXT = /\.(webm|mp4)$/i;
+  function preload(path) {
+    return new Promise(resolve => {
+      if (VIDEO_EXT.test(path)) {
+        const v = document.createElement('video');
+        v.src = path;
+        v.onloadedmetadata = v.onerror = () => resolve();
+      } else {
+        const img = new Image();
+        img.src = path;
+        img.onload = img.onerror = () => resolve();
+      }
+    });
+  }
+
   const waits = [];
 
   // 1. Fuentes
@@ -46,24 +63,35 @@
 
   // 2. Media del Photo Wall con límite de tiempo individual por archivo
   if (typeof PHOTO_WALL_MEDIA !== 'undefined') {
-    const VIDEO_EXT = /\.(webm|mp4)$/i;
     PHOTO_WALL_MEDIA.forEach(path => {
-      const p = new Promise(resolve => {
-        if (VIDEO_EXT.test(path)) {
-          const v = document.createElement('video');
-          v.src = path;
-          v.onloadedmetadata = v.onerror = () => resolve();
-        } else {
-          const img = new Image();
-          img.src = path;
-          img.onload = img.onerror = () => resolve();
-        }
-      });
       // Cada asset individual tiene máximo 3 segundos para responder, si no, se ignora
-      waits.push(timeoutPromise(p, 3000));
+      waits.push(timeoutPromise(preload(path), 3000));
     });
   }
-  
+
+  // 2.5 Imágenes/video del Scroll Narrative (Módulo 3).
+  // Sin esto, la primera "parada" del scroll narrativo empezaba a pedir
+  // background + layers recién cuando el usuario llegaba a ella — justo
+  // después de que el load screen se esconde — así que se veía el
+  // color-block placeholder (o un pop-in feo) por uno o dos frames.
+  // Ahora se precargan junto con el resto ANTES de esconder el load screen,
+  // igual que ya se hace con PHOTO_WALL_MEDIA, reutilizando el mismo helper
+  // `preload()` (detecta imagen vs video por extensión, igual que
+  // scrollNarrative.js hace internamente).
+  if (typeof SCROLL_NARRATIVE_CONFIG !== 'undefined') {
+    const scrollSrcs = new Set();
+    SCROLL_NARRATIVE_CONFIG.forEach(stop => {
+      if (stop.background && stop.background.src) scrollSrcs.add(stop.background.src);
+      (stop.layers || []).forEach(layer => {
+        if (layer.src) scrollSrcs.add(layer.src);
+      });
+    });
+
+    scrollSrcs.forEach(src => {
+      waits.push(timeoutPromise(preload(src), 3000));
+    });
+  }
+
   // 3. Avatar Opportunistic Check
   const avatarEl = document.querySelector('.hero-avatar-wrap');
   let avatarPath = null;
@@ -85,13 +113,9 @@
 
   // Si no hay ruta clara, omitimos el avatar en lugar de forzar un archivo que tal vez no exista
   const isPlaceholder = !avatarPath || /YOUR-PHOTO-FILENAME|placeholder|default-avatar/i.test(avatarPath);
-  
+
   if (!isPlaceholder) {
-    waits.push(timeoutPromise(new Promise(resolve => {
-      const img = new Image();
-      img.src = avatarPath;
-      img.onload = img.onerror = () => resolve();
-    }), 2000));
+    waits.push(timeoutPromise(preload(avatarPath), 2000));
   }
 
   // Ejecutar con seguridad absoluta
