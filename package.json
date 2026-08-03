@@ -1,0 +1,46 @@
+{
+  "name": "sebastian-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static portfolio site (vanilla HTML/CSS/JS). This package.json only adds a production build pipeline — it does not change how the site is authored or run in development.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "clean": "node scripts/clean.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:css": "stylelint \"**/*.css\" --ignore-path .stylelintignore",
+    "lint:css:fix": "stylelint \"**/*.css\" --ignore-path .stylelintignore --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm run lint && npm run lint:css && npm run format:check"
+  },
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "Firefox ESR",
+    "not dead",
+    "not IE 11"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "autoprefixer": "^10.5.4",
+    "cssnano": "^8.0.2",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "esbuild": "^0.28.1",
+    "globals": "^17.9.0",
+    "html-minifier-terser": "^7.2.0",
+    "postcss": "^8.5.25",
+    "prettier": "^3.9.6",
+    "stylelint": "^17.14.1",
+    "stylelint-config-recommended": "^18.0.0"
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
