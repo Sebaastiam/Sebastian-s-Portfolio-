@@ -1,485 +1,494 @@
 /* ══════════════════════════════════════════════════════════
-   components-main.css
-   Sebastián Castillo Portfolio — v1.3.2
+   components-main.css
+   Sebastián Castillo Portfolio — v1.3.2
 
-   Split from the former monolithic components.css (Engineering
-   Pass v3.2, Milestone 2) — this file covers the always-visible
-   homepage UI: everything present on initial page load, before
-   the archive/blog panel is ever opened.
+   Split from the former monolithic components.css (Engineering
+   Pass v3.2, Milestone 2) — this file covers the always-visible
+   homepage UI: everything present on initial page load, before
+   the archive/blog panel is ever opened.
 
-   Contenido:
-     1.  Glass card            (.glassModule, .module-*)
-     2.  Shared buttons        (.module-btn)
-     3.  Panel state helpers   (#btnPanel, .fade-*)
-     4.  Contact section       (#contactSection, .contact-*)
-     5.  Contact modal         (.cmodal-*)
-     6.  Form validation       (.input--invalid/valid/shake, .cmodal-send-error)
-     7.  More trigger button   (.more-trigger)
+   Contenido:
+     1.  Glass card            (.glassModule, .module-*)
+     2.  Shared buttons        (.module-btn)
+     3.  Panel state helpers   (#btnPanel, .fade-*)
+     4.  Contact section       (#contactSection, .contact-*)
+     5.  Contact modal         (.cmodal-*)
+     6.  Form validation       (.input--invalid/valid/shake, .cmodal-send-error)
+     7.  More trigger button   (.more-trigger)
 
-   For the archive/blog panel (feed items, ASCII bg, video embeds,
-   their responsive rules), see components-archive.css.
+   For the archive/blog panel (feed items, ASCII bg, video embeds,
+   their responsive rules), see components-archive.css.
 
-   Requiere: base.css cargado primero (tokens de :root).
-   Carga: base.css → components-main.css → components-archive.css
-          → animations.css → portafolio-panel.css
+   Requiere: base.css cargado primero (tokens de :root).
+   Carga: base.css → components-main.css → components-archive.css
+          → animations.css → portafolio-panel.css
 
-   Breakpoints en uso en este archivo: 780px (ver también
-   components-archive.css y base.css para el set completo).
-   ══════════════════════════════════════════════════════════ */
+   Breakpoints en uso en este archivo: 780px (ver también
+   components-archive.css y base.css para el set completo).
+   ══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
-   1. Glass card
-   ══════════════════════════════════════════════ */
+   1. Glass card
+   ══════════════════════════════════════════════ */
 
 .glassModule {
-  position: absolute;
-  z-index: var(--z-card); /* was bare 10 — now references base.css's z-index scale */
-  /* Fluid sizing: 280px → 340px wide, 360px → 420px tall */
-  width:  clamp(280px, 90vw, 340px);
-  height: clamp(360px, 65vh, 420px);
-  border-radius: var(--card-radius);
-  cursor: grab;
-  isolation: isolate;
-  touch-action: none;
-  box-shadow: var(--card-shadow);
-  transform-origin: center;
-  transition: box-shadow 0.25s ease, transform 0.18s ease;
-  will-change: transform;
-  contain: layout style;
-  background: transparent;
-  -webkit-user-select: none;
-  user-select: none;
-  outline: 1px solid rgba(255,255,255,0.02);
+  position: absolute;
+  z-index: var(--z-card); /* was bare 10 — now references base.css's z-index scale */
+  /* Fluid sizing: 280px → 340px wide, 360px → 420px tall */
+  width:  clamp(280px, 90vw, 340px);
+  height: clamp(360px, 65vh, 420px);
+  border-radius: var(--card-radius);
+  cursor: grab;
+  isolation: isolate;
+  touch-action: none;
+  box-shadow: var(--card-shadow);
+  transform-origin: center;
+  transition: box-shadow 0.25s ease, transform 0.18s ease;
+  will-change: transform;
+  contain: layout style;
+  background: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  outline: 1px solid rgba(255,255,255,0.02);
 }
 
 /* Glass tint layer */
 .glassModule::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  box-shadow: inset var(--shadow-offset) var(--shadow-offset)
-              var(--shadow-blur) var(--shadow-spread) var(--shadow-color);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
-    rgba(var(--tint-color), var(--tint-opacity));
-  border: 1px solid rgba(var(--tint-color), 0.14);
-  pointer-events: none;
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  box-shadow: inset var(--shadow-offset) var(--shadow-offset)
+              var(--shadow-blur) var(--shadow-spread) var(--shadow-color);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+    rgba(var(--tint-color), var(--tint-opacity));
+  border: 1px solid rgba(var(--tint-color), 0.14);
+  pointer-events: none;
 }
 
 /* Glass distortion backdrop */
 .glassModule::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  backdrop-filter: blur(var(--frost-blur));
-  -webkit-backdrop-filter: blur(var(--frost-blur));
-  filter: url(#glass-distortion);
-  -webkit-filter: url("#glass-distortion");
-  isolation: isolate;
-  pointer-events: none;
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  backdrop-filter: blur(var(--frost-blur));
+  -webkit-backdrop-filter: blur(var(--frost-blur));
+  filter: url(#glass-distortion);
+  -webkit-filter: url("#glass-distortion");
+  isolation: isolate;
+  pointer-events: none;
 }
 
 /* MOBILE PERF FIX: el filtro SVG (feTurbulence + feGaussianBlur + feDisplacementMap)
-   casi nunca tiene aceleración GPU en Android — se renderiza por software, y como este
-   elemento es ARRASTRABLE, cada frame de drag lo recalcula sobre toda el área de la
-   tarjeta. Es el motivo #1 por el que "al llegar al glass module, el rendimiento baja".
-   En móvil se elimina el filtro SVG y el backdrop-filter (que también es costoso en
-   Android), y se sustituye por un tinte plano — mantiene el look de "cristal" sin el
-   costo de recalcular una textura por frame. */
+   casi nunca tiene aceleración GPU en Android — se renderiza por software, y como este
+   elemento es ARRASTRABLE, cada frame de drag lo recalcula sobre toda el área de la
+   tarjeta. Es el motivo #1 por el que "al llegar al glass module, el rendimiento baja".
+   En móvil se elimina el filtro SVG y el backdrop-filter (que también es costoso en
+   Android), y se sustituye por un tinte plano — mantiene el look de "cristal" sin el
+   costo de recalcular una textura por frame. */
 @media (max-width: 768px) {
-  .glassModule::after {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    filter: none;
-    -webkit-filter: none;
-    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
-  }
+  .glassModule::after {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    filter: none;
+    -webkit-filter: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+  }
 }
 
 /* Drag states */
-.glassModule:hover   { box-shadow: var(--card-shadow-hover); }
-.glassModule:active  { cursor: grabbing; }
+.glassModule:hover   { box-shadow: var(--card-shadow-hover); }
+.glassModule:active  { cursor: grabbing; }
 .glassModule.dragging {
-  cursor: grabbing;
-  z-index: 9999; /* NOTE: matches base.css .skip-link's z-index (also 9999) —
-  flagged in the Milestone 2 audit as a coincidental collision, not a
-  deliberate shared tier. Left as-is; resolving it is a design call
-  (which should structurally always win) rather than a hygiene fix. */
-  transform: scale(1.01);
+  cursor: grabbing;
+  z-index: 9999; /* NOTE: matches base.css .skip-link's z-index (also 9999) —
+  flagged in the Milestone 2 audit as a coincidental collision, not a
+  deliberate shared tier. Left as-is; resolving it is a design call
+  (which should structurally always win) rather than a hygiene fix. */
+  transform: scale(1.01);
 /*note:.glassModule.touch-tap handled by JS animation class /* Clase auxiliar añadida por JS para simular interacción táctil en móviles */ }
 
 /* Inner layout */
 .module-content {
-  position: relative;
-  width: 100%; height: 100%;
-  padding: 28px;
-  border-radius: inherit;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  z-index: 1;
-  gap: 14px;
-  box-sizing: border-box;
-  text-align: center;
+  position: relative;
+  width: 100%; height: 100%;
+  padding: 28px;
+  border-radius: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  z-index: 1;
+  gap: 14px;
+  box-sizing: border-box;
+  text-align: center;
 }
 /* ==========================================
-   MODULE: TITLE (.module-title) - REFACTORED
-   ========================================== */
+   MODULE: TITLE (.module-title) - REFACTORED
+   ========================================== */
 
 .module-title {
-  /* 1. Variables locales con fallbacks seguros */
-  --gx: 50%;
-  --gy: 50%;
-  --warm-glow: rgba(168, 85, 247, 0.6);
+  /* 1. Variables locales con fallbacks seguros */
+  --gx: 50%;
+  --gy: 50%;
+  --warm-glow: rgba(168, 85, 247, 0.6);
 
-  margin: 0;
-  font-family: 'AuthenticDeclaration', cursive;
-  font-weight: normal;
-  font-size: clamp(70px, 10vw, 70px);
-  letter-spacing: 0.03em;
-  text-transform: none;
+  margin: 0;
+  font-family: 'AuthenticDeclaration', cursive;
+  font-weight: normal;
+  font-size: clamp(70px, 10vw, 70px);
+  letter-spacing: 0.03em;
+  text-transform: none;
 
-  /* Invocación global (garantiza animación incluso en fallbacks) */
-  animation: warmYellowGlow 6s ease-in-out infinite alternate;
-  color: #fff;
+  /* Invocación global (garantiza animación incluso en fallbacks) */
+  animation: warmYellowGlow 6s ease-in-out infinite alternate;
+  color: #fff;
 
-  /* Fallback visual para navegadores sin soporte OKLCH */
-  text-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.40),
-    0 0 18px rgba(180, 210, 255, 0.20),
-    0 0 40px rgba(140, 180, 255, 0.10);
+  /* Fallback visual para navegadores sin soporte OKLCH */
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.40),
+    0 0 18px rgba(180, 210, 255, 0.20),
+    0 0 40px rgba(140, 180, 255, 0.10);
 }
 /* 3. Renderizado avanzado con OKLCH y degradado en texto */
 @supports (color: oklch(0.72 0.27 18)) {
-  .module-title {
-    background-image: radial-gradient(
-      in oklch circle at var(--gx, 40%) var(--gy, 30%),
-      oklch(0.94 0.16 110) 25%,
-      oklch(0.78 0.24 60) 50%,
-      oklch(0.45 0.22 25) 90%,
-      oklch(23.42% 0.09602 348.778 / 0.582) 120%
-    );
+  .module-title {
+    background-image: radial-gradient(
+      in oklch circle at var(--gx, 40%) var(--gy, 30%),
+      oklch(0.94 0.16 110) 25%,
+      oklch(0.78 0.24 60) 50%,
+      oklch(0.45 0.22 25) 90%,
+      oklch(23.42% 0.09602 348.778 / 0.582) 120%
+    );
 
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
 
-    /* Anula text-shadow para que no tape el fondo recortado */
-    text-shadow: none;
+    /* Anula text-shadow para que no tape el fondo recortado */
+    text-shadow: none;
 
-    /* Resplandor mediante filtro (compatible con texto transparente) */
-   filter:
-      drop-shadow(0 0 22px var(--warm-glow2))
-      drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
-  }
+    /* Resplandor mediante filtro (compatible con texto transparente) */
+   filter:
+      drop-shadow(0 0 22px var(--warm-glow2))
+      drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
+  }
 }
 
 /* MOBILE PERF FIX: drop-shadow() animado (via warmYellowGlow, infinito cada 6s) es de
-   los filtros más caros que existen — recalcula el contorno del texto en cada frame,
-   para siempre, sobre un elemento SIEMPRE visible (el título del glass card). Sumado
-   al gradiente oklch que además se actualiza en cada frame por el rastreo de puntero
-   (ver panels.js → initGradientTracking, ya deshabilitado en móvil), este único
-   elemento acumulaba trabajo de repintado continuo e indefinido. En móvil: drop-shadow
-   fijo (sin animar) y sin transición — el "glow" se ve, pero ya no cuesta nada en reposo. */
+   los filtros más caros que existen — recalcula el contorno del texto en cada frame,
+   para siempre, sobre un elemento SIEMPRE visible (el título del glass card). Sumado
+   al gradiente oklch que además se actualiza en cada frame por el rastreo de puntero
+   (ver panels.js → initGradientTracking, ya deshabilitado en móvil), este único
+   elemento acumulaba trabajo de repintado continuo e indefinido. En móvil: drop-shadow
+   fijo (sin animar) y sin transición — el "glow" se ve, pero ya no cuesta nada en reposo. */
 @media (max-width: 768px) {
-  @supports (color: oklch(0.72 0.27 18)) {
-    .module-title {
-      animation: none;
-      filter:
-        drop-shadow(0 0 22px oklch(64.333% 0.24229 27.491))
-        drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
-    }
-  }
+  @supports (color: oklch(0.72 0.27 18)) {
+    .module-title {
+      animation: none;
+      filter:
+        drop-shadow(0 0 22px oklch(64.333% 0.24229 27.491))
+        drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
+    }
+  }
 }
 /* Ajuste Responsive (Engineering Pass v3.2) */
 @media (max-width: 780px) {
-  .module-title {
-    font-size: clamp(40px, 12vw, 55px);
-  }
+  .module-title {
+    font-size: clamp(40px, 12vw, 55px);
+  }
 }
 /* Drag hint label */
 .module-hint {
-  position: absolute;
-  right: 12px; top: 12px;
-  font-family: 'BarlowSC', system-ui, sans-serif;
-  font-weight: 900;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.65);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  position: absolute;
+  right: 12px; top: 12px;
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.65);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.45);
 }
 
 /* Back button */
 .module-back {
-  position: absolute;
-  left: -5px; top: -5px;
-  font-family: 'BarlowSC', system-ui, sans-serif;
-  font-weight: 900;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: rgba(179,36,36,0.65);
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 25px;
-  display: none; /* shown by JS */
-  -webkit-tap-highlight-color: transparent;
-  text-shadow: 1 1px 3px rgba(0,0,0,0.45);
+  position: absolute;
+  left: -5px; top: -5px;
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(179,36,36,0.65);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 25px;
+  display: none; /* shown by JS */
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: 1 1px 3px rgba(0,0,0,0.45);
 }
 .module-back:hover { color: #fff; }
 
 /* Small-screen overrides */
 @media (max-width: 780px) {
-  .module-title { font-size: 40px  /* ejemplo: tamaño móvil razonable */}
+  .module-title { font-size: 40px  /* ejemplo: tamaño móvil razonable */}
 }
 
 /* ══════════════════════════════════════════════
-   2. Shared buttons (.module-btn) - Unified Glass
-   ══════════════════════════════════════════════ */
+   2. Shared buttons (.module-btn) - Unified Glass
+   ══════════════════════════════════════════════ */
 
 .module-btn {
-  position: relative;
-  display: inline-block;
-  min-width: 150px;
-  padding: 12px 18px;
-  border-radius: 11px; /* Updated from 16px to match the new design */
-  border: 1px solid rgba(255, 255, 255, 0.30); /* Added glass border */
-  cursor: pointer;
-  
-  /* Translucent gradient background */
-  background: linear-gradient(135deg, rgba(109, 213, 255, 0.28), rgba(142, 84, 233, 0.28));
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  
-  color: #fff; /* Updated to white for contrast */
-  font-family: 'BarlowSC', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.26em;
-  transition: 0.18s ease-in-out all;
-  z-index: 1;
-  overflow: visible;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
-  text-decoration: none;
-  outline: 1px solid rgba(140, 190, 255, 0.5);
-  outline-offset: 3px; /* separación entre el botón y la línea */
+  position: relative;
+  display: inline-block;
+  min-width: 150px;
+  padding: 12px 18px;
+  border-radius: 11px; /* Updated from 16px to match the new design */
+  border: 1px solid rgba(255, 255, 255, 0.30); /* Added glass border */
+  cursor: pointer;
+  
+  /* Translucent gradient background */
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.28), rgba(142, 84, 233, 0.28));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  
+  color: #fff; /* Updated to white for contrast */
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  transition: 0.18s ease-in-out all;
+  z-index: 1;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+  text-decoration: none;
+  outline: 1px solid rgba(140, 190, 255, 0.5);
+  outline-offset: 3px; /* separación entre el botón y la línea */
 }
 /* Translucent light layer for the pop-in animation */
 .module-btn::after {
-  content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  border-radius: inherit; /* Automatically inherits the 14px border-radius */
-  transition: 0.2s ease-in-out all;
-  
-  /* Replaced solid white and heavy shadow with a subtle glass glow */
-  background: rgba(255, 255, 255, 0.15); 
-  box-shadow: none; 
-  z-index: -1;
-  transform-origin: center;
-  animation: bounceOut 1000ms linear both;
-  pointer-events: none;
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border-radius: inherit; /* Automatically inherits the 14px border-radius */
+  transition: 0.2s ease-in-out all;
+  
+  /* Replaced solid white and heavy shadow with a subtle glass glow */
+  background: rgba(255, 255, 255, 0.15); 
+  box-shadow: none; 
+  z-index: -1;
+  transform-origin: center;
+  animation: bounceOut 1000ms linear both;
+  pointer-events: none;
 }
 
 .module-btn:hover,
 .module-btn:focus-visible {
-  letter-spacing: 0.34em;
-  color: #fff; /* Kept white instead of dark grey (#1e1e1e) to ensure legibility on transparent backgrounds */
-  background: linear-gradient(135deg, rgba(109, 213, 255, 0.40), rgba(142, 84, 233, 0.40));
-  outline: none;
+  letter-spacing: 0.34em;
+  color: #fff; /* Kept white instead of dark grey (#1e1e1e) to ensure legibility on transparent backgrounds */
+  background: linear-gradient(135deg, rgba(109, 213, 255, 0.40), rgba(142, 84, 233, 0.40));
+  outline: none;
 }
 
 .module-btn:hover::after,
 .module-btn:focus-visible::after {
-  animation: bounceIn 1000ms linear both;
+  animation: bounceIn 1000ms linear both;
 }
 
 .module-btn:active {
-  letter-spacing: 0.28em;
-  transition: 120ms linear all;
-  transform: translateY(0) scale(0.995);
+  letter-spacing: 0.28em;
+  transition: 120ms linear all;
+  transform: translateY(0) scale(0.995);
 }
 
 .module-btn:active::after {
-  animation: scaleDown 120ms linear both;
+  animation: scaleDown 120ms linear both;
 }
 
 .module-btn:focus-visible {
-  /* Accessibility focus ring */
-  box-shadow: 0 10px 28px rgba(0,0,0,0.28), 0 0 0 4px rgba(100,150,255,0.65);
-  transform: translateY(-1px);
+  /* Accessibility focus ring */
+  box-shadow: 0 10px 28px rgba(0,0,0,0.28), 0 0 0 4px rgba(100,150,255,0.65);
+  transform: translateY(-1px);
 }
 
 /* ══════════════════════════════════════════════
-   3. Panel state helpers
-   ══════════════════════════════════════════════ */
+   3. Panel state helpers
+   ══════════════════════════════════════════════ */
 
 .fade-out { animation: fadeOut 0.35s ease forwards; }
-.fade-in  { animation: fadeIn  0.35s ease forwards; }
+.fade-in  { animation: fadeIn  0.35s ease forwards; }
 
 #btnPanel {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  opacity: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  opacity: 0;
 }
 
 
-/* ═════════════════════════════════════════════=
-   4. Contact section
-   ══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   4. Contact section
+   ══════════════════════════════════════════════ */
+
 #contactSection {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative;
 }
+
 /* Subtle scroll-in vignette */
 #contactSection::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.42) 100%);
-  pointer-events: none;
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.42) 100%);
+  pointer-events: none;
 }
+
 .contact-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 3vh; /* Shift slightly above center without using transform (avoids drag bug) */
-  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3vh; /* Shift slightly above center without using transform (avoids drag bug) */
+  z-index: 3;
 }
-  /* --heat-stop-1..4 previously declared here — promoted to
-     base.css :root (Milestone 2) since a 3rd consumer
-     (portafolio-panel.css) doesn't share this element as an
-     ancestor. Same values, single source now. */
+
+  /* --heat-stop-1..4 previously declared here — promoted to
+     base.css :root (Milestone 2) since a 3rd consumer
+     (portafolio-panel.css) doesn't share this element as an
+     ancestor. Same values, single source now. */
+
+
 /* "Contacto" heading — fluid size, oklch gradient */
 .contact-sticker {
-  --sticker-outline: clamp(3px, 0.11em, 5px);
-  display: inline-grid;
-  grid-template-areas: 'label';
-  isolation: isolate;
-  font-family: 'AuthenticDeclaration', cursive;
-  font-size: clamp(32px, 6.2vw, 52px);
-  font-style: italic;
-  letter-spacing: 0.015em;
-  line-height: 0.88;
-  text-transform: uppercase;
+  --sticker-outline: clamp(3px, 0.11em, 5px);
+  display: inline-grid;
+  grid-template-areas: 'label';
+  isolation: isolate;
+  font-family: 'AuthenticDeclaration', cursive;
+  font-size: clamp(32px, 6.2vw, 52px);
+  font-style: italic;
+  letter-spacing: 0.015em;
+  line-height: 0.88;
+  text-transform: uppercase;
 }
 .contact-sticker::before,
 .contact-sticker::after,
 .contact-sticker > * { grid-area: label; }
 .contact-sticker::before {
-  content: attr(data-text);
-  color: #fff;
-  -webkit-text-stroke: var(--sticker-outline) #fff;
-  paint-order: stroke fill;
-  z-index: 1;
+  content: attr(data-text);
+  color: #fff;
+  -webkit-text-stroke: var(--sticker-outline) #fff;
+  paint-order: stroke fill;
+  z-index: 1;
 }
 .contact-sticker::after {
-  content: attr(data-text);
-  color: transparent;
-  -webkit-text-stroke: 0.025em rgba(19, 13, 22, 0.9);
-  text-shadow: 0.07em 0.08em 0.04em rgba(0, 0, 0, 0.72);
-  transform: translate(0.035em, 0.045em);
-  z-index: 0;
+  content: attr(data-text);
+  color: transparent;
+  -webkit-text-stroke: 0.025em rgba(19, 13, 22, 0.9);
+  text-shadow: 0.07em 0.08em 0.04em rgba(0, 0, 0, 0.72);
+  transform: translate(0.035em, 0.045em);
+  z-index: 0;
 }
 .contact-prompt {
-  margin: 0;
-  text-align: center;
-  color: #fff;
-  position: relative;
-  z-index: 2;
+  margin: 0;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  z-index: 2;
 }
 @supports (color: oklch(0.75 0.25 220)) {
-  .contact-prompt {
-    background-image: linear-gradient(104deg, var(--heat-stop-3) 0%, var(--heat-stop-2) 31%, oklch(0.98 0.01 90) 49.5%, oklch(0.98 0.01 90) 50.5%, var(--heat-stop-1) 69%, oklch(0.68 0.22 330) 100%);
-
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-  }
+  .contact-prompt {
+    background-image: linear-gradient(104deg, var(--heat-stop-3) 0%, var(--heat-stop-2) 31%, oklch(0.98 0.01 90) 49.5%, oklch(0.98 0.01 90) 50.5%, var(--heat-stop-1) 69%, oklch(0.68 0.22 330) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
 }
 /* Floating contact button replacing the pill */
 .float-btn {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
-  appearance: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 14px 22px;
-  z-index: 10;
-  isolation: isolate;
-  /* Initial hidden state for the animation */
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease 0.2s, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 14px 22px;
+  z-index: 10;
+  isolation: isolate;
+  
+  /* Initial hidden state for the animation */
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease 0.2s, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
+  
 }
 .float-btn:hover {
-  transform: scale(1.05) translateY(-2px);
+  transform: scale(1.05) translateY(-2px);
 }
 .float-btn:hover .contact-sticker {
-  transform: rotate(-1.5deg) translateY(-0.04em);
+  transform: rotate(-1.5deg) translateY(-0.04em);
 }
 .float-btn:focus-visible {
-  outline: 3px solid oklch(0.92 0.17 95);
-  outline-offset: 5px;
-  border-radius: 8px;
+  outline: 3px solid oklch(0.92 0.17 95);
+  outline-offset: 5px;
+  border-radius: 8px;
 }
 .float-btn.dragging {
-  cursor: grabbing;
+  cursor: grabbing;
 }
+
 /* Glass Module overrides inside Contact Section */
 body #contactSection .glassModule {
-  position: relative; /* overrides absolute positioning without !important */
-  left: 0;
-  top: 0;
-  z-index: 5;
-  margin-bottom: 0; /* Reset margin since it's side-by-side now */
-  /* Initial hidden state */
-  opacity: 0;
-  transform: translateY(40px) scale(0.9);
-  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation: none !important; /* disable bounceOut from hero-v2.css */
+  position: relative; /* overrides absolute positioning without !important */
+  left: 0;
+  top: 0;
+  z-index: 5;
+  margin-bottom: 0; /* Reset margin since it's side-by-side now */
+  
+  /* Initial hidden state */
+  opacity: 0;
+  transform: translateY(40px) scale(0.9);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: none !important; /* disable bounceOut from hero-v2.css */
 }
+
 /* ── Animation Triggered by IntersectionObserver ── */
 #contactSection.is-active .glassModule {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  animation: bounceOut 700ms linear both !important;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: bounceOut 700ms linear both !important;
 }
 body #contactSection.is-active .glassModule:hover,
 body #contactSection.is-active .glassModule:focus-within {
-  animation: bounceIn 900ms linear both !important;
+  animation: bounceIn 900ms linear both !important;
 }
 body #contactSection.is-active .glassModule.dragging {
-  animation: none !important;
+  animation: none !important;
 }
 #contactSection.is-active .float-btn {
-  opacity: 1;
-  transform: translateY(0);
-
+  opacity: 1;
+  transform: translateY(0);
 }
 /* ══════════════════════════════════════════════
-   5. Contact modal (.cmodal-*)
-   ══════════════════════════════════════════════ */
+   5. Contact modal (.cmodal-*)
+   ══════════════════════════════════════════════ */
 
 .cmodal-wrap {
   position: fixed;
@@ -572,10 +581,10 @@ body #contactSection.is-active .glassModule.dragging {
   .cmodal-title {
     background-image: radial-gradient(
       in oklch circle at var(--gx, 50%) var(--gy, 50%),
-      oklch(0.92 0.13 85)        0vh,
-      oklch(0.72 0.27 18)       20vh,
-      oklch(0.42 0.18 320)      50vh,
-      oklch(0.18 0.06 280 / 0)  90vh
+      oklch(0.92 0.13 85)        0vh,
+      oklch(0.72 0.27 18)       20vh,
+      oklch(0.42 0.18 320)      50vh,
+      oklch(0.18 0.06 280 / 0)  90vh
     );
     background-clip: text;
     -webkit-background-clip: text;
@@ -643,149 +652,113 @@ textarea.cmodal-input {
   color: rgba(255,255,255,0.85);
   letter-spacing: 0.02em;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-}
 
-so i shall replace previous with:
-
-/* Modal title — Gradiente cromático completo sin recortes */
-.cmodal-title {
-  --gx: 50%;
-  --gy: 50%;
-  margin: 0;
-  font-family: 'AuthenticDeclaration', cursive;
-  font-weight: normal;
-  font-size: clamp(21.9px, 5.84vw, 36.5px);
-  letter-spacing: 0.03em;
-  text-transform: none;
-  text-align: center;
-  color: #fff;
-}
-
-@supports (color: oklch(0.75 0.25 220)) {
-  .cmodal-title {
-    /* Degradado de arriba a abajo / diagonal que mantiene 100% de opacidad en las letras */
-    background-image: linear-gradient(
-      135deg,
-      oklch(0.95 0.14 85) 0%,   /* Tono cálido brillante superior */
-      oklch(0.75 0.26 22) 50%,  /* Tono magenta/neón central */
-      oklch(0.55 0.22 330) 100% /* Tono violeta profundo inferior */
-    );
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-
-    /* Sombra de apoyo para resaltar sobre el fondo oscuro del modal */
-    filter:
-      drop-shadow(0 0 14px oklch(0.75 0.25 220 / 0.40))
-      drop-shadow(0 2px 4px rgba(0,0,0,0.60));
-  }
-} 
 /* ══════════════════════════════════════════════
-   6. Form validation states
-   ══════════════════════════════════════════════ */
+   6. Form validation states
+   ══════════════════════════════════════════════ */
 
 /* Invalid — red border + warm bg tint */
 .cmodal-input.input--invalid {
-  /* !important removed (Milestone 2, Pack 2B-2 #6) — this rule
-     already wins over .cmodal-input:focus on specificity tie +
-     source order (declared after it), so !important was
-     unnecessary. Please spot-check visually since form-state
-     styling is easy to eyeball. */
-  border-color: rgba(255, 80, 80, 0.70);
-  background:   rgba(255, 60, 60, 0.08);
+  /* !important removed (Milestone 2, Pack 2B-2 #6) — this rule
+     already wins over .cmodal-input:focus on specificity tie +
+     source order (declared after it), so !important was
+     unnecessary. Please spot-check visually since form-state
+     styling is easy to eyeball. */
+  border-color: rgba(255, 80, 80, 0.70);
+  background:   rgba(255, 60, 60, 0.08);
 }
 
 /* Valid — subtle green confirmation */
 .cmodal-input.input--valid {
-  border-color: rgba(80, 220, 140, 0.55);
+  border-color: rgba(80, 220, 140, 0.55);
 }
 
 /* Network send error banner */
 .cmodal-send-error {
-  margin: 4px 0 0;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(255, 60, 60, 0.14);
-  border: 1px solid rgba(255, 80, 80, 0.40);
-  color: rgba(255, 160, 160, 0.90);
-  font-family: 'BarlowSC', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-align: center;
+  margin: 4px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 60, 60, 0.14);
+  border: 1px solid rgba(255, 80, 80, 0.40);
+  color: rgba(255, 160, 160, 0.90);
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-align: center;
 }
 
 
 /* ══════════════════════════════════════════════
-   7. "Audiovisuales" side trigger button
-   ══════════════════════════════════════════════ */
+   7. "Audiovisuales" side trigger button
+   ══════════════════════════════════════════════ */
 
 .more-trigger {
-  /* --mw-win-face, --mw-win-hi, --mw-win-dark, --mw-win-black,
-     --mw-title-active, --mw-pink, --mw-cyan previously redeclared
-     here (identical to .more-panel's values) — now promoted to
-     base.css :root (Milestone 2, Pack 2B-2/2B-3 #3). Removed as
-     redundant; this element now inherits the same tokens from the
-     shared ancestor instead of a local, duplicate copy. */
-  position: fixed;
-  top: 0;
-  left: 50%;
-  right: auto;
-  z-index: 8;
-  transform: translateX(-50%);
-  padding: 0.62rem 0.75rem;
-  min-width: 0;
-  writing-mode: horizontal-tb;
-  text-orientation: mixed;
-  cursor: pointer;
-  color: #fff;
-  background:
-    linear-gradient(90deg,
-      var(--mw-title-active) 0  68%,
-      var(--mw-pink)        68% 84%,
-      var(--mw-cyan)        84% 100%);
-  border-top:    2px solid var(--mw-win-dark);
-  border-left:   2px solid var(--mw-win-hi);
-  border-right:  2px solid var(--mw-win-dark);
-  border-bottom: 2px solid var(--mw-win-hi);
-  box-shadow: 5px 5px 0 var(--mw-win-black), 9px 9px 0 var(--mw-pink);
-  font-family: 'BarlowSC', system-ui, sans-serif;
-  font-weight: 900;
-  font-size: 22px;
-  line-height: 1;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  transition: transform 0.35s ease, box-shadow 0.2s ease,
-              top 0.45s cubic-bezier(.2,.8,.2,1);
-  text-shadow:
-    0 0  8px rgba(0, 231, 255, 0.55),
-    0 0 18px rgba(0, 231, 255, 0.25);
+  /* --mw-win-face, --mw-win-hi, --mw-win-dark, --mw-win-black,
+     --mw-title-active, --mw-pink, --mw-cyan previously redeclared
+     here (identical to .more-panel's values) — now promoted to
+     base.css :root (Milestone 2, Pack 2B-2/2B-3 #3). Removed as
+     redundant; this element now inherits the same tokens from the
+     shared ancestor instead of a local, duplicate copy. */
+  position: fixed;
+  top: 0;
+  left: 50%;
+  right: auto;
+  z-index: 8;
+  transform: translateX(-50%);
+  padding: 0.62rem 0.75rem;
+  min-width: 0;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  cursor: pointer;
+  color: #fff;
+  background:
+    linear-gradient(90deg,
+      var(--mw-title-active) 0  68%,
+      var(--mw-pink)        68% 84%,
+      var(--mw-cyan)        84% 100%);
+  border-top:    2px solid var(--mw-win-dark);
+  border-left:   2px solid var(--mw-win-hi);
+  border-right:  2px solid var(--mw-win-dark);
+  border-bottom: 2px solid var(--mw-win-hi);
+  box-shadow: 5px 5px 0 var(--mw-win-black), 9px 9px 0 var(--mw-pink);
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: transform 0.35s ease, box-shadow 0.2s ease,
+              top 0.45s cubic-bezier(.2,.8,.2,1);
+  text-shadow:
+    0 0  8px rgba(0, 231, 255, 0.55),
+    0 0 18px rgba(0, 231, 255, 0.25);
 }
 
 .more-trigger:hover,
 .more-trigger:focus-visible {
-  transform: translate(-50%, 4px);
-  box-shadow: 8px 8px 0 var(--mw-win-black), 13px 13px 0 var(--mw-cyan);
-  outline: none;
+  transform: translate(-50%, 4px);
+  box-shadow: 8px 8px 0 var(--mw-win-black), 13px 13px 0 var(--mw-cyan);
+  outline: none;
 }
 
 body.more-open .more-trigger {
-  top: min(97vh, 1056px);
-  z-index: 130;
+  top: min(97vh, 1056px);
+  z-index: 130;
 }
 
 /* ── Móvil: comportamiento idéntico al desktop (ya centrado arriba) ── */
 @media (max-width: 768px) {
-  .more-trigger {
-    font-size: 18px;
-    padding: 0.5rem 0.65rem;
-  }
+  .more-trigger {
+    font-size: 18px;
+    padding: 0.5rem 0.65rem;
+  }
 }
 
 /* ── Note: warmPurpleGlow / warmYellowGlow keyframes ─────────
-   .module-title (section 1) and .module-desc (section 4, via
-   .module-desc) reference these animations, but the @keyframes
-   themselves live in animations.css (relocated there — Milestone 2,
-   Pack 2B-3 #9 — as the project's documented single home for
-   keyframes). Not a forward-reference problem: @keyframes lookups
-   resolve by name regardless of file load order. */
+   .module-title (section 1) and .module-desc (section 4, via
+   .module-desc) reference these animations, but the @keyframes
+   themselves live in animations.css (relocated there — Milestone 2,
+   Pack 2B-3 #9 — as the project's documented single home for
+   keyframes). Not a forward-reference problem: @keyframes lookups
+   resolve by name regardless of file load order. */
