@@ -45,6 +45,7 @@
   transform-origin: center;
   transition: box-shadow 0.25s ease, transform 0.18s ease;
   will-change: transform;
+  contain: layout style;
   background: transparent;
   -webkit-user-select: none;
   user-select: none;

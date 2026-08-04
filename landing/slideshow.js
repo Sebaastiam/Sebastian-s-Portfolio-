@@ -37,10 +37,12 @@
   function startCycle() {
     if (intervalId || document.hidden) return;
     intervalId = setInterval(() => {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      applyAnim(current);
-      slides[current].classList.add('active');
+      requestAnimationFrame(() => {
+        slides[current].classList.remove('active');
+        current = (current + 1) % slides.length;
+        applyAnim(current);
+        slides[current].classList.add('active');
+      });
     }, CONFIG.SLIDE_INTERVAL_MS);
   }
 

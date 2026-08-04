@@ -53,6 +53,7 @@
   pointer-events: none;
   box-shadow: -22px 0 70px rgba(0,0,0,0.38);
   overflow: hidden;
+  contain: layout style paint;
 }
 .more-panel.open {
   transform: translateX(0);

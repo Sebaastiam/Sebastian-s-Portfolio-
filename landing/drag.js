@@ -12,16 +12,26 @@
     let originX = 0, originY = 0;
     let isDragging = false;
     let elWidth = 0, elHeight = 0;
+    let baseLeft = 0, baseTop = 0;
     let pendingX = null, pendingY = null;
+    let lastDX = 0, lastDY = 0;
     let rafId = 0;
+
+    // .glassModule.dragging has a CSS transform: scale(1.01) (components-main.css);
+    // .float-btn.dragging does not. Since the inline transform set below wins over
+    // that class rule for whichever element has it, fold the same scale in only
+    // for glassModule so its "pop" effect is preserved and float-btn stays unchanged.
+    const dragScale = el.classList.contains('glassModule') ? ' scale(1.01)' : '';
 
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
     function applyPending() {
       rafId = 0;
       if (pendingX === null) return;
-      el.style.left = pendingX + 'px';
-      el.style.top  = pendingY + 'px';
+      lastDX = pendingX - baseLeft;
+      lastDY = pendingY - baseTop;
+      // transform instead of left/top: compositor-only, no layout/reflow per frame
+      el.style.transform = `translate3d(${lastDX}px, ${lastDY}px, 0)${dragScale}`;
       pendingX = pendingY = null;
     }
 
@@ -44,6 +54,8 @@
         el.style.top = rect.top + 'px';
       }
 
+      baseLeft = parseFloat(el.style.left) || rect.left;
+      baseTop = parseFloat(el.style.top) || rect.top;
       originX = e.clientX - rect.left;
       originY = e.clientY - rect.top;
       elWidth = el.offsetWidth;
@@ -69,6 +81,16 @@
       document.removeEventListener('pointercancel', onUp);
       if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
       pendingX = pendingY = null;
+      // Bake the transform-based offset back into left/top once, so the
+      // resize handler (and any future drag start) keeps working off
+      // left/top as the resting-state source of truth — transform is only
+      // used for the active per-frame movement itself.
+      if (lastDX !== 0 || lastDY !== 0) {
+        el.style.left = (baseLeft + lastDX) + 'px';
+        el.style.top = (baseTop + lastDY) + 'px';
+        el.style.transform = 'none';
+        lastDX = lastDY = 0;
+      }
     }
 
     el.addEventListener('pointerdown', e => {
