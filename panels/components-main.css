@@ -268,8 +268,6 @@
   -webkit-tap-highlight-color: transparent;
   box-shadow: 0 6px 18px rgba(0,0,0,0.16);
   text-decoration: none;
-}
-.module-btn {
   outline: 1px solid rgba(140, 190, 255, 0.5);
   outline-offset: 3px; /* separación entre el botón y la línea */
 }
