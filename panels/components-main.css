@@ -144,11 +144,8 @@
   font-size: clamp(70px, 10vw, 70px);
   letter-spacing: 0.03em;
   text-transform: none;
-/*. Invocación global (garantiza animación incluso en fallbacks) */
+/*. Invocación global (garantiza animación incluso en fallbacks) */ /* Fallback visual para navegadores sin soporte OKLCH */
   animation: warmYellowGlow 6s ease-in-out infinite alternate;
-}
-    /* Fallback visual para navegadores sin soporte OKLCH */
-.module-title {
   color: #fff;
   text-shadow:
     0 1px   3px rgba(0, 0, 0, 0.40),
