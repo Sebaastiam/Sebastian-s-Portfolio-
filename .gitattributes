@@ -1,2 +1,4 @@
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.webm filter=lfs diff=lfs merge=lfs -text
 *.webm !text !filter !merge !diff
 *.mp4 !text !filter !merge !diff
