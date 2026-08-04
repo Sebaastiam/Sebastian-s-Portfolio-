@@ -174,8 +174,8 @@
     text-shadow: none;
 
     /* Resplandor mediante filtro (compatible con texto transparente) */
-    filter:
-      drop-shadow(0 0 22px var(--warm-glow))
+   filter:
+      drop-shadow(0 0 22px var(--warm-glow2))
       drop-shadow(0 1px 5px rgba(255, 0, 0, 0.781));
   }
 }
