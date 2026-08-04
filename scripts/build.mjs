@@ -51,11 +51,12 @@ const SOURCE_ENTRIES = [
   'scroll',
   'fonts',
   'images',
+  'Video',
 ];
 
 const FONT_EXTENSIONS = new Set(['.woff2', '.woff', '.ttf', '.otf', '.eot']);
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico']);
-
+const VIDEO_EXTENSIONS = new Set(['.webm', '.mp4', '.mov']);
 const stats = { html: 0, css: 0, js: 0, copied: 0, bytesBefore: 0, bytesAfter: 0 };
 
 async function listFilesRecursively(entryPath) {
@@ -184,7 +185,16 @@ async function optimizeSvgFile(srcPath, outPath) {
   stats.bytesBefore += Buffer.byteLength(src);
   stats.bytesAfter += Buffer.byteLength(result.data);
 }
-
+  async function optimizeWebp(srcPath, outPath) {
+  const src = await readFile(srcPath);
+  let out = await sharp(src).webp({ quality: 82, effort: 4 }).toBuffer();
+  if (out.length >= src.length) out = src;
+  await ensureDirFor(outPath);
+  await writeFile(outPath, out);
+  stats.copied += 1;
+  stats.bytesBefore += src.length;
+  stats.bytesAfter += out.length;
+}
 async function copyAsIs(srcPath, outPath) {
   await ensureDirFor(outPath);
   const buf = await readFile(srcPath);
@@ -231,6 +241,10 @@ async function main() {
         await optimizeGif(srcPath, outPath);
       } else if (ext === '.svg') {
         await optimizeSvgFile(srcPath, outPath);
+      } else if (ext === '.webp') {
+        await optimizeWebp(srcPath, outPath);
+      } else if (VIDEO_EXTENSIONS.has(ext)) {
+        await copyAsIs(srcPath, outPath);
       } else if (IMAGE_EXTENSIONS.has(ext)) {
         // .webp, .ico, etc. — no safe lossless optimizer wired in, pass through.
         await copyAsIs(srcPath, outPath);
