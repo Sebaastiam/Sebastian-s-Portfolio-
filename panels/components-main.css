@@ -337,158 +337,51 @@
 
 
 /* ══════════════════════════════════════════════
-   4. Contact section
+   4. Contact section — Sticker Header
    ══════════════════════════════════════════════ */
 
-#contactSection {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  position: relative;
-}
-
-/* Subtle scroll-in vignette */
-#contactSection::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.42) 100%);
-  pointer-events: none;
-}
-
-.contact-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 3vh; /* Shift slightly above center without using transform (avoids drag bug) */
-  z-index: 3;
-}
-
-  /* --heat-stop-1..4 previously declared here — promoted to
-     base.css :root (Milestone 2) since a 3rd consumer
-     (portafolio-panel.css) doesn't share this element as an
-     ancestor. Same values, single source now. */
-
-
-/* "Contacto" heading — fluid size, oklch gradient */
 .contact-sticker {
   --sticker-outline: clamp(3px, 0.11em, 5px);
-  display: inline-grid;
-  grid-template-areas: 'label';
-  isolation: isolate;
+  display: inline-block;
   font-family: 'AuthenticDeclaration', cursive;
   font-size: clamp(32px, 6.2vw, 52px);
   font-style: italic;
   letter-spacing: 0.015em;
   line-height: 0.88;
   text-transform: uppercase;
-}
-.contact-sticker::before,
-.contact-sticker::after,
-.contact-sticker > * { grid-area: label; }
-.contact-sticker::before {
-  content: attr(data-text);
-  color: #fff;
-  -webkit-text-stroke: var(--sticker-outline) #fff;
-  paint-order: stroke fill;
-  z-index: 1;
-}
-.contact-sticker::after {
-  content: attr(data-text);
-  color: transparent;
-  -webkit-text-stroke: 0.025em rgba(19, 13, 22, 0.9);
-  text-shadow: 0.07em 0.08em 0.04em rgba(0, 0, 0, 0.72);
-  transform: translate(0.035em, 0.045em);
-  z-index: 0;
-}
-.contact-prompt {
-  margin: 0;
-  text-align: center;
-  color: #fff;
   position: relative;
   z-index: 2;
+
+  /* Relleno blanco por defecto (fallback) */
+  color: #fff;
+  
+  /* Borde blanco exterior alrededor de cada letra */
+  -webkit-text-stroke: var(--sticker-outline) #fff;
+  paint-order: stroke fill;
+  
+  /* Sombra proyectada posterior */
+  filter: drop-shadow(0.07em 0.08em 0.04em rgba(0, 0, 0, 0.72));
 }
+
+/* Aplicación del degradado OKLCH sobre el relleno del texto */
 @supports (color: oklch(0.75 0.25 220)) {
-  .contact-prompt {
-    background-image: linear-gradient(104deg, var(--heat-stop-3) 0%, var(--heat-stop-2) 31%, oklch(0.98 0.01 90) 49.5%, oklch(0.98 0.01 90) 50.5%, var(--heat-stop-1) 69%, oklch(0.68 0.22 330) 100%);
+  .contact-sticker {
+    background-image: linear-gradient(
+      104deg, 
+      var(--heat-stop-3) 0%, 
+      var(--heat-stop-2) 31%, 
+      oklch(0.98 0.01 90) 49.5%, 
+      oklch(0.98 0.01 90) 50.5%, 
+      var(--heat-stop-1) 69%, 
+      oklch(0.68 0.22 330) 100%
+    );
     background-clip: text;
     -webkit-background-clip: text;
+    
+    /* Hace transparente solo el relleno sin perder el stroke blanco */
     color: transparent;
   }
-}
-/* Floating contact button replacing the pill */
-.float-btn {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
-  appearance: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 14px 22px;
-  z-index: 10;
-  isolation: isolate;
-  
-  /* Initial hidden state for the animation */
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease 0.2s, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
-  
-}
-.float-btn:hover {
-  transform: scale(1.05) translateY(-2px);
-}
-.float-btn:hover .contact-sticker {
-  transform: rotate(-1.5deg) translateY(-0.04em);
-}
-.float-btn:focus-visible {
-  outline: 3px solid oklch(0.92 0.17 95);
-  outline-offset: 5px;
-  border-radius: 8px;
-}
-.float-btn.dragging {
-  cursor: grabbing;
-}
-
-/* Glass Module overrides inside Contact Section */
-body #contactSection .glassModule {
-  position: relative; /* overrides absolute positioning without !important */
-  left: 0;
-  top: 0;
-  z-index: 5;
-  margin-bottom: 0; /* Reset margin since it's side-by-side now */
-  
-  /* Initial hidden state */
-  opacity: 0;
-  transform: translateY(40px) scale(0.9);
-  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation: none !important; /* disable bounceOut from hero-v2.css */
-}
-
-/* ── Animation Triggered by IntersectionObserver ── */
-#contactSection.is-active .glassModule {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  animation: bounceOut 700ms linear both !important;
-}
-body #contactSection.is-active .glassModule:hover,
-body #contactSection.is-active .glassModule:focus-within {
-  animation: bounceIn 900ms linear both !important;
-}
-body #contactSection.is-active .glassModule.dragging {
-  animation: none !important;
-}
-#contactSection.is-active .float-btn {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-
-/* ══════════════════════════════════════════════
+}/* ══════════════════════════════════════════════
    5. Contact modal (.cmodal-*)
    ══════════════════════════════════════════════ */
 
