@@ -107,8 +107,8 @@
 
 /* Applied to .glassModule by drag.js via style.animation */
 /*.glassModule:hover        { animation: bounceIn  900ms linear both;} ¡¡¡DEACTIVATED FOR INITSCROLL!!! */
-.glassModule:active       { animation: scaleDown 120ms linear both; cursor: grabbing; }
-.glassModule.touch-tap    { animation: scaleDown 120ms linear both; }
+.glassModule:active       { animation: scaleDown 120ms linear both; cursor: grabbing; will-change: transform; }
+.glassModule.touch-tap    { animation: scaleDown 120ms linear both; will-change: transform; }
 
 
 /* ── 4. Scroll hint bob ───────────────────────────────────── */
@@ -120,6 +120,7 @@
 
 #scrollHint svg {
   animation: hintBounce 1.9s ease-in-out infinite;
+  will-change: transform;
 }
 
 

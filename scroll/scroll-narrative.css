@@ -38,6 +38,7 @@
   top: 0;                  /* Se ancla exactamente al borde superior del viewport */
   height: 100vh;           /* Mantiene siempre el tamaño exacto de 1 pantalla física */
   overflow: hidden;        /* Recorta los bordes de la imagen cuando hace zoom o cae para evitar scrollbars accidentales */
+  contain: layout style paint; /* Aísla el repintado de esta parada del resto de la página */
   display: flex;           /* Flexbox para alinear elementos internos */
   align-items: flex-end;   /* Alinea el texto en la parte inferior por defecto. 
                               Ej: flex-end (abajo) / center (centro) / flex-start (arriba) */
