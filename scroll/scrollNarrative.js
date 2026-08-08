@@ -228,19 +228,35 @@
     progressFill.style.width = (done * 100) + '%';
   }
 
-  /* ── Modelo 3D: aparece/enfoca entre revealFrom y revealTo (progress
-     PROPIO de la parada). Fuera de esa ventana, pausado — no renderiza,
-     no cuesta nada. La carga del motor + .glb es perezosa, una sola vez. ── */
+  /* ── Modelo 3D: 3 tramos dentro de [revealFrom, fadeOutTo] (progress
+     PROPIO de la parada) — fade-in (revealFrom→focusAt), sostenido en foco,
+     fade-out (fadeOutFrom→fadeOutTo). El zoom (--model-scale) es continuo
+     en toda la ventana, independiente del fade — sigue acercándose aunque
+     ya esté a opacidad 1. Fuera de la ventana: pausado, no renderiza. */
   function updateModel(stop, progress) {
     const { config, canvas } = stop.model;
-    const from = config.revealFrom ?? 0.5, to = config.revealTo ?? 1;
-    if (progress < from) { pauseModel(stop); return; }
-    const t = Math.min(1, (progress - from) / Math.max(0.001, to - from)); /* 0→1 dentro de la ventana */
+    const from      = config.revealFrom  ?? 0.03;
+    const focusAt    = config.revealTo    ?? 0.25;
+    const fadeFrom   = config.fadeOutFrom ?? 0.88;
+    const fadeTo     = config.fadeOutTo   ?? 1;
+
+    if (progress < from || progress > fadeTo) { pauseModel(stop); return; }
+
+    let t; /* envolvente de opacidad/blur — sube, se sostiene, baja */
+    if (progress < focusAt)      t = (progress - from) / Math.max(0.001, focusAt - from);
+    else if (progress < fadeFrom) t = 1;
+    else                          t = 1 - (progress - fadeFrom) / Math.max(0.001, fadeTo - fadeFrom);
+    t = Math.max(0, Math.min(1, t));
+
+    /* Zoom dramático: crece en TODA la ventana [from, fadeTo], no se detiene
+       cuando t llega a 1 — sigue "acercándose" hasta el final. */
+    const zoomT = Math.max(0, Math.min(1, (progress - from) / Math.max(0.001, fadeTo - from)));
+
     canvas.style.setProperty('--model-opacity', String(t));
     canvas.style.setProperty('--model-blur', ((1 - t) * 14) + 'px');
-    canvas.style.setProperty('--model-scale', String(0.85 + t * 0.55)); /* 0.85 → 1.4, "se acerca" junto con el resto */
+    canvas.style.setProperty('--model-scale', String(0.7 + zoomT * 1.9)); /* 0.7 → 2.6, arco completo */
     if (!stop.model.viewer && !stop.model.loading) loadModel(stop);
-    if (stop.model.viewer) stop.model.viewer.setFocus(t); /* rotación/foco sutil, no continuo */
+    if (stop.model.viewer) stop.model.viewer.setFocus(zoomT); /* giro atado al scroll, no al fade */
     resumeRender(stop);
   }
 
@@ -306,14 +322,35 @@ function initModelViewer(container, glbSrc) {
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0, 4);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-    const dir = new THREE.DirectionalLight(0xffffff, 2.5);
-    dir.position.set(2, 3, 4);
-    scene.add(dir);
+    /* Iluminación de 3 puntos, sin texturas/archivos extra:
+       - Hemisferio: ambiente con gradiente cielo/suelo (más natural que un
+         AmbientLight plano, y no requiere un mapa HDRI).
+       - Key cálida: la luz principal, mismo tono cálido que el resto del
+         sitio (glow del título, barra de progreso).
+       - Rim fría, desde atrás: separa la silueta del fondo, look "cinemático". */
+    scene.add(new THREE.HemisphereLight(0xfff2e0, 0x201028, 0.55));
+    const key = new THREE.DirectionalLight(0xffdca8, 2.6);
+    key.position.set(2, 3, 4);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x6fb2ff, 1.1);
+    rim.position.set(-3, 1.5, -3);
+    scene.add(rim);
 
     let model = null;
     let paused = true;
     let raf = 0;
+    let spinY = 0;      /* rotación base, atada al scroll (el "twist") */
+    let mouseTX = 0, mouseTY = 0, mouseX = 0, mouseY = 0; /* target / suavizado */
+
+    /* Seguimiento de mouse: sólo actualiza dos números — el trabajo real
+       (lerp + render) pasa en tick(), y tick() sólo corre mientras el
+       modelo está en pantalla (paused=false). En touch no hay mousemove
+       persistente, así que ahí simplemente no pasa nada — gratis. */
+    function onPointerMove(e) {
+      mouseTX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseTY = (e.clientY / window.innerHeight) * 2 - 1;
+    }
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
 
     function resize() {
       const w = container.clientWidth || 300, h = container.clientHeight || 300;
@@ -324,10 +361,23 @@ function initModelViewer(container, glbSrc) {
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
+    /* Loop continuo — pero SOLO mientras paused=false (modelo en pantalla y
+       dentro de su ventana de reveal). En cuanto pause() lo marca, tick()
+       deja de reprogramarse solo y el loop muere ahí — nunca queda un
+       requestAnimationFrame corriendo de fondo sin motivo (la lección de
+       toda esta sesión). */
     function tick() {
       raf = 0;
       if (paused) return;
+      mouseX += (mouseTX - mouseX) * 0.06;
+      mouseY += (mouseTY - mouseY) * 0.06;
+      if (model) {
+        model.rotation.y = spinY + mouseX * 0.22; /* twist del scroll + look-around sutil */
+        model.rotation.x = mouseY * 0.10;
+        model.rotation.z = mouseX * 0.05;
+      }
       renderer.render(scene, camera);
+      raf = requestAnimationFrame(tick);
     }
     function requestFrame() { if (!raf) raf = requestAnimationFrame(tick); }
 
@@ -355,9 +405,10 @@ function initModelViewer(container, glbSrc) {
     });
 
     return {
-      setFocus(t) {
-        /* Rotación sutil ligada al progreso, no una animación infinita */
-        if (model) model.rotation.y = t * Math.PI * 0.6;
+      setFocus(zoomT) {
+        /* Gira sobre su propio eje conforme avanza el scroll — un giro
+           completo (2π) a lo largo de toda la ventana visible del modelo. */
+        spinY = zoomT * Math.PI * 2;
         requestFrame();
       },
       pause() { paused = true; },

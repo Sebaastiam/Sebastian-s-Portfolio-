@@ -8,12 +8,14 @@
    es 1 sola alargada para dar espacio al modelo 3D al final).
 
    NUEVO: `model` (opcional, una sola vez, en la parada donde debe aparecer) —
-     src:        ruta al .glb (motor tres.js vive en ./scroll/three.js)
-     revealFrom: 0..1, en qué punto del progress PROPIO de esta parada
-                 empieza a asomar el modelo (antes borroso/lejano)
-     revealTo:   0..1, en qué punto ya está en foco/primer plano
-     Fuera de [revealFrom, revealTo] el modelo no se renderiza (pausado),
-     así no cuesta nada mientras el usuario ni siquiera ha llegado ahí.
+     src:         ruta al .glb (motor tres.js vive en ./scroll/)
+     revealFrom:  0..1, dónde empieza a asomar (borroso/lejano → foco)
+     revealTo:    0..1, dónde ya está a foco/opacidad completa
+     fadeOutFrom: 0..1, dónde empieza a desvanecer otra vez
+     fadeOutTo:   0..1, dónde ya desapareció del todo
+     El zoom (--model-scale) es continuo en TODO [revealFrom, fadeOutTo] —
+     sigue acercándose aunque ya esté a opacidad 1. Fuera de esa ventana
+     completa, el modelo no se renderiza (pausado) — cero costo.
    ══════════════════════════════════════════════════════════ */
 
 window.SCROLL_NARRATIVE_CONFIG = [
@@ -30,8 +32,10 @@ window.SCROLL_NARRATIVE_CONFIG = [
     ],
     model: {
       src: './scroll/mushroom.glb', /* ajusta el nombre real del archivo */
-      revealFrom: 0.55, /* justo donde antes arrancaba la 2ª parada "Bogotá, de noche" */
-      revealTo: 0.98,   /* casi al final del recorrido — primerísimo plano */
+      revealFrom: 0.04,   /* casi desde que arranca el scroll — antes 0.55 */
+      revealTo: 0.22,     /* rápido a foco completo, y ahí se sostiene */
+      fadeOutFrom: 0.88,  /* nuevo: empieza a desvanecer cerca del final... */
+      fadeOutTo: 1,       /* ...y llega a 0 justo antes de pasar a "El estudio" */
     },
   },
   {
