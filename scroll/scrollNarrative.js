@@ -331,13 +331,11 @@ function initModelViewer(container, glbSrc) {
     }
     function requestFrame() { if (!raf) raf = requestAnimationFrame(tick); }
 
-    /* DRACOLoader descomprime la geometría del .glb — sólo hace falta el
-       decodificador (WASM), no el resto del repo: usamos el que Google aloja
-       públicamente para esto exacto, así no hay que arrastrar otra carpeta
-       más al repo. Si prefieres 100% local, cambia setDecoderPath por
-       './scroll/draco/' y copia ahí examples/jsm/libs/draco/. */
+    /* DRACOLoader descomprime la geometría del .glb — decodificador local,
+       ./scroll/draco/ (draco_decoder.js, draco_wasm_wrapper.js,
+       draco_decoder.wasm), sin depender de un CDN externo. */
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+    dracoLoader.setDecoderPath(new URL('./scroll/draco/', window.location.href).href);
 
     const gltfLoader = new GLTFLoader();
     gltfLoader.setDRACOLoader(dracoLoader);
