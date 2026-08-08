@@ -38,7 +38,6 @@
   top: 0;                  /* Se ancla exactamente al borde superior del viewport */
   height: 100vh;           /* Mantiene siempre el tamaño exacto de 1 pantalla física */
   overflow: hidden;        /* Recorta los bordes de la imagen cuando hace zoom o cae para evitar scrollbars accidentales */
-  contain: layout style paint; /* Aísla el repintado de esta parada del resto de la página */
   display: flex;           /* Flexbox para alinear elementos internos */
   align-items: flex-end;   /* Alinea el texto en la parte inferior por defecto. 
                               Ej: flex-end (abajo) / center (centro) / flex-start (arriba) */
@@ -101,6 +100,49 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* ── Modelo 3D (three.js) — capa por encima de todas las demás, propio
+   sistema de --model-* (no comparte --scale/--blur/--opacity con las capas
+   planas: su curva de aparición es independiente, ver revealFrom/revealTo
+   en la config). Empieza invisible/pequeño — sólo se activa cuando la
+   parada entra en su ventana de reveal. ── */
+.narrative-stop__model-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* por encima de la capa "near" (depth más alto) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: var(--model-opacity, 0);
+  filter: blur(var(--model-blur, 14px));
+  transform: scale(var(--model-scale, 0.85));
+  pointer-events: none;
+  transition: opacity 0.2s linear, filter 0.2s ease-out;
+}
+.narrative-stop__model-canvas canvas {
+  max-width: 70%;
+  max-height: 70%;
+}
+
+/* ── Barra de progreso del scroll narrativo — fija, arriba del todo.
+   --narrative-progress (0→1) la actualiza scrollNarrative.js en el mismo
+   rAF que ya usa para el parallax, sin listeners extra. ── */
+.narrative-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+.narrative-progress__fill {
+  height: 100%;
+  width: calc(var(--narrative-progress, 0) * 100%);
+  background: linear-gradient(90deg, #ff5050, #ffcc00);
+  transition: width 0.1s linear;
 }
 
 /* ── Placeholders de prueba visual para capas sin asset final ── */

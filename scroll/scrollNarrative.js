@@ -65,6 +65,7 @@
     const stopEl = document.createElement('div');
     stopEl.className = 'narrative-stop' + (stop.isLastStop ? ' narrative-stop--hero' : '');
     stopEl.style.setProperty('--stack-order', String(SCROLL_NARRATIVE_CONFIG.length - i));
+    if (stop.scrollLength) stopEl.style.setProperty('--stop-height', stop.scrollLength);
 
     const frame = document.createElement('div');
     frame.className = 'narrative-stop__frame';
@@ -142,9 +143,23 @@
       frame.appendChild(text);
     }
 
+    /* Modelo 3D (opcional) — el <canvas> se crea ya, pero el motor tres.js
+       y el .glb sólo se cargan cuando el scroll entra a su ventana de
+       reveal (ver initModelViewer). Nunca cuesta nada antes de eso. */
+    let modelCanvas = null;
+    if (stop.model && stop.model.src) {
+      modelCanvas = document.createElement('div');
+      modelCanvas.className = 'narrative-stop__model-canvas';
+      frame.appendChild(modelCanvas);
+    }
+
     stopEl.appendChild(frame);
     root.appendChild(stopEl);
-    stopEls.push({ el: stopEl, frameEl: frame, visuals: visualRefs, isLastStop: Boolean(stop.isLastStop), inRange: false });
+    stopEls.push({
+      el: stopEl, frameEl: frame, visuals: visualRefs,
+      isLastStop: Boolean(stop.isLastStop), inRange: false,
+      model: stop.model ? { config: stop.model, canvas: modelCanvas, viewer: null, loading: false } : null,
+    });
   });
 
   /* ── IntersectionObserver: tracks which stops are anywhere near
@@ -162,6 +177,14 @@
 
   stopEls.forEach(s => io.observe(s.el));
 
+  /* ── Barra de progreso — un solo elemento, fuera de .narrative para no
+     interferir con los z-index internos de las paradas. ── */
+  const progressBar = document.createElement('div');
+  progressBar.className = 'narrative-progress';
+  progressBar.innerHTML = '<div class="narrative-progress__fill"></div>';
+  document.body.appendChild(progressBar);
+  const progressFill = progressBar.querySelector('.narrative-progress__fill');
+
   /* ── Scroll handling: passive listener + rAF batching, same
      pattern already fixed into drag.js this session ── */
   let rafId = 0;
@@ -169,7 +192,7 @@
   function updateParallax() {
     rafId = 0;
     stopEls.forEach(stop => {
-      if (!stop.inRange) return; /* never compute for off-screen stops */
+      if (!stop.inRange) { pauseModel(stop); return; } /* never compute for off-screen stops */
       const rect = stop.el.getBoundingClientRect();
       const span = rect.height - window.innerHeight; /* total scrollable range within this stop */
       if (span <= 0) return;
@@ -191,7 +214,48 @@
         visual.el.style.setProperty('--blur', blur + 'px');
         visual.el.style.setProperty('--opacity', String(opacity));
       });
+      if (stop.model) updateModel(stop, progress);
     });
+    updateProgressBar();
+  }
+
+  /* ── Progreso global: qué % del alto TOTAL de .narrative ya se scrolleó. ── */
+  function updateProgressBar() {
+    const rect = root.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    const done = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
+    progressFill.style.setProperty('--narrative-progress', String(done));
+    progressFill.style.width = (done * 100) + '%';
+  }
+
+  /* ── Modelo 3D: aparece/enfoca entre revealFrom y revealTo (progress
+     PROPIO de la parada). Fuera de esa ventana, pausado — no renderiza,
+     no cuesta nada. La carga del motor + .glb es perezosa, una sola vez. ── */
+  function updateModel(stop, progress) {
+    const { config, canvas } = stop.model;
+    const from = config.revealFrom ?? 0.5, to = config.revealTo ?? 1;
+    if (progress < from) { pauseModel(stop); return; }
+    const t = Math.min(1, (progress - from) / Math.max(0.001, to - from)); /* 0→1 dentro de la ventana */
+    canvas.style.setProperty('--model-opacity', String(t));
+    canvas.style.setProperty('--model-blur', ((1 - t) * 14) + 'px');
+    canvas.style.setProperty('--model-scale', String(0.85 + t * 0.55)); /* 0.85 → 1.4, "se acerca" junto con el resto */
+    if (!stop.model.viewer && !stop.model.loading) loadModel(stop);
+    if (stop.model.viewer) stop.model.viewer.setFocus(t); /* rotación/foco sutil, no continuo */
+    resumeRender(stop);
+  }
+
+  function pauseModel(stop) {
+    if (stop.model && stop.model.viewer) stop.model.viewer.pause();
+  }
+  function resumeRender(stop) {
+    if (stop.model && stop.model.viewer) stop.model.viewer.resume();
+  }
+
+  function loadModel(stop) {
+    stop.model.loading = true;
+    initModelViewer(stop.model.canvas, stop.model.config.src)
+      .then(viewer => { stop.model.viewer = viewer; })
+      .catch(err => console.warn('[scroll-narrative] modelo 3D no cargó:', err));
   }
 
   function onScroll() {
@@ -203,6 +267,84 @@
   document.addEventListener('scroll', onScroll, { capture: true, passive: true });
   updateParallax(); /* initial paint, in case the page loads already scrolled */
 })();
+
+/* ══════════════════════════════════════════════════════════
+   initModelViewer — motor tres.js aislado, un módulo por <canvas>.
+   Carga perezosa (import dinámico, sólo cuando el scroll lo necesita),
+   pixelRatio limitado, y render sólo bajo demanda (pause/resume) —
+   nunca un requestAnimationFrame infinito, la lección de esta sesión.
+   ══════════════════════════════════════════════════════════ */
+function initModelViewer(container, glbSrc) {
+  const threeUrl = new URL('../node_modules/three/build/three.module.js', window.location.href);
+  const gltfLoaderUrl = new URL('../node_modules/three/examples/jsm/loaders/GLTFLoader.js', window.location.href);
+
+  return Promise.all([
+    import(threeUrl.href),
+    import(gltfLoaderUrl.href),
+  ]).then(([THREE_MODULE, { GLTFLoader }]) => {
+    const THREE = THREE_MODULE;
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); /* Android: nunca DPR completo */
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.LinearToneMapping;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 0, 4);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+    const dir = new THREE.DirectionalLight(0xffffff, 2.5);
+    dir.position.set(2, 3, 4);
+    scene.add(dir);
+
+    let model = null;
+    let paused = true;
+    let raf = 0;
+
+    function resize() {
+      const w = container.clientWidth || 300, h = container.clientHeight || 300;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    function tick() {
+      raf = 0;
+      if (paused) return;
+      renderer.render(scene, camera);
+    }
+    function requestFrame() { if (!raf) raf = requestAnimationFrame(tick); }
+
+    new GLTFLoader().load(glbSrc, gltf => {
+      model = gltf.scene;
+      /* Centrar y normalizar escala — cualquier .glb, sin importar sus
+         unidades originales, queda encuadrado igual. */
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      model.scale.setScalar(1.6 / maxDim);
+      model.position.sub(center.multiplyScalar(1.6 / maxDim));
+      scene.add(model);
+      requestFrame();
+    });
+
+    return {
+      setFocus(t) {
+        /* Rotación sutil ligada al progreso, no una animación infinita */
+        if (model) model.rotation.y = t * Math.PI * 0.6;
+        requestFrame();
+      },
+      pause() { paused = true; },
+      resume() { paused = false; requestFrame(); },
+    };
+  });
+}
 
 /* ── Contact Section Animation Observer ── */
 (function initContactObserver() {
