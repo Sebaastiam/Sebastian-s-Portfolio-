@@ -282,11 +282,17 @@ function initModelViewer(container, glbSrc) {
      ./scroll/loaders/, con ./scroll/utils/ como hermano, igual que en
      el repo (examples/jsm/loaders/ + examples/jsm/utils/). */
   const gltfLoaderUrl = new URL('./scroll/loaders/GLTFLoader.js', window.location.href);
+  /* DRACOLoader: mismo tipo de archivo que GLTFLoader (repo oficial,
+     examples/jsm/loaders/), así que vive en la misma carpeta ./scroll/loaders/.
+     A diferencia de GLTFLoader, no importa nada de ../utils/ — no necesita
+     nada más además de sí mismo. */
+  const dracoLoaderUrl = new URL('./scroll/loaders/DRACOLoader.js', window.location.href);
 
   return Promise.all([
     import(threeUrl.href),
     import(gltfLoaderUrl.href),
-  ]).then(([THREE_MODULE, { GLTFLoader }]) => {
+    import(dracoLoaderUrl.href),
+  ]).then(([THREE_MODULE, { GLTFLoader }, { DRACOLoader }]) => {
     const THREE = THREE_MODULE;
     const canvas = document.createElement('canvas');
     container.appendChild(canvas);
@@ -325,7 +331,18 @@ function initModelViewer(container, glbSrc) {
     }
     function requestFrame() { if (!raf) raf = requestAnimationFrame(tick); }
 
-    new GLTFLoader().load(glbSrc, gltf => {
+    /* DRACOLoader descomprime la geometría del .glb — sólo hace falta el
+       decodificador (WASM), no el resto del repo: usamos el que Google aloja
+       públicamente para esto exacto, así no hay que arrastrar otra carpeta
+       más al repo. Si prefieres 100% local, cambia setDecoderPath por
+       './scroll/draco/' y copia ahí examples/jsm/libs/draco/. */
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
+    gltfLoader.load(glbSrc, gltf => {
       model = gltf.scene;
       /* Centrar y normalizar escala — cualquier .glb, sin importar sus
          unidades originales, queda encuadrado igual. */
