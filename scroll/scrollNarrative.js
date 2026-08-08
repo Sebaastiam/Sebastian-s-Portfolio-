@@ -372,7 +372,7 @@ function initModelViewer(container, glbSrc) {
       mouseX += (mouseTX - mouseX) * 0.06;
       mouseY += (mouseTY - mouseY) * 0.06;
       if (model) {
-        model.rotation.y = spinY + mouseX * 0.22; /* twist del scroll + look-around sutil */
+        model.rotation.y = spinY + mouseX * 0.8; /* twist del scroll + look-around sutil */
         model.rotation.x = mouseY * 0.10;
         model.rotation.z = mouseX * 0.05;
       }
