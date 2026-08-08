@@ -275,8 +275,8 @@
    nunca un requestAnimationFrame infinito, la lección de esta sesión.
    ══════════════════════════════════════════════════════════ */
 function initModelViewer(container, glbSrc) {
-  const threeUrl = new URL('../node_modules/three/build/three.module.js', window.location.href);
-  const gltfLoaderUrl = new URL('../node_modules/three/examples/jsm/loaders/GLTFLoader.js', window.location.href);
+  const threeUrl = new URL('./scroll/three.module.js', window.location.href);
+const gltfLoaderUrl = new URL('./scroll/GLTFLoader.js', window.location.href);
 
   return Promise.all([
     import(threeUrl.href),
