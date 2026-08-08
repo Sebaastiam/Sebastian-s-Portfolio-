@@ -340,6 +340,19 @@
 
   <!-- ── Scripts ── -->
   <!-- Load order: config first, then independent modules -->
+
+  <!-- Import map: GLTFLoader.js (repo oficial) hace `import ... from 'three'`
+       (specifier "pelado", sin ruta) — sin esto, un sitio estático no sabe
+       resolverlo (404). Debe ir ANTES de cualquier <script> que dispare un
+       import (scrollNarrative.js lo hace vía import() dinámico). -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./scroll/three.module.js"
+    }
+  }
+  </script>
+
   <script>
     /* Engineering Pass v3.2 — Milestone 1 (#16, #21):
        Single source of truth for watermark text. Replaces the two
@@ -369,6 +382,6 @@
   <script src="./panels/portfolio-panel.js"></script> 
   <script src="./panels/asciiDrawer.js"></script>
   <script src="https://player.vimeo.com/api/player.js" defer></script>
-/* slideshow.js are missing in link but not in file, review landing folder for it */
+  <!-- slideshow.js: falta el <script src> si algo más no lo carga dinámicamente — revisar carpeta ./landing -->
 </body>
 </html>
