@@ -276,7 +276,12 @@
    ══════════════════════════════════════════════════════════ */
 function initModelViewer(container, glbSrc) {
   const threeUrl = new URL('./scroll/three.module.js', window.location.href);
-const gltfLoaderUrl = new URL('./scroll/GLTFLoader.js', window.location.href);
+  /* GLTFLoader.js (repo oficial) importa internamente
+     '../utils/BufferGeometryUtils.js' y '../utils/SkeletonUtils.js' —
+     rutas relativas a SU PROPIA ubicación. Por eso debe vivir dentro de
+     ./scroll/loaders/, con ./scroll/utils/ como hermano, igual que en
+     el repo (examples/jsm/loaders/ + examples/jsm/utils/). */
+  const gltfLoaderUrl = new URL('./scroll/loaders/GLTFLoader.js', window.location.href);
 
   return Promise.all([
     import(threeUrl.href),
