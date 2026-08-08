@@ -14,13 +14,13 @@ import {
 
 const _taskCache = new WeakMap();
 
-const WASM_BIN_URL = new URL( '../libs/draco/draco_decoder.wasm', import.meta.url ).toString();
-const WASM_JS_URL = new URL( '../libs/draco/draco_wasm_wrapper.js', import.meta.url ).toString();
-const JS_URL = new URL( '../libs/draco/draco_decoder.js', import.meta.url ).toString();
+const WASM_BIN_URL = '';
+const WASM_JS_URL = '';
+const JS_URL = '';
 
 const DRACO_GLTF_CONFIG = {
-	js: new URL( '../libs/draco/gltf/draco_wasm_wrapper.js', import.meta.url ).toString(),
-	wasm: new URL( '../libs/draco/gltf/draco_decoder.wasm', import.meta.url ).toString(),
+    js: '',
+	wasm: '',
 };
 
 /**
