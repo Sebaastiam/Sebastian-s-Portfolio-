@@ -118,7 +118,7 @@
   filter: blur(var(--model-blur, 14px));
   transform: scale(var(--model-scale, 0.85));
   pointer-events: none;
-  transition: opacity 0.2s linear, filter 0.2s ease-out;
+  transition: transform 0.15s ease-out, opacity 0.2s linear, filter 0.2s ease-out; /* transform agregado — antes saltaba sin interpolar */
 }
 .narrative-stop__model-canvas canvas {
   max-width: 70%;

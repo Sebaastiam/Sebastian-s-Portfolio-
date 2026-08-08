@@ -32,10 +32,10 @@ window.SCROLL_NARRATIVE_CONFIG = [
     ],
     model: {
       src: './scroll/mushroom.glb', /* ajusta el nombre real del archivo */
-      revealFrom: 0.00,   /* casi desde que arranca el scroll — antes 0.55 */
-      revealTo: 0.3,     /* rápido a foco completo, y ahí se sostiene */
-      fadeOutFrom: 0.88,  /* nuevo: empieza a desvanecer cerca del final... */
-      fadeOutTo: 1.3,       /* ...y llega a 0 justo antes de pasar a "El estudio" */
+      revealFrom: 0.1,    /* antes 0.00 — 0 exacto es un borde delicado (progress rara vez es EXACTAMENTE 0), 0.1 es más confiable */
+      revealTo: 0.3,      /* rápido a foco completo, y ahí se sostiene */
+      fadeOutFrom: 0.88,  /* empieza a desvanecer cerca del final... */
+      fadeOutTo: 1,        /* ...y llega a 0 justo antes de pasar a "El estudio" — OJO: nunca > 1, rompe el fade (traía 1.3) */
     },
   },
   {

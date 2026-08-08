@@ -322,12 +322,14 @@ function initModelViewer(container, glbSrc) {
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0, 4);
 
-    /* Iluminación de 3 puntos, sin texturas/archivos extra:
+    /* Iluminación de 4 puntos, sin texturas/archivos extra:
        - Hemisferio: ambiente con gradiente cielo/suelo (más natural que un
          AmbientLight plano, y no requiere un mapa HDRI).
        - Key cálida: la luz principal, mismo tono cálido que el resto del
          sitio (glow del título, barra de progreso).
-       - Rim fría, desde atrás: separa la silueta del fondo, look "cinemático". */
+       - Rim fría, desde atrás: separa la silueta del fondo, look "cinemático".
+       - Red (bonus): punto de luz rojo, orbita con el scroll junto a key/rim
+         y su intensidad crece conforme el modelo entra en foco. */
     scene.add(new THREE.HemisphereLight(0xfff2e0, 0x201028, 0.55));
     const key = new THREE.DirectionalLight(0xffdca8, 2.6);
     key.position.set(2, 3, 4);
@@ -335,11 +337,16 @@ function initModelViewer(container, glbSrc) {
     const rim = new THREE.DirectionalLight(0x6fb2ff, 1.1);
     rim.position.set(-3, 1.5, -3);
     scene.add(rim);
+    const red = new THREE.PointLight(0xff2b2b, 0, 8);
+    red.position.set(-2, -1, 2);
+    scene.add(red);
 
     let model = null;
     let paused = true;
     let raf = 0;
-    let spinY = 0;      /* rotación base, atada al scroll (el "twist") */
+    let spinY = 0, spinYTarget = 0;         /* twist del scroll — target salta, spinY la sigue suave */
+    let lightAngle = 0, lightAngleTarget = 0; /* órbita de las luces, mismo patrón de suavizado */
+    let redPower = 0, redPowerTarget = 0;     /* intensidad de la luz roja */
     let mouseTX = 0, mouseTY = 0, mouseX = 0, mouseY = 0; /* target / suavizado */
 
     /* Seguimiento de mouse: sólo actualiza dos números — el trabajo real
@@ -371,11 +378,26 @@ function initModelViewer(container, glbSrc) {
       if (paused) return;
       mouseX += (mouseTX - mouseX) * 0.06;
       mouseY += (mouseTY - mouseY) * 0.06;
+      /* Este es EL suavizado que hace que el giro por scroll se vea continuo:
+         spinYTarget salta de golpe cada vez que el scroll dispara un update,
+         pero spinY lo persigue de a poco, en cada frame (60/s), no solo
+         cuando hay un evento de scroll — por eso los "pasos" desaparecen. */
+      spinY += (spinYTarget - spinY) * 0.08;
+      lightAngle += (lightAngleTarget - lightAngle) * 0.05; /* luces: aún más lento, se siente más "ambiental" */
+      redPower += (redPowerTarget - redPower) * 0.05;
       if (model) {
         model.rotation.y = spinY + mouseX * 0.8; /* twist del scroll + look-around sutil */
         model.rotation.x = mouseY * 0.10;
         model.rotation.z = mouseX * 0.05;
       }
+      /* Iluminación dinámica: key/rim orbitan juntas alrededor del modelo
+         conforme avanza el scroll — mismo radio y desfase de 180° entre
+         ellas para que nunca se cancelen. La roja pulsa en intensidad y
+         gira más despacio (la mitad de velocidad) para dar profundidad. */
+      key.position.set(Math.cos(lightAngle) * 4, 3, Math.sin(lightAngle) * 4);
+      rim.position.set(Math.cos(lightAngle + Math.PI) * 3, 1.5, Math.sin(lightAngle + Math.PI) * 3);
+      red.position.set(Math.cos(lightAngle * 0.5) * 3, -1, Math.sin(lightAngle * 0.5) * 3);
+      red.intensity = redPower * 4;
       renderer.render(scene, camera);
       raf = requestAnimationFrame(tick);
     }
@@ -398,8 +420,8 @@ function initModelViewer(container, glbSrc) {
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      model.scale.setScalar(1.6 / maxDim);
-      model.position.sub(center.multiplyScalar(1.6 / maxDim));
+      model.scale.setScalar(2.0 / maxDim); /* antes 1.6 — +25%, se ve más grande/cerca */
+      model.position.sub(center.multiplyScalar(2.0 / maxDim));
       scene.add(model);
       requestFrame();
     });
@@ -408,7 +430,12 @@ function initModelViewer(container, glbSrc) {
       setFocus(zoomT) {
         /* Gira sobre su propio eje conforme avanza el scroll — un giro
            completo (2π) a lo largo de toda la ventana visible del modelo. */
-        spinY = zoomT * Math.PI * 2;
+        spinYTarget = zoomT * Math.PI * 2;
+        /* Bonus — iluminación dinámica: las luces orbitan con el mismo
+           progreso del scroll, y la roja se enciende gradualmente conforme
+           el modelo entra en foco (0 al inicio → intensidad plena). */
+        lightAngleTarget = zoomT * Math.PI * 2;
+        redPowerTarget = zoomT;
         requestFrame();
       },
       pause() { paused = true; },
