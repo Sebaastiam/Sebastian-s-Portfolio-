@@ -28,9 +28,10 @@ window.SCROLL_NARRATIVE_CONFIG = [
                               smoothly between the 1-3 manual scroll steps and the 3D model reveal. */
     background: { type: 'image', src: "./scroll/1.3.webp" },
     layers: [
-  { src: "./scroll/1.2.webp", depth: 2 },  // mid ground
-  { src: "./scroll/1.1.webp", depth: 4 },  // near (was 12, excessive)
-    ],
+  { src: "./scroll/1.2.webp", depth: 2 },
+  { src: "./scroll/1.1.webp", depth: 4 },
+  { src: "./scroll/1.webp",   depth: 6 }
+],
     model: {
       src: './scroll/mushroom.glb',
       revealFrom:  0.08,  /* enters early — blur fades in quickly from the start */
