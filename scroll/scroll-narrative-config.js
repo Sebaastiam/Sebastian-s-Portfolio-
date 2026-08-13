@@ -30,7 +30,6 @@ window.SCROLL_NARRATIVE_CONFIG = [
     layers: [
   { src: "./scroll/1.2.webp", depth: 2 },  // mid ground
   { src: "./scroll/1.1.webp", depth: 4 },  // near (was 12, excessive)
-  { src: "./scroll/1.webp",   depth: 6 },  // foreground — highest z-index
 ],
     ],
     model: {
