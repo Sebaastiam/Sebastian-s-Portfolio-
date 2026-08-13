@@ -59,8 +59,11 @@
   
   will-change: auto;  /* Estado de descanso para no sobrecargar memoria GPU cuando la parada no está visible */
   
-  /* 💡 Transición ultra-corta para amortiguar los saltos del wheel del mouse */
-  transition: transform 0.15s ease-out, filter 0.15s ease-out, opacity 0.2s linear;
+  /* Extended transition: the auto-travel engine moves the scroll position
+     smoothly over many frames, so the visual interpolation can afford a
+     longer ease — 0.28s gives the dolly-zoom a cinematic, fluid feel
+     without lagging behind the scroll position during fast movement. */
+  transition: transform 0.28s ease-out, filter 0.28s ease-out, opacity 0.32s linear;
 }
 
 .narrative-stop__bg img,
@@ -87,7 +90,7 @@
   filter: blur(var(--blur, 0px));
   opacity: var(--opacity, 1);
   will-change: auto;
-  transition: transform 0.15s ease-out, filter 0.15s ease-out, opacity 0.2s linear;
+  transition: transform 0.28s ease-out, filter 0.28s ease-out, opacity 0.32s linear;
 }
 
 /* Activa la aceleración de hardware por GPU ÚNICAMENTE cuando la parada está activa en pantalla */
@@ -118,11 +121,11 @@
   filter: blur(var(--model-blur, 14px));
   transform: scale(var(--model-scale, 0.85));
   pointer-events: none;
-  transition: transform 0.15s ease-out, opacity 0.2s linear, filter 0.2s ease-out; /* transform agregado — antes saltaba sin interpolar */
+  transition: transform 0.28s ease-out, opacity 0.32s linear, filter 0.28s ease-out;
 }
 .narrative-stop__model-canvas canvas {
-  max-width: 70%;
-  max-height: 70%;
+  max-width: 88%;  /* wider — gives the 3D element more screen presence */
+  max-height: 88%;
 }
 
 /* ── Barra de progreso del scroll narrativo — fija, arriba del todo.

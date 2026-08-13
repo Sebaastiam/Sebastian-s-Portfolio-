@@ -306,14 +306,182 @@
       .catch(err => console.warn('[scroll-narrative] modelo 3D no cargó:', err));
   }
 
+  /* ══════════════════════════════════════════════════════════
+     AUTO-TRAVEL ENGINE — "magical scroll" UX
+     ══════════════════════════════════════════════════════════
+
+     Design intent: the user scrolls 1–3 small steps (wheel ticks
+     or swipe nudges) and the narrative takes over — gliding
+     smoothly and automatically to the next stop's focal point.
+     The experience should feel like a cinematic cut guided by
+     the user's intent, not a manual scrub.
+
+     How it works:
+     1. INTENT DETECTION: each wheel/touch event adds delta to a
+        rolling accumulator. After INTENT_THRESHOLD px of input
+        (roughly 1–3 wheel ticks), the engine considers the user's
+        direction "declared" and takes over.
+
+     2. AUTO-TRAVEL: the engine picks the nearest snap point (each
+        stop has a focal progress value where the key content is
+        centered) and drives window.scrollBy() toward it every rAF
+        frame with an ease-out curve. The user feels the page
+        "pull" toward the destination — smooth, slow, cinematic.
+
+     3. RELEASE: once within ARRIVE_THRESHOLD px of the target,
+        travel stops. The user can then scroll again (1–3 ticks)
+        to declare intent toward the next stop.
+
+     4. INTERRUPT: any new scroll input while traveling instantly
+        resets the accumulator and re-evaluates direction — the
+        user is always in control. Dragging the scrollbar bypasses
+        the engine completely (it only fires on wheel/touch).
+
+     Performance: all scroll math runs inside the existing rAF
+     loop (updateParallax) — no second rAF loop, no setInterval.
+     ══════════════════════════════════════════════════════════ */
+
+  const INTENT_THRESHOLD  = 60;   /* px of wheel/touch delta before auto-travel fires (~2 wheel ticks) */
+  const ARRIVE_THRESHOLD  = 6;    /* px from target — close enough to consider "arrived" */
+  const TRAVEL_EASE       = 0.072; /* lerp factor per frame — lower = slower/smoother (0.05 dreamy, 0.12 snappy) */
+  const INTENT_DECAY_MS   = 280;  /* ms of scroll silence before accumulator resets */
+
+  /* Snap points: for each stop, the scroll position (px) where
+     the focal content is centered on screen. Computed lazily
+     after the DOM settles — stops have sticky frames so their
+     offsetTop is stable after first paint. */
+  function getSnapPoints() {
+    return stopEls.map((stop, i) => {
+      const stopTop  = stop.el.offsetTop;
+      const stopSpan = stop.el.offsetHeight - window.innerHeight;
+      /* Focal progress for each stop:
+         - Stop 0 (city): 0.35 — model is entering focus
+         - Stop 1 (studio): 0.4 — image is nicely zoomed
+         Default: 0.38 — safe cinematic center */
+      const focalProgress = [0.35, 0.40][i] ?? 0.38;
+      return Math.round(stopTop + stopSpan * focalProgress);
+    });
+  }
+
+  let snapPoints       = null; /* computed once on first scroll */
+  let snapIndex        = 0;    /* which snap point we're currently at / heading to */
+  let isTraveling      = false;
+  let travelTarget     = 0;
+  let intentAccum      = 0;    /* rolling delta accumulator */
+  let lastIntentTime   = 0;
+  let touchStartY      = 0;
+
+  function declareTravelIntent(deltaY) {
+    const now = Date.now();
+    /* Decay accumulator if there's been a pause in scrolling */
+    if (now - lastIntentTime > INTENT_DECAY_MS) intentAccum = 0;
+    lastIntentTime = now;
+    intentAccum   += deltaY;
+
+    if (Math.abs(intentAccum) < INTENT_THRESHOLD) return; /* not enough intent yet */
+
+    /* Intent declared — pick the target snap point */
+    if (!snapPoints) snapPoints = getSnapPoints();
+    const dir          = intentAccum > 0 ? 1 : -1;
+    const currentY     = window.scrollY;
+    intentAccum        = 0; /* reset for next gesture */
+
+    /* Find the next snap point in the declared direction */
+    let target = null;
+    if (dir > 0) {
+      /* scrolling DOWN — find next snap point below current position */
+      for (let i = 0; i < snapPoints.length; i++) {
+        if (snapPoints[i] > currentY + ARRIVE_THRESHOLD) {
+          target    = snapPoints[i];
+          snapIndex = i;
+          break;
+        }
+      }
+    } else {
+      /* scrolling UP — find next snap point above current position */
+      for (let i = snapPoints.length - 1; i >= 0; i--) {
+        if (snapPoints[i] < currentY - ARRIVE_THRESHOLD) {
+          target    = snapPoints[i];
+          snapIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (target === null) return; /* already at first/last stop */
+
+    isTraveling  = true;
+    travelTarget = target;
+    if (!rafId) rafId = requestAnimationFrame(travelTick);
+  }
+
+  function travelTick() {
+    rafId = 0;
+    updateParallax(); /* keep visual in sync */
+
+    if (!isTraveling) return;
+
+    const currentY = window.scrollY;
+    const dist     = travelTarget - currentY;
+
+    if (Math.abs(dist) < ARRIVE_THRESHOLD) {
+      /* Arrived — snap exactly and stop */
+      window.scrollTo({ top: travelTarget, behavior: 'instant' });
+      isTraveling = false;
+      return;
+    }
+
+    /* Ease-out lerp: moves fast when far, slows as it arrives */
+    const step = dist * TRAVEL_EASE;
+    window.scrollBy({ top: step, behavior: 'instant' });
+
+    rafId = requestAnimationFrame(travelTick);
+  }
+
+  /* Wheel: intercept delta, let engine decide */
+  window.addEventListener('wheel', e => {
+    if (document.hidden) return;
+    /* Allow native scroll to keep the page position updating —
+       the engine adds extra travel on top via scrollBy().
+       We only preventDefault if we want FULL takeover, but that
+       breaks trackpad inertia. Instead we run alongside native scroll. */
+    declareTravelIntent(e.deltaY);
+    if (!rafId) rafId = requestAnimationFrame(updateParallax);
+  }, { passive: true });
+
+  /* Touch: accumulate swipe distance for mobile */
+  window.addEventListener('touchstart', e => {
+    touchStartY  = e.touches[0].clientY;
+    intentAccum  = 0;
+  }, { passive: true });
+
+  window.addEventListener('touchmove', e => {
+    if (document.hidden) return;
+    const delta = touchStartY - e.touches[0].clientY;
+    touchStartY  = e.touches[0].clientY;
+    declareTravelIntent(delta);
+    if (!rafId) rafId = requestAnimationFrame(updateParallax);
+  }, { passive: true });
+
+  /* Native scroll fallback (keyboard arrows, scrollbar drag, programmatic) */
   function onScroll() {
     if (document.hidden) return;
+    /* If a drag/keyboard scroll happens while traveling, abort travel
+       so the user stays in control */
+    if (isTraveling) {
+      isTraveling = false;
+      intentAccum = 0;
+    }
     if (!rafId) rafId = requestAnimationFrame(updateParallax);
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
   document.addEventListener('scroll', onScroll, { capture: true, passive: true });
-  updateParallax(); /* initial paint, in case the page loads already scrolled */
+
+  /* Recompute snap points on resize (stop heights change) */
+  window.addEventListener('resize', () => { snapPoints = null; }, { passive: true });
+
+  updateParallax(); /* initial paint */
 })();
 
 /* ══════════════════════════════════════════════════════════
@@ -354,22 +522,29 @@ function initModelViewer(container, glbSrc) {
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0, 4);
 
-    /* Iluminación de 4 puntos, sin texturas/archivos extra:
-       - Hemisferio: ambiente con gradiente cielo/suelo (más natural que un
-         AmbientLight plano, y no requiere un mapa HDRI).
-       - Key cálida: la luz principal, mismo tono cálido que el resto del
-         sitio (glow del título, barra de progreso).
-       - Rim fría, desde atrás: separa la silueta del fondo, look "cinemático".
-       - Red (bonus): punto de luz rojo, orbita con el scroll junto a key/rim
-         y su intensidad crece conforme el modelo entra en foco. */
-    scene.add(new THREE.HemisphereLight(0xfff2e0, 0x201028, 0.55));
-    const key = new THREE.DirectionalLight(0xffdca8, 2.6);
+    /* Iluminación de 5 puntos — diseño warm-environment:
+       - Hemisferio: boosted desde 0.55 → 1.1 para un suelo de luz ambiente
+         más cálido. Elimina las sombras duras en zonas no iluminadas.
+       - Front fill (NUEVO): luz direccional cálida fija, apuntando directo
+         desde la cámara hacia el modelo. No orbita. Resuelve el problema de
+         "elemento muy oscuro" — ilumina la cara frontal del modelo que el
+         usuario ve todo el tiempo, independientemente del spinY del scroll.
+       - Key cálida: boosted desde 2.6 → 3.2, mueve con el scroll (orbita).
+       - Rim fría: separa la silueta del fondo oscuro, look cinemático.
+       - Red (bonus): punto de luz rojo que crece con el scroll focus. */
+    scene.add(new THREE.HemisphereLight(0xfff5e8, 0x2a1830, 1.1)); /* boosted ambient */
+
+    const fill = new THREE.DirectionalLight(0xffe8c8, 2.2); /* warm front fill — FIXED position, never orbits */
+    fill.position.set(0, 0.5, 6); /* directly in front: z+ = toward camera, y+ = slight top */
+    scene.add(fill);
+
+    const key = new THREE.DirectionalLight(0xffdca8, 3.2); /* boosted key — orbits with scroll */
     key.position.set(2, 3, 4);
     scene.add(key);
     const rim = new THREE.DirectionalLight(0x6fb2ff, 1.1);
     rim.position.set(-3, 1.5, -3);
     scene.add(rim);
-    const red = new THREE.PointLight(0xff2b2b, 0, 8);
+    const red = new THREE.PointLight(0xff3a1a, 0, 10); /* slightly warmer red, wider radius */
     red.position.set(-2, -1, 2);
     scene.add(red);
 

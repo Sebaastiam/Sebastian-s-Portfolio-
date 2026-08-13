@@ -23,7 +23,9 @@ window.SCROLL_NARRATIVE_CONFIG = [
   {
     header: 'Calles que caminé',
     description: '',
-    scrollLength: '380vh', /* antes 220vh — el excedente es lo que antes era la parada "Bogotá, de noche" */
+    scrollLength: '520vh', /* Extended: more scroll travel = slower, more cinematic dolly per wheel tick.
+                              The auto-travel engine in scrollNarrative.js uses this space to glide
+                              smoothly between the 1-3 manual scroll steps and the 3D model reveal. */
     background: { type: 'image', src: "./scroll/1.3.webp" },
     layers: [
       { src: "./scroll/1.2.webp", depth: 2 },  // far — distant skyline
@@ -31,11 +33,11 @@ window.SCROLL_NARRATIVE_CONFIG = [
       { src: "./scroll/1.webp",   depth: 2 }, // near — foreground streetlamp/wire, zoom más intenso
     ],
     model: {
-      src: './scroll/mushroom.glb', /* ajusta el nombre real del archivo */
-      revealFrom: 0.1,    /* antes 0.00 — 0 exacto es un borde delicado (progress rara vez es EXACTAMENTE 0), 0.1 es más confiable */
-      revealTo: 0.3,      /* rápido a foco completo, y ahí se sostiene */
-      fadeOutFrom: 0.88,  /* empieza a desvanecer cerca del final... */
-      fadeOutTo: 1,        /* ...y llega a 0 justo antes de pasar a "El estudio" — OJO: nunca > 1, rompe el fade (traía 1.3) */
+      src: './scroll/mushroom.glb',
+      revealFrom:  0.08,  /* enters early — blur fades in quickly from the start */
+      revealTo:    0.20,  /* reaches full focus fast, then STAYS visible for a long time */
+      fadeOutFrom: 0.82,  /* holds at full opacity from 0.20 → 0.82 (62% of the stop) */
+      fadeOutTo:   0.97,  /* graceful exit before the stop ends — leaves breathing room */
     },
   },
   {

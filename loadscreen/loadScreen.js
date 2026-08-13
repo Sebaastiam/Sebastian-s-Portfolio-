@@ -118,6 +118,25 @@
     waits.push(timeoutPromise(preload(avatarPath), 2000));
   }
 
+  // 4. 3D Model (GLB) — preload via fetch so the model is in the browser
+  //    cache before scrollNarrative.js requests it via GLTFLoader.
+  //    Without this, the model would start loading only when the user's
+  //    scroll reaches revealFrom — causing a visible "pop in" delay.
+  //    We use fetch() (not an <img>) because GLB is a binary asset that
+  //    the browser won't cache via an image preload tag.
+  //    Individual timeout: 5s — GLB files can be large; we don't want
+  //    the load screen to wait forever if the model fails to load.
+  if (typeof SCROLL_NARRATIVE_CONFIG !== 'undefined') {
+    SCROLL_NARRATIVE_CONFIG.forEach(stop => {
+      if (stop.model && stop.model.src) {
+        const glbPromise = fetch(stop.model.src, { priority: 'low' })
+          .then(r => { if (!r.ok) throw new Error(r.status); })
+          .catch(() => {}); /* never block hiding on model failure */
+        waits.push(timeoutPromise(glbPromise, 5000));
+      }
+    });
+  }
+
   // Ejecutar con seguridad absoluta
   Promise.all(waits).then(hide).catch(hide);
 
