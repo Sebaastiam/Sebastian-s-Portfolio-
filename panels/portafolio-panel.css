@@ -198,9 +198,16 @@
   transform: scale(1);
   transform-origin: var(--zoom-ox, 50%) var(--zoom-oy, 50%);
   transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform-origin 0s;
-  will-change: transform; /* Optimización GPU */
+  /* PERF FIX: will-change:transform was unconditional — created a dedicated GPU
+     compositor layer for EVERY grid image permanently, even with the panel closed.
+     With 6 gallery rooms × N images, this allocated significant VRAM at all times.
+     Moved to :hover — browser promotes the layer right before the zoom transition
+     starts, so zero visual difference, zero resting cost. */
 }
-.port-grid-item:hover img { transform: scale(3.2); }
+.port-grid-item:hover img {
+  transform: scale(3.2);
+  will-change: transform; /* promote layer only while zoom transition is active */
+}
 
 .port-grid-overlay {
   position: absolute;
@@ -326,8 +333,11 @@
 .port-lightbox-nav.next { right: 1.2rem; }
 .port-lightbox-content {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-  will-change: transform, opacity;
-  }
+  /* PERF FIX: will-change removed from resting state — lightbox content is always
+     in the DOM even when the lightbox is closed, so this was holding a compositor
+     layer permanently. The slide-out/slide-in classes below trigger the actual
+     transition; the browser handles promotion automatically at that point. */
+}
 .port-lightbox-content.slide-out-left { transform: translateX(-100%); opacity: 0; }
 .port-lightbox-content.slide-out-right { transform: translateX(100%); opacity: 0; }
 .port-lightbox-content.slide-in { transform: translateX(0); opacity: 1; }
@@ -352,7 +362,9 @@
 .port-panel-close.room-open { opacity: 0; pointer-events: none; }
 #portLbImg {
   transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+  /* PERF FIX: will-change removed — same pattern as .port-lightbox-content above.
+     Element is always in DOM; layer promotion was permanent. Browser promotes
+     automatically when the slide-out transition fires via JS class toggle. */
 }
 .slide-out-left { transform: translateX(-20px); opacity: 0; }
 .slide-out-right { transform: translateX(20px); opacity: 0; }

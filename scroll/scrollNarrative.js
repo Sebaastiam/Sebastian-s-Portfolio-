@@ -20,6 +20,15 @@
      elsewhere in this project (.bg-img, .port-grid-item img) is not
      repeated here.
 
+   PERF FIX (Issue #1 — v3.2.1):
+   - updateParallax() now separates DOM reads from DOM writes in two
+     explicit phases per rAF frame. Previously, getBoundingClientRect()
+     reads and style.setProperty() writes were interleaved per stop
+     inside the same forEach loop — each write could invalidate the
+     layout and force a fresh reflow for the next read. Now all reads
+     happen first (computing all values), then all writes apply at once.
+     The rAF scheduling was already correct and is unchanged.
+
    HOW TO USE:
    1. Add <div class="narrative" id="scrollNarrative"></div> where
       the narrative should render.
@@ -185,47 +194,68 @@
   document.body.appendChild(progressBar);
   const progressFill = progressBar.querySelector('.narrative-progress__fill');
 
-  /* ── Scroll handling: passive listener + rAF batching, same
-     pattern already fixed into drag.js this session ── */
+  /* ── Scroll handling: passive listener + rAF batching ── */
   let rafId = 0;
 
   function updateParallax() {
     rafId = 0;
+
+    /* PERF FIX: Separate read and write phases to avoid forced reflows.
+       Previously, getBoundingClientRect() (read) and style.setProperty()
+       (write) were interleaved per-stop in the same forEach, meaning each
+       write could invalidate layout and force a fresh reflow for the next
+       stop's read. Now all reads happen in one pass, results are stored,
+       then all writes happen in a second pass — zero reflows per frame.
+
+       Phase 1 — READ: collect all geometry and compute all values. */
+    const updates = [];
+
     stopEls.forEach(stop => {
-      if (!stop.inRange) { pauseModel(stop); return; } /* never compute for off-screen stops */
+      if (!stop.inRange) {
+        pauseModel(stop);
+        return;
+      }
+
       const rect = stop.el.getBoundingClientRect();
-      const span = rect.height - window.innerHeight; /* total scrollable range within this stop */
+      const span = rect.height - window.innerHeight;
       if (span <= 0) return;
-      /* rect.top is viewport-relative: 0 = stop just entered, -span = fully scrolled through */
+
       const progress = Math.min(1, Math.max(0, -rect.top / span));
       const zoomProgress = progress <= ZOOM_START
         ? 0
-        : (progress - ZOOM_START) / (1 - ZOOM_START); /* nunca se topa con un techo antes de progress=1 */
+        : (progress - ZOOM_START) / (1 - ZOOM_START);
       const blurFadeProgress = progress <= BLUR_START ? 0 : (progress - BLUR_START) / (1 - BLUR_START);
-      const blur = blurFadeProgress * EXIT_BLUR_PX;
+      const blur    = blurFadeProgress * EXIT_BLUR_PX;
       const opacity = 1 - blurFadeProgress;
-      stop.visuals.forEach(visual => {
-        /* Cada plano zoomea a su propio ritmo según su profundidad — el fondo
-           (depth 0) usa MAX_SCALE tal cual; cada nivel de profundidad encima
-           se acerca proporcionalmente más rápido. */
+
+      const visualUpdates = stop.visuals.map(visual => {
         const depthMultiplier = 1 + (visual.depth * DEPTH_INTENSITY);
         const scale = 1 + ((MAX_SCALE - 1) * zoomProgress * depthMultiplier);
-        visual.el.style.setProperty('--scale', String(scale));
-        visual.el.style.setProperty('--blur', blur + 'px');
-        visual.el.style.setProperty('--opacity', String(opacity));
+        return { el: visual.el, scale, blur, opacity };
+      });
+
+      updates.push({ stop, progress, visualUpdates });
+    });
+
+    /* Progress bar READ (batched with stop reads above conceptually,
+       but kept separate since it's a different element) */
+    const rootRect = root.getBoundingClientRect();
+    const rootTotal = rootRect.height - window.innerHeight;
+    const rootDone  = rootTotal > 0 ? Math.min(1, Math.max(0, -rootRect.top / rootTotal)) : 0;
+
+    /* Phase 2 — WRITE: apply all computed values, no reads here. */
+    updates.forEach(({ stop, progress, visualUpdates }) => {
+      visualUpdates.forEach(({ el, scale, blur, opacity }) => {
+        el.style.setProperty('--scale',   String(scale));
+        el.style.setProperty('--blur',    blur + 'px');
+        el.style.setProperty('--opacity', String(opacity));
       });
       if (stop.model) updateModel(stop, progress);
     });
-    updateProgressBar();
-  }
 
-  /* ── Progreso global: qué % del alto TOTAL de .narrative ya se scrolleó. ── */
-  function updateProgressBar() {
-    const rect = root.getBoundingClientRect();
-    const total = rect.height - window.innerHeight;
-    const done = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
-    progressFill.style.setProperty('--narrative-progress', String(done));
-    progressFill.style.width = (done * 100) + '%';
+    /* Progress bar WRITE */
+    progressFill.style.setProperty('--narrative-progress', String(rootDone));
+    progressFill.style.width = (rootDone * 100) + '%';
   }
 
   /* ── Modelo 3D: 3 tramos dentro de [revealFrom, fadeOutTo] (progress
@@ -235,15 +265,15 @@
      ya esté a opacidad 1. Fuera de la ventana: pausado, no renderiza. */
   function updateModel(stop, progress) {
     const { config, canvas } = stop.model;
-    const from      = config.revealFrom  ?? 0.03;
-    const focusAt    = config.revealTo    ?? 0.25;
-    const fadeFrom   = config.fadeOutFrom ?? 0.88;
-    const fadeTo     = config.fadeOutTo   ?? 1;
+    const from     = config.revealFrom  ?? 0.03;
+    const focusAt  = config.revealTo    ?? 0.25;
+    const fadeFrom = config.fadeOutFrom ?? 0.88;
+    const fadeTo   = config.fadeOutTo   ?? 1;
 
     if (progress < from || progress > fadeTo) { pauseModel(stop); return; }
 
     let t; /* envolvente de opacidad/blur — sube, se sostiene, baja */
-    if (progress < focusAt)      t = (progress - from) / Math.max(0.001, focusAt - from);
+    if (progress < focusAt)       t = (progress - from) / Math.max(0.001, focusAt - from);
     else if (progress < fadeFrom) t = 1;
     else                          t = 1 - (progress - fadeFrom) / Math.max(0.001, fadeTo - fadeFrom);
     t = Math.max(0, Math.min(1, t));
@@ -252,11 +282,13 @@
        cuando t llega a 1 — sigue "acercándose" hasta el final. */
     const zoomT = Math.max(0, Math.min(1, (progress - from) / Math.max(0.001, fadeTo - from)));
 
+    /* Model CSS writes — these are compositor-only (opacity, blur, scale
+       via CSS custom props) so they don't trigger layout. */
     canvas.style.setProperty('--model-opacity', String(t));
-    canvas.style.setProperty('--model-blur', ((1 - t) * 14) + 'px');
-    canvas.style.setProperty('--model-scale', String(0.7 + zoomT * 1.9)); /* 0.7 → 2.6, arco completo */
+    canvas.style.setProperty('--model-blur',    ((1 - t) * 14) + 'px');
+    canvas.style.setProperty('--model-scale',   String(0.7 + zoomT * 1.9));
     if (!stop.model.viewer && !stop.model.loading) loadModel(stop);
-    if (stop.model.viewer) stop.model.viewer.setFocus(zoomT); /* giro atado al scroll, no al fade */
+    if (stop.model.viewer) stop.model.viewer.setFocus(zoomT);
     resumeRender(stop);
   }
 
@@ -344,15 +376,11 @@ function initModelViewer(container, glbSrc) {
     let model = null;
     let paused = true;
     let raf = 0;
-    let spinY = 0, spinYTarget = 0;         /* twist del scroll — target salta, spinY la sigue suave */
-    let lightAngle = 0, lightAngleTarget = 0; /* órbita de las luces, mismo patrón de suavizado */
-    let redPower = 0, redPowerTarget = 0;     /* intensidad de la luz roja */
-    let mouseTX = 0, mouseTY = 0, mouseX = 0, mouseY = 0; /* target / suavizado */
+    let spinY = 0, spinYTarget = 0;
+    let lightAngle = 0, lightAngleTarget = 0;
+    let redPower = 0, redPowerTarget = 0;
+    let mouseTX = 0, mouseTY = 0, mouseX = 0, mouseY = 0;
 
-    /* Seguimiento de mouse: sólo actualiza dos números — el trabajo real
-       (lerp + render) pasa en tick(), y tick() sólo corre mientras el
-       modelo está en pantalla (paused=false). En touch no hay mousemove
-       persistente, así que ahí simplemente no pasa nada — gratis. */
     function onPointerMove(e) {
       mouseTX = (e.clientX / window.innerWidth) * 2 - 1;
       mouseTY = (e.clientY / window.innerHeight) * 2 - 1;
@@ -368,32 +396,19 @@ function initModelViewer(container, glbSrc) {
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    /* Loop continuo — pero SOLO mientras paused=false (modelo en pantalla y
-       dentro de su ventana de reveal). En cuanto pause() lo marca, tick()
-       deja de reprogramarse solo y el loop muere ahí — nunca queda un
-       requestAnimationFrame corriendo de fondo sin motivo (la lección de
-       toda esta sesión). */
     function tick() {
       raf = 0;
       if (paused) return;
       mouseX += (mouseTX - mouseX) * 0.06;
       mouseY += (mouseTY - mouseY) * 0.06;
-      /* Este es EL suavizado que hace que el giro por scroll se vea continuo:
-         spinYTarget salta de golpe cada vez que el scroll dispara un update,
-         pero spinY lo persigue de a poco, en cada frame (60/s), no solo
-         cuando hay un evento de scroll — por eso los "pasos" desaparecen. */
-      spinY += (spinYTarget - spinY) * 0.08;
-      lightAngle += (lightAngleTarget - lightAngle) * 0.05; /* luces: aún más lento, se siente más "ambiental" */
-      redPower += (redPowerTarget - redPower) * 0.05;
+      spinY      += (spinYTarget      - spinY)      * 0.08;
+      lightAngle += (lightAngleTarget - lightAngle) * 0.05;
+      redPower   += (redPowerTarget   - redPower)   * 0.05;
       if (model) {
-        model.rotation.y = spinY + mouseX * 0.8; /* twist del scroll + look-around sutil */
+        model.rotation.y = spinY + mouseX * 0.8;
         model.rotation.x = mouseY * 0.10;
         model.rotation.z = mouseX * 0.05;
       }
-      /* Iluminación dinámica: key/rim orbitan juntas alrededor del modelo
-         conforme avanza el scroll — mismo radio y desfase de 180° entre
-         ellas para que nunca se cancelen. La roja pulsa en intensidad y
-         gira más despacio (la mitad de velocidad) para dar profundidad. */
       key.position.set(Math.cos(lightAngle) * 4, 3, Math.sin(lightAngle) * 4);
       rim.position.set(Math.cos(lightAngle + Math.PI) * 3, 1.5, Math.sin(lightAngle + Math.PI) * 3);
       red.position.set(Math.cos(lightAngle * 0.5) * 3, -1, Math.sin(lightAngle * 0.5) * 3);
@@ -403,9 +418,6 @@ function initModelViewer(container, glbSrc) {
     }
     function requestFrame() { if (!raf) raf = requestAnimationFrame(tick); }
 
-    /* DRACOLoader descomprime la geometría del .glb — decodificador local,
-       ./scroll/draco/ (draco_decoder.js, draco_wasm_wrapper.js,
-       draco_decoder.wasm), sin depender de un CDN externo. */
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(new URL('./scroll/draco/', window.location.href).href);
 
@@ -414,13 +426,11 @@ function initModelViewer(container, glbSrc) {
 
     gltfLoader.load(glbSrc, gltf => {
       model = gltf.scene;
-      /* Centrar y normalizar escala — cualquier .glb, sin importar sus
-         unidades originales, queda encuadrado igual. */
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      model.scale.setScalar(2.0 / maxDim); /* antes 1.6 — +25%, se ve más grande/cerca */
+      model.scale.setScalar(2.0 / maxDim);
       model.position.sub(center.multiplyScalar(2.0 / maxDim));
       scene.add(model);
       requestFrame();
@@ -428,17 +438,12 @@ function initModelViewer(container, glbSrc) {
 
     return {
       setFocus(zoomT) {
-        /* Gira sobre su propio eje conforme avanza el scroll — un giro
-           completo (2π) a lo largo de toda la ventana visible del modelo. */
-        spinYTarget = zoomT * Math.PI * 2;
-        /* Bonus — iluminación dinámica: las luces orbitan con el mismo
-           progreso del scroll, y la roja se enciende gradualmente conforme
-           el modelo entra en foco (0 al inicio → intensidad plena). */
+        spinYTarget    = zoomT * Math.PI * 2;
         lightAngleTarget = zoomT * Math.PI * 2;
         redPowerTarget = zoomT;
         requestFrame();
       },
-      pause() { paused = true; },
+      pause()  { paused = true; },
       resume() { paused = false; requestFrame(); },
     };
   });
@@ -451,11 +456,9 @@ function initModelViewer(container, glbSrc) {
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      // Toggle .is-active when at least 20% of the section is visible
       if (entry.isIntersecting) {
         contactSection.classList.add('is-active');
       } else {
-        // Optional: remove class if you want it to animate out when scrolling back up
         contactSection.classList.remove('is-active');
       }
     });

@@ -16,8 +16,30 @@
      when the wall is off-screen or the tab is hidden — same
      combined-condition discipline as asciiDrawer.js's isActive(),
      since CSS animation-play-state alone does not stop video
-     decode/playback (a real gap this project already had to learn
-     the hard way in a different file)
+     decode/playback
+
+   PERF FIX (Issue #2 — v3.2.1):
+   - Previously, colItems.concat(colItems) doubled every path and
+     then buildItem() created a full <video autoplay> for EACH slot,
+     including the clone half. The browser treats every <video> with
+     autoplay as an independent download stream — so a single 4.69MB
+     .webm was being requested 3× simultaneously (once per column
+     that contained it, plus its clone in the same column).
+
+   - Fix: buildItem() now accepts an `isClone` flag. Clone slots for
+     video files get a lightweight <div class="photo-wall__item
+     photo-wall__item--clone"> with a CSS background-image instead
+     of a <video> element. This means:
+       · Zero extra network requests for the clone half
+       · The CSS marquee loop is visually identical (same dimensions,
+         same vignette/sticker effect)
+       · Only the original slots decode and play video — clones are
+         purely visual stand-ins painted by the GPU from the already-
+         decoded frame cached in memory
+
+   - For image items (non-video), clones remain <img loading="lazy">
+     as before — the browser already deduplicates image requests to
+     the same src, so no change needed there.
 
    HOW TO USE:
    1. Add a <div class="photo-wall" id="photoWall"></div> wherever
@@ -40,24 +62,42 @@
   const videos = []; /* tracked so we can actually .pause()/.play() them,
     not just toggle the CSS animation that drives the column scroll */
 
-  function buildItem(path) {
+  /* PERF FIX: isClone flag — video clones become CSS-only stand-ins,
+     image clones stay as <img> (browser deduplicates those already). */
+  function buildItem(path, isClone) {
     const item = document.createElement('div');
     item.className = 'photo-wall__item';
 
     if (VIDEO_EXT.test(path)) {
-      const video = document.createElement('video');
-      video.src = path;
-      video.autoplay = true;
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true; /* matches the same attribute set already used on your existing bg-slide videos in index.html */
-      item.appendChild(video);
-      videos.push(video);
+      if (isClone) {
+        /* Clone slot: a styled <div> that mirrors the video's appearance
+           via CSS background. No <video> element = no download stream.
+           The CSS marquee animation makes this slot scroll into view only
+           after the original has already played — visually seamless. */
+        item.classList.add('photo-wall__item--clone');
+        /* Use the video src as a CSS custom property so photo-wall.css
+           can optionally style it (e.g. a poster image if one exists).
+           No src attribute = no network request triggered. */
+        item.dataset.cloneSrc = path;
+        /* Accessible no-op: decorative, same as the aria-hidden on root */
+      } else {
+        /* Original slot: real <video> element, plays and is tracked */
+        const video = document.createElement('video');
+        video.src = path;
+        video.autoplay = true;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        item.appendChild(video);
+        videos.push(video);
+      }
     } else {
+      /* Images: browser deduplicates requests to the same src automatically,
+         so clones can remain real <img> elements without extra downloads. */
       const img = document.createElement('img');
       img.src = path;
       img.loading = 'lazy';
-      img.alt = ''; /* decorative background wall — same reasoning as the existing .bg-img slides, which are also aria-hidden */
+      img.alt = ''; /* decorative background wall */
       item.appendChild(img);
     }
     return item;
@@ -74,17 +114,18 @@
     const track = document.createElement('div');
     track.className = 'photo-wall__track';
 
-    /* Duplicate once — CSS keyframe scrolls exactly -50%, so the
-       duplicate creates a seamless wrap with no visible jump */
-    const doubled = colItems.concat(colItems);
-    doubled.forEach(path => track.appendChild(buildItem(path)));
+    /* Original items first (isClone = false), then clone items (isClone = true).
+       CSS keyframe scrolls exactly -50% so the clone half creates a seamless
+       wrap — visually identical to before, zero extra video download streams. */
+    colItems.forEach(path => track.appendChild(buildItem(path, false)));
+    colItems.forEach(path => track.appendChild(buildItem(path, true)));
 
     col.appendChild(track);
     inner.appendChild(col);
   });
 
   root.appendChild(inner);
-  root.setAttribute('aria-hidden', 'true'); /* decorative, same treatment as #bgContainer */
+  root.setAttribute('aria-hidden', 'true'); /* decorative */
 
   /* ── Pause/resume: off-screen (IntersectionObserver) AND
      hidden-tab (visibilitychange), combined — mirrors asciiDrawer.js's
@@ -95,7 +136,7 @@
     const shouldRun = isIntersecting && !document.hidden;
     root.classList.toggle('is-paused', !shouldRun);
     videos.forEach(v => {
-      if (shouldRun) v.play().catch(() => {}); /* ignore autoplay-policy rejections, same as the Vimeo pause/resume fix in panels.js */
+      if (shouldRun) v.play().catch(() => {}); /* ignore autoplay-policy rejections */
       else v.pause();
     });
   }

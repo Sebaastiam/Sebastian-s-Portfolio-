@@ -105,6 +105,20 @@
   background: linear-gradient(to top, #111 0%, transparent 100%);
 }
 
+/* ── Clone items — structural spacers for the seamless -50% loop.
+   photoWall.js marks clone video slots as .photo-wall__item--clone
+   (a plain <div>, no <video> element) so the browser doesn't open
+   a second download stream for the same heavy .webm file.
+   visibility:hidden keeps the slot's dimensions intact (the loop
+   needs the height) while rendering nothing to screen. Image clones
+   remain real <img> tags — browsers deduplicate those automatically.
+   pointer-events:none prevents the invisible divs from intercepting
+   hover/click events on elements behind them. ── */
+.photo-wall__item--clone {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* ── Pause state — toggled by photoWall.js via IntersectionObserver
    and visibilitychange, NOT decorative, this is the actual
    off-screen/hidden-tab pause mechanism ── */

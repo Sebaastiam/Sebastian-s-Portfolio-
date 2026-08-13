@@ -1,6 +1,9 @@
 /* ══════════════════════════════════════════════════
    drag.js — Draggable widgets (Glass card & Sticker button)
-   Sebastián Castillo Portfolio — v1.4.0
+   Sebastián Castillo Portfolio — v1.4.1
+   Perf fix (Issue #1): eliminated forced reflows in onDown() and
+   resize handler by separating all DOM reads from DOM writes.
+   onMove() was already correct (rAF-batched via applyPending).
    ══════════════════════════════════════════════════ */
 
 (function initDrag() {
@@ -37,32 +40,39 @@
 
     function onDown(e) {
       e.preventDefault();
+
+      /* PERF FIX: In the original code, getBoundingClientRect() (READ) was
+         immediately followed by multiple style.* assignments (WRITE), and then
+         offsetWidth/offsetHeight (READ again) — a classic forced-reflow pattern.
+         Fix: batch ALL reads first, then do ALL writes in one pass.
+         The position check (getComputedStyle) is done before any writes too. */
+
+      // ── READ PHASE: gather all geometry before touching any style ──
+      const rect        = el.getBoundingClientRect();
+      const isFixed     = window.getComputedStyle(el).position === 'fixed';
+      const measuredW   = el.offsetWidth;   // read now, before any write
+      const measuredH   = el.offsetHeight;  // read now, before any write
+      const currentLeft = parseFloat(el.style.left) || rect.left;
+      const currentTop  = parseFloat(el.style.top)  || rect.top;
+
+      // ── WRITE PHASE: apply all style changes at once ──
       isDragging = true;
       el.classList.add('dragging');
-      
-      // Pop to fixed so it can drag anywhere freely
-      const rect = el.getBoundingClientRect();
-      
-      // Only lock to fixed if it isn't already, to prevent jumps
-      if (window.getComputedStyle(el).position !== 'fixed') {
-        el.style.transition = 'none'; // stop entrance animations
-        el.style.animation = 'none';
-        el.style.transform = 'none'; // clear transform so left/top map exactly to screen
-        el.style.margin = '0';
-        el.style.position = 'fixed';
-        el.style.left = rect.left + 'px';
-        el.style.top = rect.top + 'px';
+
+      if (!isFixed) {
+        el.style.cssText += ';transition:none;animation:none;transform:none;margin:0;position:fixed;left:' + rect.left + 'px;top:' + rect.top + 'px';
       }
 
-      baseLeft = parseFloat(el.style.left) || rect.left;
-      baseTop = parseFloat(el.style.top) || rect.top;
-      originX = e.clientX - rect.left;
-      originY = e.clientY - rect.top;
-      elWidth = el.offsetWidth;
-      elHeight = el.offsetHeight;
-      
+      // ── Assign from pre-read values (no style read after write) ──
+      baseLeft = currentLeft;
+      baseTop  = currentTop;
+      originX  = e.clientX - rect.left;
+      originY  = e.clientY - rect.top;
+      elWidth  = measuredW;
+      elHeight = measuredH;
+
       document.addEventListener('pointermove', onMove, { passive: true });
-      document.addEventListener('pointerup', onUp, { once: true });
+      document.addEventListener('pointerup',     onUp, { once: true });
       document.addEventListener('pointercancel', onUp, { once: true });
     }
 
@@ -77,7 +87,7 @@
       isDragging = false;
       el.classList.remove('dragging');
       document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointerup',     onUp);
       document.removeEventListener('pointercancel', onUp);
       if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
       pendingX = pendingY = null;
@@ -86,8 +96,8 @@
       // left/top as the resting-state source of truth — transform is only
       // used for the active per-frame movement itself.
       if (lastDX !== 0 || lastDY !== 0) {
-        el.style.left = (baseLeft + lastDX) + 'px';
-        el.style.top = (baseTop + lastDY) + 'px';
+        el.style.left      = (baseLeft + lastDX) + 'px';
+        el.style.top       = (baseTop  + lastDY) + 'px';
         el.style.transform = 'none';
         lastDX = lastDY = 0;
       }
@@ -96,19 +106,26 @@
     el.addEventListener('pointerdown', e => {
       // Allow dragging the button itself, but not links inside the card
       if (e.target.closest(INTERACTIVE_SELECTOR) && el.id !== 'contactTrigger') {
-        // If clicking a button inside the glass card, don't drag
-        return; 
+        return;
       }
       el.classList.add('touch-tap');
       setTimeout(() => el.classList.remove('touch-tap'), 160);
       onDown(e);
     });
 
+    /* PERF FIX: resize handler had the same read-write-read pattern.
+       Fix: read rect + offsetWidth/Height together FIRST, then write. */
     window.addEventListener('resize', () => {
       if (window.getComputedStyle(el).position !== 'fixed') return;
+
+      // ── READ PHASE ──
       const rect = el.getBoundingClientRect();
-      el.style.left = clamp(rect.left, 8, window.innerWidth  - el.offsetWidth  - 8) + 'px';
-      el.style.top  = clamp(rect.top,  8, window.innerHeight - el.offsetHeight - 8) + 'px';
+      const w    = el.offsetWidth;
+      const h    = el.offsetHeight;
+
+      // ── WRITE PHASE ──
+      el.style.left = clamp(rect.left, 8, window.innerWidth  - w - 8) + 'px';
+      el.style.top  = clamp(rect.top,  8, window.innerHeight - h - 8) + 'px';
     }, { passive: true });
   }
 
