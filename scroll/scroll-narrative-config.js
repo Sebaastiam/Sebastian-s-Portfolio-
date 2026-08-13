@@ -19,33 +19,30 @@
    ══════════════════════════════════════════════════════════ */
 
 window.SCROLL_NARRATIVE_CONFIG = [
-
   {
     header: 'Calles que caminé',
     description: '',
-    scrollLength: '520vh', /* Extended: more scroll travel = slower, more cinematic dolly per wheel tick.
-                              The auto-travel engine in scrollNarrative.js uses this space to glide
-                              smoothly between the 1-3 manual scroll steps and the 3D model reveal. */
+    scrollLength: '520vh',
     background: { type: 'image', src: "./scroll/1.3.webp" },
     layers: [
-  { src: "./scroll/1.2.webp", depth: 2 },
-  { src: "./scroll/1.1.webp", depth: 4 },
-  { src: "./scroll/1.webp",   depth: 6 }
-],
+      { src: "./scroll/1.2.webp", depth: 2 },
+      { src: "./scroll/1.1.webp", depth: 4 },
+      { src: "./scroll/1.webp",   depth: 6 }
+    ],
     model: {
       src: './scroll/mushroom.glb',
-      revealFrom:  0.08,  /* enters early — blur fades in quickly from the start */
-      revealTo:    0.20,  /* reaches full focus fast, then STAYS visible for a long time */
-      fadeOutFrom: 0.82,  /* holds at full opacity from 0.20 → 0.82 (62% of the stop) */
-      fadeOutTo:   0.97,  /* graceful exit before the stop ends — leaves breathing room */
-    },
+      revealFrom:  0.08,
+      revealTo:    0.20,
+      fadeOutFrom: 0.82,
+      fadeOutTo:   0.97
+    }
   },
   {
     header: 'El estudio',
     description: '',
     background: { type: 'image', src: "./scroll/3.webp" },
     layers: [
-      { src: "./scroll/3.1.webp", depth: 24 }, // far
-    ],
-  },
+      { src: "./scroll/3.1.webp", depth: 24 }
+    ]
+  }
 ];
