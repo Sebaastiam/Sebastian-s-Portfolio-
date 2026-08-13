@@ -7,7 +7,7 @@
   const screen = document.getElementById('loadScreen');
   if (!screen) return;
 
-  const cfg = (typeof CONFIG !== 'undefined' && CONFIG.LOAD_SCREEN) || { MAX_WAIT_MS: 8000, MIN_DISPLAY_MS: 4500 };
+  const cfg = (typeof CONFIG !== 'undefined' && CONFIG.LOAD_SCREEN) || { MAX_WAIT_MS: 9000, MIN_DISPLAY_MS: 1200 };
   const startTime = Date.now();
   let resolved = false;
 
@@ -55,6 +55,9 @@
   }
 
   const waits = [];
+  let glbProgressPromise = null; /* set by GLB section below */
+  let glbProgressCb = null;      /* injected by trackProgress */
+  let glbLastPct = 0;            /* last reported GLB byte progress */
 
   // 1. Fuentes
   if (document.fonts && document.fonts.ready) {
@@ -118,27 +121,89 @@
     waits.push(timeoutPromise(preload(avatarPath), 2000));
   }
 
-  // 4. 3D Model (GLB) — preload via fetch so the model is in the browser
-  //    cache before scrollNarrative.js requests it via GLTFLoader.
-  //    Without this, the model would start loading only when the user's
-  //    scroll reaches revealFrom — causing a visible "pop in" delay.
-  //    We use fetch() (not an <img>) because GLB is a binary asset that
-  //    the browser won't cache via an image preload tag.
-  //    Individual timeout: 5s — GLB files can be large; we don't want
-  //    the load screen to wait forever if the model fails to load.
+  // 4. 3D Model (GLB) — XHR with progress events so the load bar moves
+  //    continuously during the download, not just at completion.
+  //    GLTFLoader will hit the browser cache on its own fetch since XHR
+  //    and fetch() share the HTTP cache for same-origin assets.
+  //    Progress weight: GLB counts as 8 synthetic "ticks" spread across
+  //    the download so the bar visually represents the largest asset.
   if (typeof SCROLL_NARRATIVE_CONFIG !== 'undefined') {
     SCROLL_NARRATIVE_CONFIG.forEach(stop => {
       if (stop.model && stop.model.src) {
-        const glbPromise = fetch(stop.model.src, { priority: 'low' })
-          .then(r => { if (!r.ok) throw new Error(r.status); })
-          .catch(() => {}); /* never block hiding on model failure */
-        waits.push(timeoutPromise(glbPromise, 5000));
+        const glbPromise = new Promise(resolve => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', stop.model.src, true);
+          xhr.responseType = 'arraybuffer';
+          /* onprogress fires continuously — each event moves the bar */
+          xhr.onprogress = e => {
+            if (e.lengthComputable && glbProgressCb) {
+              glbProgressCb(e.loaded / e.total);
+            }
+          };
+          xhr.onload = xhr.onerror = xhr.ontimeout = () => resolve();
+          xhr.timeout = 6000;
+          xhr.send();
+        });
+        waits.push(timeoutPromise(glbPromise, 7000));
+        /* Store a reference so trackProgress can inject the progress callback */
+        glbProgressPromise = glbPromise;
       }
     });
   }
 
-  // Ejecutar con seguridad absoluta
-  Promise.all(waits).then(hide).catch(hide);
+  // ── Progress bar + percentage — real asset tracking ──────────────────
+  // Each promise in waits[] is wrapped so that when it settles (resolve or
+  // timeout), it ticks a counter and updates the bar/label in real time.
+  // This wrapping happens AFTER all waits[] entries are pushed, so the
+  // total count is known before any promise has a chance to settle.
+  // The bar drives from 0 → 92% while assets load, then jumps to 100%
+  // right before the screen fades — so the user always sees completion.
+
+  const barEl   = document.getElementById('loadBar');
+  const pctEl   = document.getElementById('loadPct');
+
+  function setProgress(pct) {
+    const p = Math.min(100, Math.round(pct));
+    if (barEl) barEl.style.setProperty('--load-pct', p + '%');
+    if (pctEl) pctEl.textContent = p + '%';
+  }
+
+  function trackProgress(promises) {
+    if (!promises.length) return promises;
+    let done = 0;
+    const total = promises.length;
+    /* GLB counts as 8 virtual slots so it dominates the bar weight
+       proportional to its byte size vs. the small image assets */
+    const GLB_WEIGHT = 8;
+    const effective  = total + GLB_WEIGHT - (glbProgressPromise ? 1 : 0);
+    setProgress(0);
+
+    /* Inject continuous GLB byte-progress into the bar */
+    if (glbProgressPromise) {
+      glbProgressCb = (ratio) => {
+        /* GLB progress contributes GLB_WEIGHT slots worth of bar movement */
+        const glbContrib = (ratio * GLB_WEIGHT) / effective;
+        const otherContrib = (done / effective);
+        setProgress((glbContrib + otherContrib) * 92);
+      };
+    }
+
+    return promises.map(p => {
+      const isGlb = (p === glbProgressPromise);
+      return p.then(
+        v => { if (!isGlb) done++; setProgress((done / effective) * 92); return v; },
+        v => { if (!isGlb) done++; setProgress((done / effective) * 92); return v; }
+      );
+    });
+  }
+
+  // Wire progress tracking, then run
+  const tracked = trackProgress(waits);
+
+  Promise.all(tracked).then(() => {
+    setProgress(100);
+    hide();
+  }).catch(hide);
 
   // Fallback por timeout duro global (Garantía absoluta de cierre)
   setTimeout(hide, cfg.MAX_WAIT_MS);
