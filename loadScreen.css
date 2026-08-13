@@ -1,0 +1,101 @@
+/* ══════════════════════════════════════════════════════════
+   loadScreen.css
+   Landing Redesign — Module 4 of 4 (Load Screen)
+   Sebastián Castillo Portfolio — Engineering Pass v3.2 → UX/UI Phase
+
+   Reuses your existing --heat-stop-* gradient tokens and the
+   fadeOut keyframe already in animations.css, rather than
+   introducing new colors/animations for a screen that's only ever
+   seen for a few seconds.
+   ══════════════════════════════════════════════════════════ */
+
+#loadScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999; /* intentionally the same ceiling as .skip-link/.glassModule.dragging — this is the one legitimate case of "must always win," and it's gone from the DOM within seconds, so no lasting collision */
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+}
+
+#loadScreen.is-hiding {
+  animation: fadeOut 0.4s ease forwards;
+  pointer-events: none; /* stop blocking clicks the instant it starts fading, don't wait for the animation to finish */
+}
+
+/* Simple pulsing orb using the real Heat Wave gradient stops —
+   same signature color language as the hero card and scroll
+   narrative, not a generic spinner */
+#loadScreen .load-orb {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-image: radial-gradient(
+    circle at 40% 35%,
+    var(--heat-stop-1) 0%,
+    var(--heat-stop-2) 40%,
+    var(--heat-stop-3) 75%,
+    var(--heat-stop-4) 100%
+  );
+  animation: loadOrbPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes loadOrbPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%      { transform: scale(1.15); opacity: 1;    }
+}
+
+#loadScreen .load-label {
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+/* ── Progress bar ── */
+.load-progress {
+  width: 180px;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.load-progress__fill {
+  height: 100%;
+  width: var(--load-pct, 0%);
+  background: linear-gradient(90deg,
+    var(--heat-stop-1, #ff5050),
+    var(--heat-stop-2, #ffaa00),
+    var(--heat-stop-3, #ffdd88)
+  );
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ── Percentage counter ── */
+.load-pct {
+  font-family: 'BarlowSC', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.25);
+  min-width: 3ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums; /* prevents layout shift as digits change width */
+}
+
+/*@media (prefers-reduced-motion: reduce) {
+  #loadScreen .load-orb {
+    animation: none;
+  }
+  .load-progress__fill {
+    transition: none;
+  }
+}*/
