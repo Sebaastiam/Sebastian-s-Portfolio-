@@ -28,7 +28,7 @@ window.SCROLL_NARRATIVE_CONFIG = [
     layers: [
       { src: "./scroll/1.2.webp", depth: 2 },  // far — distant skyline
       { src: "./scroll/1.1.webp", depth: 12 }, // mid — mid-ground rooftops
-      { src: "./scroll/1.webp",   depth: 24 }, // near — foreground streetlamp/wire, zoom más intenso
+      { src: "./scroll/1.webp",   depth: 2 }, // near — foreground streetlamp/wire, zoom más intenso
     ],
     model: {
       src: './scroll/mushroom.glb', /* ajusta el nombre real del archivo */
@@ -43,7 +43,7 @@ window.SCROLL_NARRATIVE_CONFIG = [
     description: '',
     background: { type: 'image', src: "./scroll/3.webp" },
     layers: [
-      { src: "./scroll/3.1.webp", depth: 10 }, // far
+      { src: "./scroll/3.1.webp", depth: 24 }, // far
     ],
   },
 ];
