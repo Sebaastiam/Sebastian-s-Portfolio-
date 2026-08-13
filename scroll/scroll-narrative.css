@@ -113,7 +113,7 @@
 .narrative-stop__model-canvas {
   position: absolute;
   inset: 0;
-  z-index: 2; /* por encima de la capa "near" (depth más alto) */
+  z-index: 10; /* por encima de la capa "near" (depth más alto) */
   display: flex;
   align-items: center;
   justify-content: center;
