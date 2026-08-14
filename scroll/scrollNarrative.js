@@ -267,10 +267,6 @@
     if (!document.hidden) scheduleRender();
   }, { passive: true });
 
-  document.addEventListener('scroll', () => {
-    if (!document.hidden) scheduleRender();
-  }, { capture: true, passive: true });
-
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) scheduleRender();
   });
@@ -391,7 +387,9 @@ function initModelViewer(container, glbSrc) {
     let mouseX       = 0, mouseTX         = 0;
     let mouseY       = 0, mouseTY         = 0;
 
+    /* pointermove only updates while the model is visible — no cost when paused */
     window.addEventListener('pointermove', e => {
+      if (paused) return;
       mouseTX = (e.clientX / window.innerWidth)  * 2 - 1;
       mouseTY = (e.clientY / window.innerHeight) * 2 - 1;
     }, { passive: true });
